@@ -10,7 +10,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
     // From UABEA
     public class TextureHelper
     {
-        private AssetsManager _assetsManager;
+        private readonly AssetsManager _assetsManager;
         public TextureHelper(AssetsManager assetsManager)
         {
             _assetsManager = assetsManager;
