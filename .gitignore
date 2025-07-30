@@ -97,3 +97,18 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+Library
+Logs
+Temp
+UserSettings
+MemoryCaptures
+Obj
+Build
+
+Packages/*
+!Packages/manifest.json
+!Packages/packages-lock.json
+
+.idea
+
