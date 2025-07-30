@@ -1,15 +1,26 @@
 using System.IO;
 using AssetsTools.NET.Texture;
+using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Tga;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace UABS.Assets.Script.__Test__
+namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
 {
-    public class TextureImportExport
+    // From UABEA
+    public class TextureImportExport : ITextureImporter<Rgba32>, ITextureExporter<Rgba32>
     {
-        public static byte[] Import(
+        private readonly ITextureDecoder _decoder;
+        private readonly ITextureEncoder<Rgba32> _encoder;
+
+        public TextureImportExport(ITextureDecoder decoder, ITextureEncoder<Rgba32> encoder)
+        {
+            _decoder = decoder;
+            _encoder = encoder;
+        }
+
+        public byte[] Import(
             string imagePath, TextureFormat format,
             out int width, out int height, ref int mips,
             uint platform = 0, byte[] platformBlob = null)
@@ -18,17 +29,11 @@ namespace UABS.Assets.Script.__Test__
             return Import(image, format, out width, out height, ref mips, platform, platformBlob);
         }
 
-        public static byte[] Import(
+        public byte[] Import(
             Image<Rgba32> image, TextureFormat format,
             out int width, out int height, ref int mips,
             uint platform = 0, byte[] platformBlob = null)
         {
-
-            bool IsPo2(int n)
-            {
-                return n > 0 && ((n & (n - 1)) == 0);
-            }
-
             // switch swizzle code does not support mipmaps yet (they're a bit special)
             if (platform == 38 && platformBlob != null && platformBlob.Length != 0)
             {
@@ -39,18 +44,18 @@ namespace UABS.Assets.Script.__Test__
             height = image.Height;
 
             // can't make mipmaps from this image
-            if (mips > 1 && (width != height || !IsPo2(width)))
+            if (mips > 1 && (width != height || !TextureHelper.IsPo2(width)))
             {
                 mips = 1;
             }
 
             image.Mutate(i => i.Flip(FlipMode.Vertical));
 
-            byte[] encData = TextureEncoderDecoder.Encode(image, width, height, format, 5, mips);
+            byte[] encData = _encoder.Encode(image, width, height, format, 5, mips);
             return encData;
         }
 
-        private static byte[] ImportSwitch(
+        private byte[] ImportSwitch(
             Image<Rgba32> image, TextureFormat format,
             out int width, out int height,
             byte[] platformBlob = null)
@@ -77,11 +82,11 @@ namespace UABS.Assets.Script.__Test__
 
             Image<Rgba32> swizzledImage = Texture2DSwitchDeswizzler.SwitchSwizzle(image, blockSize, gobsPerBlock);
 
-            byte[] encData = TextureEncoderDecoder.Encode(swizzledImage, paddedWidth, paddedHeight, format);
+            byte[] encData = _encoder.Encode(swizzledImage, paddedWidth, paddedHeight, format);
             return encData;
         }
 
-        public static bool Export(
+        public bool Export(
             byte[] encData, string imagePath, int width, int height,
             TextureFormat format, uint platform = 0, byte[] platformBlob = null)
         {
@@ -93,7 +98,7 @@ namespace UABS.Assets.Script.__Test__
             return true;
         }
 
-        public static Image<Rgba32> Export(
+        public Image<Rgba32> Export(
             byte[] encData, int width, int height,
             TextureFormat format, uint platform = 0, byte[] platformBlob = null)
         {
@@ -102,7 +107,7 @@ namespace UABS.Assets.Script.__Test__
                 return ExportSwitch(encData, width, height, format, platformBlob);
             }
 
-            byte[] decData = TextureEncoderDecoder.Decode(encData, width, height, format);
+            byte[] decData = _decoder.Decode(encData, width, height, format);
             if (decData == null)
                 return null;
 
@@ -114,7 +119,7 @@ namespace UABS.Assets.Script.__Test__
             return image;
         }
 
-        private static Image<Rgba32> ExportSwitch(
+        private Image<Rgba32> ExportSwitch(
             byte[] encData, int width, int height,
             TextureFormat format, byte[] platformBlob = null)
         {
@@ -128,7 +133,7 @@ namespace UABS.Assets.Script.__Test__
             width = newSize.Width;
             height = newSize.Height;
 
-            byte[] decData = TextureEncoderDecoder.Decode(encData, width, height, format);
+            byte[] decData = _decoder.Decode(encData, width, height, format);
             if (decData == null)
                 return null;
 

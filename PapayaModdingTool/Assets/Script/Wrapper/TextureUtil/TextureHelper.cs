@@ -5,8 +5,9 @@ using AssetsTools.NET;
 using AssetsTools.NET.Extra;
 using AssetsTools.NET.Texture;
 
-namespace UABS.Assets.Script.__Test__
+namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
 {
+    // From UABEA
     public class TextureHelper
     {
         private AssetsManager _assetsManager;
@@ -111,7 +112,7 @@ namespace UABS.Assets.Script.__Test__
             return platformBlob;
         }
 
-        public bool IsPo2(int n)
+        public static bool IsPo2(int n)
         {
             return n > 0 && ((n & (n - 1)) == 0);
         }

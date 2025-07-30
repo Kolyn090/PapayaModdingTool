@@ -3,12 +3,14 @@ using System.IO;
 using AssetsTools.NET.Texture;
 using PapayaModdingTool.Assets.Script.__Test__;
 using PapayaModdingTool.Assets.Script.__Test__.PVRTexLib;
+using PapayaModdingTool.Assets.Script.Wrapper.ISPC;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace UABS.Assets.Script.__Test__
+namespace PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode
 {
-    public class TextureEncoderDecoder
+    // From UABEA
+    public class TextureEncoderDecoder : ITextureDecoder, ITextureEncoder<Rgba32>
     {
         public static int RGBAToFormatByteSize(TextureFormat format, int width, int height)
         {
@@ -151,7 +153,7 @@ namespace UABS.Assets.Script.__Test__
             }
         }
 
-        private static byte[] DecodeAssetRipperTex(byte[] data, int width, int height, TextureFormat format)
+        private byte[] DecodeAssetRipperTex(byte[] data, int width, int height, TextureFormat format)
         {
             byte[] dest = TextureFile.DecodeManaged(data, format, width, height);
 
@@ -164,7 +166,7 @@ namespace UABS.Assets.Script.__Test__
             return dest;
         }
 
-        private static byte[] DecodePVRTexLib(byte[] data, int width, int height, TextureFormat format)
+        private byte[] DecodePVRTexLib(byte[] data, int width, int height, TextureFormat format)
         {
             byte[] dest = new byte[width * height * 4];
             uint size = 0;
@@ -193,7 +195,7 @@ namespace UABS.Assets.Script.__Test__
             }
         }
 
-        // private static byte[] DecodeCrunch(byte[] data, int width, int height, TextureFormat format)
+        // private byte[] DecodeCrunch(byte[] data, int width, int height, TextureFormat format)
         // {
         //     byte[] dest = new byte[width * height * 4];
         //     uint size = 0;
@@ -262,7 +264,7 @@ namespace UABS.Assets.Script.__Test__
         //     }
         // }
 
-        public static byte[] Decode(byte[] data, int width, int height, TextureFormat format)
+        public byte[] Decode(byte[] data, int width, int height, TextureFormat format)
         {
             switch (format)
             {
@@ -361,7 +363,7 @@ namespace UABS.Assets.Script.__Test__
             }
         }
 
-        public static byte[] EncodeMip(byte[] data, int width, int height, TextureFormat format, int quality, int mips = 1)
+        public byte[] EncodeMip(byte[] data, int width, int height, TextureFormat format, int quality, int mips = 1)
         {
             switch (format)
             {
@@ -442,7 +444,7 @@ namespace UABS.Assets.Script.__Test__
             }
         }
 
-        public static byte[] Encode(SixLabors.ImageSharp.Image<Rgba32> image, int width, int height, TextureFormat format, int quality = 5, int mips = 1)
+        public byte[] Encode(SixLabors.ImageSharp.Image<Rgba32> image, int width, int height, TextureFormat format, int quality = 5, int mips = 1)
         {
             using MemoryStream rawDataStream = new MemoryStream();
 

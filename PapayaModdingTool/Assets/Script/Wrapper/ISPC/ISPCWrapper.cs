@@ -1,10 +1,11 @@
 using System;
 using System.Runtime.InteropServices;
 using AssetsTools.NET.Texture;
-using UABS.Assets.Script.__Test__;
+using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
 
-namespace PapayaModdingTool.Assets.Script.__Test__
+namespace PapayaModdingTool.Assets.Script.Wrapper.ISPC
 {
+    // From UABEA, converted from 'ispc_texcomp.h' and 'textoolwrap.cpp'
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct RgbaSurface
     {

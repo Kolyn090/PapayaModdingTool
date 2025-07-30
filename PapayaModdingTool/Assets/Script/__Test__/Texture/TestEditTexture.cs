@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using AssetsTools.NET;
 using AssetsTools.NET.Extra;
 using AssetsTools.NET.Texture;
+using PapayaModdingTool.Assets.Script.__Test__.TestUtil;
+using PapayaModdingTool.Assets.Script.Misc.AppCore;
+using PapayaModdingTool.Assets.Script.Reader;
+using PapayaModdingTool.Assets.Script.Wrapper.TextureUtil;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using UnityEngine;
 
 using TextureFormat = AssetsTools.NET.Texture.TextureFormat;
-using System.Globalization;
-using System.Linq;
-using PapayaModdingTool.Assets.Script.__Test__.TestUtil;
-using PapayaModdingTool.Assets.Script.Misc.AppCore;
-using PapayaModdingTool.Assets.Script.Reader;
-using PapayaModdingTool.Assets.Script.__Test__;
 
-namespace UABS.Assets.Script.__Test__
+namespace PapayaModdingTool.Assets.Script.__Test__.Texture
 {
     public class TestEditTexture : MonoBehaviour, ITestable
     {
@@ -33,18 +32,22 @@ namespace UABS.Assets.Script.__Test__
                 long texturePathID = -5051031092977008815;
                 string ASSET_PATH = Path.Combine(PredefinedTestPaths.LabDeskPath, "Asset");
                 string texture4ReplacePath = Path.Combine(ASSET_PATH, "spriteassetgroup_assets_assets/needdynamicloadresources/spritereference/unit_hero_gangdan-CAB-7570f5ae7807c50c425af095d0113220--5051031092977008815.png");
-                ReplaceTexture(appEnvironment, appEnvironment.AssetsManager, assetInst, bunInst, texturePathID, texture4ReplacePath, bundlePath);
+                ReplaceTexture(appEnvironment.AssetsManager,
+                                appEnvironment.Wrapper.TextureImportExport,
+                                assetInst,
+                                bunInst,
+                                texturePathID,
+                                texture4ReplacePath);
                 onComplete?.Invoke();
             });
         }
 
-        private void ReplaceTexture(AppEnvironment appEnvironment,
-                                    AssetsManager am,
+        private void ReplaceTexture(AssetsManager am,
+                                    ITextureImporter<Rgba32> textureImporter,
                                     AssetsFileInstance assetInst,
                                     BundleFileInstance bunInst,
                                     long pathID,
-                                    string textureImagePath,
-                                    string bundlePath)
+                                    string textureImagePath)
         {
             // EditTextureOption.cs - ExecutePlugin
             AssetFileInfo info = assetInst.file.GetAssetInfo(pathID);
@@ -71,25 +74,9 @@ namespace UABS.Assets.Script.__Test__
             int mips = 1;
             if (!texBase["m_MipCount"].IsDummy)
                 mips = texBase["m_MipCount"].AsInt;
-            else if (textureHelper.IsPo2(imgToImport.Width) && textureHelper.IsPo2(imgToImport.Height))
+            else if (TextureHelper.IsPo2(imgToImport.Width) && TextureHelper.IsPo2(imgToImport.Height))
                 mips = textureHelper.GetMaxMipCount(imgToImport.Width, imgToImport.Height);
-
-            int width = 0, height = 0;
-            byte[] encImageBytes = null;
-            encImageBytes = TextureImportExport.Import(imgToImport, (TextureFormat)format, out width, out height, ref mips, platform, platformBlob);
-            
-            // Try with BCnEncoder
-            // ITextureDecoder textureDecoder = appEnvironment.Wrapper.TextureDecoder;
-            // byte[] rgbaBytes = new byte[width * height * 4];
-            // imgToImport.CopyPixelDataTo(rgbaBytes);
-            // byte[] imageBytes = rgbaBytes;
-            // if (IsSupportedFormat((TextureFormat)format, out TextureCompressionFormat compressFormat))
-            // {
-            //     encImageBytes = textureDecoder.EncodeToBytes(textureImagePath, TextureCompressionFormat.Rgba);
-            //     texBase["m_TextureFormat"].AsInt = 4; // RGBA32
-            //     // encImageBytes = textureDecoder.DecodeToBytes(imageBytes, width, height, compressFormat);
-            // }
-
+            byte[] encImageBytes = textureImporter.Import(imgToImport, (TextureFormat)format, out int width, out int height, ref mips, platform, platformBlob);
             if (encImageBytes == null)
             {
                 Debug.LogError($"Failed to encode texture format {(TextureFormat)format}!");
@@ -150,30 +137,6 @@ namespace UABS.Assets.Script.__Test__
             image_data.TemplateField.ValueType = AssetValueType.ByteArray;
             image_data.AsByteArray = encImageBytes;
 
-            // TextureFile.StreamingInfo streamInfo = texFile.m_StreamData;
-            // if (streamInfo.path != null && streamInfo.path != "" && assetInst.parentBundle != null)
-            // {
-            //     string searchPath = streamInfo.path;
-            //     if (searchPath.StartsWith("archive:/"))
-            //         searchPath = searchPath.Substring(9);
-
-            //     searchPath = Path.GetFileName(searchPath);
-            //     AssetsFileReader reader = bunInst.file.DataReader;
-            //     AssetBundleDirectoryInfo[] dirInf = bunInst.file.BlockAndDirInfo.DirectoryInfos;
-            //     for (int i = 0; i < dirInf.Length; i++)
-            //     {
-            //         AssetBundleDirectoryInfo bunInfo = dirInf[i];
-            //         if (bunInfo.Name == searchPath)
-            //         {
-            //             reader.Position = bunInfo.Offset + (long)streamInfo.offset;
-            //             texFile.pictureData = reader.ReadBytes((int)streamInfo.size);
-            //             texFile.m_StreamData.offset = 0;
-            //             texFile.m_StreamData.size = 0;
-            //             texFile.m_StreamData.path = "";
-            //         }
-            //     }
-            // }
-
             // 1. Write patched asset to byte array
             byte[] savedAsset = texBase.WriteToByteArray();
             AssetsReplacerFromMemory replacer = new(
@@ -221,124 +184,6 @@ namespace UABS.Assets.Script.__Test__
             bunInst.file.Read(new AssetsFileReader(File.OpenRead(origFilePath)));
 
             am.UnloadAllBundleFiles();
-
-            // var streamPath = texBase["m_StreamData"]["path"].AsString;
-            // string searchPath = streamPath.StartsWith("archive:/") ? streamPath.Substring(9) : streamPath;
-            // searchPath = Path.GetFileName(searchPath);
-            // var dirInfo = bunInst.file.BlockAndDirInfo.DirectoryInfos.FirstOrDefault(d => d.Name == searchPath);
-            // if (dirInfo == null)
-            // {
-            //     Debug.LogError("Could not find .resS entry in bundle directory.");
-            //     return;
-            // }
-            // using (var fs = new FileStream(bundlePath, FileMode.Open, FileAccess.Write, FileShare.None))
-            // {
-            //     var header = CreateDDSHeaderForBC7(width, height, encImageBytes.Length);
-            //     File.WriteAllBytes("view.dds", header.Concat(encImageBytes).ToArray());
-            //     long writePos = dirInfo.Offset + texBase["m_StreamData"]["offset"].AsLong;
-            //     fs.Position = writePos;
-            //     fs.Write(encImageBytes, 0, encImageBytes.Length);
-            //     fs.Flush();
-            // }
-            /*
-                // 2. Write patched assets file back to disk 
-                string tempAssetPath = Path.Combine(Path.GetDirectoryName(bundlePath), "temp_assets.assets");
-                using (FileStream fs = File.Create(tempAssetPath))
-                using (AssetsFileWriter writer = new(fs))
-                {
-                    assetInst.file.Write(writer, 0, replacers, am.ClassDatabase);
-                }
-
-                var streamPath = texBase["m_StreamData"]["path"].AsString;
-                string searchPath = streamPath.StartsWith("archive:/") ? streamPath.Substring(9) : streamPath;
-                searchPath = Path.GetFileName(searchPath);
-
-                // Find the directory info inside the bundle file
-                var dirInfo = bunInst.file.BlockAndDirInfo.DirectoryInfos.FirstOrDefault(d => d.Name == searchPath);
-                if (dirInfo == null)
-                {
-                    Debug.LogError("Could not find .resS entry in bundle directory.");
-                    return;
-                }
-
-                am.UnloadAllBundleFiles();
-
-                // Write the raw .resS bytes at the correct position inside the bundle file
-                using (var fs = new FileStream(bundlePath, FileMode.Open, FileAccess.Write, FileShare.None))
-                {
-                    long writePos = dirInfo.Offset + texBase["m_StreamData"]["offset"].AsLong;
-                    fs.Position = writePos;
-                    fs.Write(encImageBytes, 0, encImageBytes.Length);
-                    fs.Flush();
-                }
-
-                if (File.Exists(tempAssetPath))
-                {
-                    File.Delete(tempAssetPath);
-                }
-            */
-        }
-
-        byte[] CreateDDSHeaderForBC7(int width, int height, int dataSize)
-        {
-            byte[] header = new byte[128];
-
-            // 'DDS '
-            header[0] = (byte)'D';
-            header[1] = (byte)'D';
-            header[2] = (byte)'S';
-            header[3] = (byte)' ';
-
-            // dwSize
-            BitConverter.GetBytes(124).CopyTo(header, 4);
-
-            // dwFlags: CAPS | HEIGHT | WIDTH | PIXELFORMAT | LINEARSIZE
-            BitConverter.GetBytes(0x00021007).CopyTo(header, 8);
-
-            // dwHeight
-            BitConverter.GetBytes(height).CopyTo(header, 12);
-
-            // dwWidth
-            BitConverter.GetBytes(width).CopyTo(header, 16);
-
-            // dwPitchOrLinearSize
-            BitConverter.GetBytes(dataSize).CopyTo(header, 20);
-
-            // dwMipMapCount = 1
-            BitConverter.GetBytes(1).CopyTo(header, 28);
-
-            // pixel format size
-            BitConverter.GetBytes(32).CopyTo(header, 76);
-
-            // pixel format flags: DDPF_FOURCC
-            BitConverter.GetBytes(0x00000004).CopyTo(header, 80);
-
-            // FourCC = 'DX10'
-            header[84] = (byte)'D';
-            header[85] = (byte)'X';
-            header[86] = (byte)'1';
-            header[87] = (byte)'0';
-
-            // DDS caps
-            BitConverter.GetBytes(0x1000).CopyTo(header, 108); // DDSCAPS_TEXTURE
-
-            // DX10 header starts at byte 128
-            byte[] dx10Header = new byte[20];
-            BitConverter.GetBytes(98).CopyTo(dx10Header, 0);   // DXGI_FORMAT_BC7_UNORM (value 98)
-            BitConverter.GetBytes(3).CopyTo(dx10Header, 4);    // D3D10_RESOURCE_DIMENSION_TEXTURE2D
-            BitConverter.GetBytes(0).CopyTo(dx10Header, 8);    // misc flag
-            BitConverter.GetBytes(1).CopyTo(dx10Header, 12);   // array size
-            BitConverter.GetBytes(0).CopyTo(dx10Header, 16);   // misc flags 2
-
-            return header.Concat(dx10Header).ToArray();
-        }
-
-        private int IndexToTextureFormat(int format)
-        {
-            if (format >= 37)
-                return format + 41 - 37;
-            else
-                return format + 1;
         }
     }
 }

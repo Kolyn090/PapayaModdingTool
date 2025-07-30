@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using static PVRTexLib.PVRTexLibNative;
 using static PVRTexLib.PVRDefine;
 
+// https://github.com/YingFengTingYu/PVRTexLib.NET.git
+
 namespace PVRTexLib
 {
     public class MetaDataBlock

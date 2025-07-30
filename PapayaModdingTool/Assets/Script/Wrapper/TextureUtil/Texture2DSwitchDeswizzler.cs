@@ -3,9 +3,9 @@ using AssetsTools.NET.Texture;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace UABS.Assets.Script.__Test__
+namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
 {
-
+    // From UABEA
     public class Texture2DSwitchDeswizzler
     {
         // referring to block here as a compressed texture block, not a gob one

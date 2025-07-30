@@ -1,7 +1,9 @@
 using System;
+using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
 using PVRTexLib;
-using UABS.Assets.Script.__Test__;
 using UnityEngine;
+
+// https://github.com/YingFengTingYu/PVRTexLib.NET.git
 
 namespace PapayaModdingTool.Assets.Script.__Test__.PVRTexLib
 {

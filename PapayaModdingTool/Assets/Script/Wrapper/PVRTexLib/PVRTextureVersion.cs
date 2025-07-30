@@ -1,4 +1,6 @@
-﻿namespace PVRTexLib
+﻿// https://github.com/YingFengTingYu/PVRTexLib.NET.git
+
+namespace PVRTexLib
 {
     public static partial class PVRDefine
     {

@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 
+// https://github.com/YingFengTingYu/PVRTexLib.NET.git
+
 namespace PVRTexLib
 {
     /// <summary>
