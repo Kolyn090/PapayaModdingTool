@@ -29,6 +29,8 @@ namespace PapayaModdingTool.Assets.Script.__Test__.Texture
                                                 bunInst,
                                                 texturePathID,
                                                 texture4ReplacePath);
+                
+                appEnvironment.AssetsManager.UnloadAll();
                 onComplete?.Invoke();
             });
         }
