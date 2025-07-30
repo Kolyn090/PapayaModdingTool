@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace UABS.Assets.Script.__Test__.UABEA
+namespace UABS.Assets.Script.__Test__
 {
     // public class PInvoke
     // {

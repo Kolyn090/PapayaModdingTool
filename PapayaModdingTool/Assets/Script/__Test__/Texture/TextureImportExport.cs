@@ -5,7 +5,7 @@ using SixLabors.ImageSharp.Formats.Tga;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace UABS.Assets.Script.__Test__.UABEA
+namespace UABS.Assets.Script.__Test__
 {
     // public class TextureImportExport
     // {

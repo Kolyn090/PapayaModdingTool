@@ -15,7 +15,7 @@ using PapayaModdingTool.Assets.Script.__Test__.TestUtil;
 using PapayaModdingTool.Assets.Script.Misc.AppCore;
 using PapayaModdingTool.Assets.Script.Reader;
 
-namespace UABS.Assets.Script.__Test__.UABEA
+namespace UABS.Assets.Script.__Test__
 {
     public class TestEditTexture : MonoBehaviour, ITestable
     {

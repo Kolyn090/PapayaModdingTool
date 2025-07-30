@@ -3,7 +3,7 @@ using AssetsTools.NET.Texture;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace UABS.Assets.Script.__Test__.UABEA
+namespace UABS.Assets.Script.__Test__
 {
 
     public class Texture2DSwitchDeswizzler

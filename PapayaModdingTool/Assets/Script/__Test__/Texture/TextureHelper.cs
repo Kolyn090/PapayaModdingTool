@@ -5,7 +5,7 @@ using AssetsTools.NET;
 using AssetsTools.NET.Extra;
 using AssetsTools.NET.Texture;
 
-namespace UABS.Assets.Script.__Test__.UABEA
+namespace UABS.Assets.Script.__Test__
 {
     public class TextureHelper
     {

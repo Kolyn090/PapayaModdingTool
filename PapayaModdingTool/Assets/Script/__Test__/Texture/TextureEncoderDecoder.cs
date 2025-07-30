@@ -4,7 +4,7 @@ using AssetsTools.NET.Texture;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace UABS.Assets.Script.__Test__.UABEA
+namespace UABS.Assets.Script.__Test__
 {
     // public class TextureEncoderDecoder
     // {
