@@ -1,11 +1,9 @@
 using System;
-using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
-using UnityEngine;
 using PVRTexLib;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using UnityEngine;
 
 namespace UABS.Assets.Script.__Test__.UABEA.PVRTexLib
 {
@@ -15,7 +13,7 @@ namespace UABS.Assets.Script.__Test__.UABEA.PVRTexLib
         {
             EncodeTexture("in.png", "out.bin", (ulong)PVRTexLibPixelFormat.PVRTCII_HDR_8bpp);
         }
-        
+
         public static unsafe void EncodeTexture(string inFile, string outFile, ulong outFormat)
         {
             using (Image<Bgra32> image = Image.Load<Bgra32>(inFile)) // BGRA 8-8-8-8

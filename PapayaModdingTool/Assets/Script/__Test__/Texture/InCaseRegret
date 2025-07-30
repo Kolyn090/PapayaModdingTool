@@ -78,6 +78,27 @@ namespace UABS.Assets.Script.__Test__
             byte[] encImageBytes = null;
             encImageBytes = TextureImportExport.Import(imgToImport, (TextureFormat)format, out width, out height, ref mips, platform, platformBlob);
             
+            // Test
+            var streamPath = texBase["m_StreamData"]["path"].AsString;
+            string searchPath = streamPath.StartsWith("archive:/") ? streamPath.Substring(9) : streamPath;
+            searchPath = Path.GetFileName(searchPath);
+            var dirInfo = bunInst.file.BlockAndDirInfo.DirectoryInfos.FirstOrDefault(d => d.Name == searchPath);
+            byte[] originalBytes;
+            using (var fs = File.OpenRead(bunInst.path))
+            {
+                // Position at start of .resS data inside bundle
+                fs.Position = dirInfo.Offset + texBase["m_StreamData"]["offset"].AsLong;
+                
+                // Read the texture data size bytes
+                originalBytes = new byte[texBase["m_StreamData"]["size"].AsInt];
+                fs.Read(originalBytes, 0, originalBytes.Length);
+
+                // Now originalBytes has the texture's BC7 raw data
+            }
+
+            byte[] ddsBytes = CreateDDSHeaderForBC7(width, height, originalBytes.Length).Concat(originalBytes).ToArray();
+            File.WriteAllBytes("originalTexture.dds", ddsBytes);
+
             // Try with BCnEncoder
             // ITextureDecoder textureDecoder = appEnvironment.Wrapper.TextureDecoder;
             // byte[] rgbaBytes = new byte[width * height * 4];
@@ -141,14 +162,6 @@ namespace UABS.Assets.Script.__Test__
 
             texBase["m_Width"].AsInt = width;
             texBase["m_Height"].AsInt = height;
-            
-            texBase["m_StreamData"]["path"].AsString = "";
-            texBase["m_StreamData"]["offset"].AsInt = 0;
-            texBase["m_StreamData"]["size"].AsInt = 0;
-            AssetTypeValueField image_data = texBase["image data"];
-            image_data.Value.ValueType = AssetValueType.ByteArray;
-            image_data.TemplateField.ValueType = AssetValueType.ByteArray;
-            image_data.AsByteArray = encImageBytes;
 
             // TextureFile.StreamingInfo streamInfo = texFile.m_StreamData;
             // if (streamInfo.path != null && streamInfo.path != "" && assetInst.parentBundle != null)
@@ -226,20 +239,38 @@ namespace UABS.Assets.Script.__Test__
             // string searchPath = streamPath.StartsWith("archive:/") ? streamPath.Substring(9) : streamPath;
             // searchPath = Path.GetFileName(searchPath);
             // var dirInfo = bunInst.file.BlockAndDirInfo.DirectoryInfos.FirstOrDefault(d => d.Name == searchPath);
-            // if (dirInfo == null)
+            if (dirInfo == null)
+            {
+                Debug.LogError("Could not find .resS entry in bundle directory.");
+                return;
+            }
+
+            // foreach (var block in bunInst.file.BlockAndDirInfo.BlockInfos)
             // {
-            //     Debug.LogError("Could not find .resS entry in bundle directory.");
-            //     return;
+            //     Debug.Log($"Block flags: {block.GetCompressionType()}");
             // }
-            // using (var fs = new FileStream(bundlePath, FileMode.Open, FileAccess.Write, FileShare.None))
-            // {
-            //     var header = CreateDDSHeaderForBC7(width, height, encImageBytes.Length);
-            //     File.WriteAllBytes("view.dds", header.Concat(encImageBytes).ToArray());
-            //     long writePos = dirInfo.Offset + texBase["m_StreamData"]["offset"].AsLong;
-            //     fs.Position = writePos;
-            //     fs.Write(encImageBytes, 0, encImageBytes.Length);
-            //     fs.Flush();
-            // }
+            // long expectedLength = ((width + 3) / 4) * ((height + 3) / 4) * 16;
+            // Debug.Log($"Expected BC7 length: {expectedLength}");
+            // Debug.Log($"Actual: {encImageBytes.Length}");
+
+            using (var fs = new FileStream(bundlePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                var header = CreateDDSHeaderForBC7(width, height, encImageBytes.Length);
+                File.WriteAllBytes("view.dds", header.Concat(encImageBytes).ToArray());
+                long writePos = dirInfo.Offset + texBase["m_StreamData"]["offset"].AsLong;
+                fs.Position = writePos;
+
+                // Debug.Log($"m_StreamData.path = '{streamPath}'");
+                // Debug.Log($"m_StreamData.offset = {texBase["m_StreamData"]["offset"].AsLong}");
+                // Debug.Log($"dirInfo.Offset = {dirInfo?.Offset}");
+
+                // byte[] oldBytes = new byte[encImageBytes.Length];
+                // fs.Read(oldBytes, 0, oldBytes.Length);
+                // File.WriteAllBytes("old.dds", header.Concat(oldBytes).ToArray());
+
+                fs.Write(encImageBytes, 0, encImageBytes.Length);
+                fs.Flush();
+            }
             /*
                 // 2. Write patched assets file back to disk 
                 string tempAssetPath = Path.Combine(Path.GetDirectoryName(bundlePath), "temp_assets.assets");
