@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
+using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,47 +9,49 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
 {
     public class TextureModdingMainWindow : MainWindow
     {
-        private Vector2 scrollPos;
-        private List<string> items = new List<string>();
+        private readonly ProjectLoader _projectLoader = new();
+        private Vector2 _scrollPos;
+        private string _removeLoadedPath;
 
-
-        public static void Open(string projectName)
+        public static void Open(string projectPath)
         {
-            var window = GetWindow<TextureModdingMainWindow>(Path.GetFileName(projectName));
-            window.Initialize(projectName);
+            var window = GetWindow<TextureModdingMainWindow>(Path.GetFileName(projectPath));
+            window.Initialize(projectPath);
             window.Show();
-        }
-        
-        
-        private void OnEnable()
-        {
-            // Populate example items
-            for (int i = 1; i <= 50; i++)
-                items.Add("Item " + i);
         }
 
         protected override void OnGUI()
         {
             base.OnGUI();
 
-            // Begin scroll view and capture the scroll position
-            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Height(300));
+            List<string> loadedPaths = _projectLoader.FindLoadedPaths(Path.GetFileName(_projectPath), _appEnvironment.Wrapper.JsonSerializer);
 
-            // Draw list items
-            foreach (var item in items)
+            GUILayout.Space(20);
+
+            // Scroll view for loaded paths
+            GUILayout.Label(ELT("loaded_files"), EditorStyles.boldLabel);
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.Height(50));
+            foreach (var item in loadedPaths)
             {
-                GUILayout.Label(item);
+                EditorGUILayout.SelectableLabel(item, GUILayout.Height(15));
             }
-
-            // End scroll view
             EditorGUILayout.EndScrollView();
-
-            // Optional: Add buttons or other controls below
-            if (GUILayout.Button("Add Item"))
+            GUILayout.Space(5);
+            if (GUILayout.Button(ELT("load_new")))
             {
-                items.Add("Item " + (items.Count + 1));
-                Repaint();
+
             }
+
+            GUILayout.Space(20);
+
+            GUILayout.Label(ELT("remove_loaded"), EditorStyles.boldLabel);
+            _removeLoadedPath = EditorGUILayout.TextField("", _removeLoadedPath);
+
+        }
+
+        private void LoadNewFile()
+        {
+            
         }
     }
 }

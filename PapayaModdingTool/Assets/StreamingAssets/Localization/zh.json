@@ -22,6 +22,9 @@
         "enter_project_name_to_delete": "请在以下输入你想删除的项目的名字：",
         "project_name_dne": "未找到名字为\"{0}\"的项目",
         "project_deleted_title": "成功删除项目",
-        "project_deleted_message": "\"{0}\"已从你的电脑上删除"
+        "project_deleted_message": "\"{0}\"已从你的电脑上删除",
+        "loaded_files": "已载入文件：",
+        "load_new": "载入新文件（.assets, .bundle, .ab, ...）",
+        "remove_loaded": "移除已载入文件（复制粘贴以上路径来移除）"
     }
 }

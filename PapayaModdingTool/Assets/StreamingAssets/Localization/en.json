@@ -22,6 +22,9 @@
         "enter_project_name_to_delete": "Enter the name of the project you want to delete below:",
         "project_name_dne": "Couldn't find the project with name {0}",
         "project_deleted_title": "Project deleted",
-        "project_deleted_message": "{0} has been deleted from your PC."
+        "project_deleted_message": "{0} has been deleted from your PC.",
+        "loaded_files": "Loaded Files:",
+        "load_new": "Load New File (.assets, .bundle, .ab, ...)",
+        "remove_loaded": "Remove loaded (Copy-paste for the path above to remove it)"
     }
 }
