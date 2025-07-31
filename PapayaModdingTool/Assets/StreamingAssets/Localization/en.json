@@ -18,6 +18,10 @@
         "delete_cancel_button": "Cancel",
         "fail_to_delete_project": "Failed to delete project",
         "error": "Error",
-        "ok": "OK"
+        "ok": "OK",
+        "enter_project_name_to_delete": "Enter the name of the project you want to delete below:",
+        "project_name_dne": "Couldn't find the project with name {0}",
+        "project_deleted_title": "Project deleted",
+        "project_deleted_message": "{0} has been deleted from your PC."
     }
 }

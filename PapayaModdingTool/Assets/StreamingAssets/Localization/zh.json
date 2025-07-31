@@ -12,12 +12,16 @@
         "manage_project": "管理项目",
         "editing_project": "当前编辑：{0}",
         "delete_project": "删除项目",
-        "double_confirm_delete_project": "你确定要删除{0}吗？",
+        "double_confirm_delete_project": "你确定要删除\"{0}\"吗？",
         "cannot_undone": "该操作将不可恢复",
         "delete_project_button": "确认",
         "delete_cancel_button": "取消",
         "fail_to_delete_project": "删除项目失败",
         "error": "错误",
-        "ok": "好"
+        "ok": "好",
+        "enter_project_name_to_delete": "请在以下输入你想删除的项目的名字：",
+        "project_name_dne": "未找到名字为\"{0}\"的项目",
+        "project_deleted_title": "成功删除项目",
+        "project_deleted_message": "\"{0}\"已从你的电脑上删除"
     }
 }
