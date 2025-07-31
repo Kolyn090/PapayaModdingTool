@@ -16,6 +16,12 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.FileBrowser
             return result.Select(x => @$"\\?\{x}").ToArray();
         }
 
+        public string[] OpenFilePanel(string title, string directory, bool multiselect)
+        {
+            string[] result = StandaloneFileBrowser.OpenFilePanel(title, directory, "", multiselect);
+            return result.Select(x => @$"\\?\{x}").ToArray();
+        }
+
         public string[] OpenFolderPanel(string title, string directory, bool multiselect)
         {
             string[] result = StandaloneFileBrowser.OpenFolderPanel(title, directory, multiselect);

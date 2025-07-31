@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
+using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
+using PapayaModdingTool.Assets.Script.Writer.ProjectUtil;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,6 +12,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
     public class TextureModdingMainWindow : MainWindow
     {
         private readonly ProjectLoader _projectLoader = new();
+        private readonly ProjectWriter _projectWriter = new();
         private Vector2 _scrollPos;
         private string _removeLoadedPath;
 
@@ -24,6 +27,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         {
             base.OnGUI();
 
+            GUIStyle rightAlignedStyle = new(EditorStyles.label)
+            {
+                alignment = TextAnchor.MiddleRight
+            };
+
             List<string> loadedPaths = _projectLoader.FindLoadedPaths(Path.GetFileName(_projectPath), _appEnvironment.Wrapper.JsonSerializer);
 
             GUILayout.Space(20);
@@ -33,13 +41,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.Height(50));
             foreach (var item in loadedPaths)
             {
-                EditorGUILayout.SelectableLabel(item, GUILayout.Height(15));
+                EditorGUILayout.SelectableLabel(item, rightAlignedStyle, GUILayout.Height(15));
             }
             EditorGUILayout.EndScrollView();
             GUILayout.Space(5);
             if (GUILayout.Button(ELT("load_new")))
             {
-
+                LoadNewFile();
             }
 
             GUILayout.Space(20);
@@ -50,6 +58,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         }
 
         private void LoadNewFile()
+        {
+            LoadFileInfo? loadInfo = _projectWriter.LoadNewFile(Path.GetFileName(_projectPath),
+                                        _appEnvironment.Wrapper.FileBrowser,
+                                        _appEnvironment.Wrapper.JsonSerializer);
+            if (loadInfo == null)
+                return;
+        }
+
+        private void AttemptToLoadTexture()
         {
             
         }
