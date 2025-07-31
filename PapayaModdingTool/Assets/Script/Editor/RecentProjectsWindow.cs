@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
-using PapayaModdingTool.Assets.Script.Misc.AppCore;
+using System.Linq;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
+using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,26 +10,20 @@ namespace PapayaModdingTool.Assets.Script.Editor
 {
     public class RecentProjectsWindow : EditorWindow
     {
-        private readonly AppEnvironment _appEnvironment = new();
         private string _newProjectName = "";
         private int selectedIndex = -1;
-        private List<string> recentProjects = new()
-        {
-            "Project A",
-            "Project B",
-            "Project C"
-        };
 
-        [MenuItem("Tools/01 Texture Modding")]
-        public static void ShowWindow()
+        public static void ShowWindow(string title)
         {
-            GetWindow<RecentProjectsWindow>("01 Texture Modding");
+            GetWindow<RecentProjectsWindow>(title);
         }
 
         private void OnGUI()
         {
             GUILayout.Label(EL.T("select_recent_project"), EditorStyles.boldLabel);
-            selectedIndex = EditorGUILayout.Popup(EL.T("recent_projects"), selectedIndex, recentProjects.ToArray());
+            List<string> recentProjects = RecentProjectsFinder.FindRecentProjects();
+            List<string> renderRecentProjects = recentProjects.Select(x => Path.GetFileName(x)).ToList();
+            selectedIndex = EditorGUILayout.Popup(EL.T("recent_projects"), selectedIndex, renderRecentProjects.ToArray());
 
             GUILayout.Space(20);
 
@@ -64,7 +59,7 @@ namespace PapayaModdingTool.Assets.Script.Editor
         private void OpenEditorForProject(string projectName)
         {
             // Open the other EditorWindow
-            ProjectEditorWindow.Open(projectName);
+            MainWindow.Open(projectName);
 
             // Close this window
             Close();
