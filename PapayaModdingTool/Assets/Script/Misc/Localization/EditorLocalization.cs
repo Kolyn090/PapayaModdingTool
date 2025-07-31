@@ -1,44 +1,39 @@
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
-using Newtonsoft.Json;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Wrapper.Json;
 using UnityEngine;
 
-public static class EditorLocalization
+public class EditorLocalization
 {
-    public static string CurrentLanguage = "zh";
+    public string CurrentLanguage = "zh";
+    private readonly Dictionary<string, IJsonObject> _localizedTexts = new();
 
-    private static readonly Dictionary<string, Dictionary<string, string>> localizedTexts =
-    new()
+    public EditorLocalization(IJsonSerializer jsonSerializer)
     {
-        ["en"] = LoadTranslations(Path.Combine(PredefinedPaths.LocalizationPath, "en.json")),
-        ["zh"] = LoadTranslations(Path.Combine(PredefinedPaths.LocalizationPath, "zh.json"))
-    };
+        _localizedTexts["en"] = LoadTranslations(Path.Combine(PredefinedPaths.LocalizationPath, "en.json"), jsonSerializer);
+        _localizedTexts["zh"] = LoadTranslations(Path.Combine(PredefinedPaths.LocalizationPath, "zh.json"), jsonSerializer);
+    }
 
-    public static Dictionary<string, string> LoadTranslations(string path)
+    public IJsonObject LoadTranslations(string path, IJsonSerializer jsonSerializer)
     {
         if (!File.Exists(path))
         {
             Debug.LogError("File not found: " + path);
-            return new Dictionary<string, string>();
+            return null;
         }
 
         string json = File.ReadAllText(path);
-        var localization = JsonConvert.DeserializeObject<LocalizationFile>(json);
-        return localization.translations ?? new Dictionary<string, string>();
+        return jsonSerializer.DeserializeToObject(json).GetObject("translations");
     }
 
-    public static string ELT(string key)
+    public string ELT(string key)
     {
-        if (localizedTexts.TryGetValue(CurrentLanguage, out var table) &&
-            table.TryGetValue(key, out var value))
+        if (_localizedTexts.TryGetValue(CurrentLanguage, out var table))
         {
-            return value;
+            return table.GetString(key);
         }
 
         return key; // fallback
     }
 }
-#endif
