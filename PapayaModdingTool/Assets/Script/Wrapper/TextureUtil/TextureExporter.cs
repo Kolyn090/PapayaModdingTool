@@ -13,12 +13,14 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
     {
         private readonly AssetsManager _assetsManager;
         private readonly TextureImportExport _textureImportExport;
+        private readonly TextureHelper _textureHelper;
 
         public TextureExporter(AppEnvironment appEnvironment)
         {
             _assetsManager = appEnvironment.AssetsManager;
             _textureImportExport = new(appEnvironment.Wrapper.TextureEncoderDecoder,
                                         appEnvironment.Wrapper.TextureEncoderDecoder);
+            _textureHelper = new(_assetsManager);
         }
 
         public void ExportTextureWithPathIdTo(string savePath,
@@ -26,21 +28,27 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
                                                 long pathID)
         {
             AssetFileInfo info = assetInst.file.GetAssetInfo(pathID);
-            TextureHelper textureHelper = new(_assetsManager);
-            AssetTypeValueField texBase = textureHelper.GetByteArrayTexture(assetInst, info);
+            AssetTypeValueField texBase = _textureHelper.GetByteArrayTexture(assetInst, info);
+            ExportTextureWithPathIdTo(savePath, assetInst, texBase);
+        }
 
+
+        public void ExportTextureWithPathIdTo(string savePath,
+                                                AssetsFileInstance assetInst,
+                                                AssetTypeValueField texBase)
+        {
             uint platform = assetInst.file.Metadata.TargetPlatform;
-            byte[] platformBlob = textureHelper.GetPlatformBlob(texBase);
+            byte[] platformBlob = _textureHelper.GetPlatformBlob(texBase);
 
             TextureFile texFile = TextureFile.ReadTextureFile(texBase);
 
-            if (!textureHelper.GetResSTexture(texFile, assetInst))
+            if (!_textureHelper.GetResSTexture(texFile, assetInst))
             {
                 UnityEngine.Debug.LogError("Texture uses resS, but the resS file wasn't found");
                 return;
             }
 
-            byte[] data = textureHelper.GetRawTextureBytes(texFile, assetInst);
+            byte[] data = _textureHelper.GetRawTextureBytes(texFile, assetInst);
             Image<Rgba32> imageToExport = _textureImportExport.Export(data,
                                         texFile.m_Width,
                                         texFile.m_Height,
@@ -51,7 +59,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
-            TextureImportExport.SaveImageAtPath(imageToExport, Path.Combine(savePath, texFile.m_Name+".png"));
+            TextureImportExport.SaveImageAtPath(imageToExport, Path.Combine(savePath, texFile.m_Name + ".png"));
         }
     }
 }
