@@ -6,6 +6,7 @@ using PapayaModdingTool.Assets.Script.DataStruct.EditorWindow;
 using PapayaModdingTool.Assets.Script.Editor.TextureModding;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
+using PapayaModdingTool.Assets.Script.Writer.ProjectUtil;
 using UnityEditor;
 using UnityEngine;
 
@@ -70,7 +71,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
         private void CreateNewProject()
         {
             string newProjectPath = Path.Combine(PredefinedPaths.ProjectsPath, _newProjectName);
-            Directory.CreateDirectory(newProjectPath);
+            NewProjectCreator creator = new();
+            creator.CreateNewProject(newProjectPath, _appEnvironment.Wrapper.JsonSerializer);
             OpenEditorForProject(newProjectPath);
         }
 

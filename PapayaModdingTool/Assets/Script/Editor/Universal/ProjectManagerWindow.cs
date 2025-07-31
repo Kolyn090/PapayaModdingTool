@@ -18,7 +18,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 
         private void OnGUI()
         {
-            Debug.Log("GUI called");
             GUILayout.Label(ELT("delete_project"), EditorStyles.boldLabel);
             GUILayout.Label(ELT("enter_project_name_to_delete"), EditorStyles.whiteLabel);
             _deleteProjectName = EditorGUILayout.TextField("", _deleteProjectName);
