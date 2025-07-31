@@ -1,0 +1,12 @@
+{
+    "language": "zh",
+    "translations": {
+        "recent_projects": "最近项目",
+        "open_project": "打开",
+        "create_new_project": "创建",
+        "select_recent_project": "选择最近项目",
+        "or_create_new": "或者你可以创建一个新项目",
+        "fyi_save_project": "友情提示：该项目会被保存在{0}",
+        "project_already_exists": "你已经有一个同名的项目了，换一个名字吧。"
+    }
+}

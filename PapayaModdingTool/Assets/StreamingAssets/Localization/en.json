@@ -1,0 +1,12 @@
+{
+    "language": "en",
+    "translations": {
+        "recent_projects": "Recent Projects",
+        "open_project": "Open",
+        "create_new_project": "Create New",
+        "select_recent_project": "Select a Recent Project",
+        "or_create_new": "Or you can create a new project",
+        "fyi_save_project": "Just FYI, this project is saved under {0}",
+        "project_already_exists": "A project with this name already exists."
+    }
+}
