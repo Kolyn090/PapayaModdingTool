@@ -4,12 +4,12 @@ using UnityEditor;
 
 namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
 {
-    public class TextureModdingStartWindow : EditorWindow
+    public class TextureModdingStartWindow : BaseEditorWindow
     {
         [MenuItem("Tools/01 Texture Modding")]
         public static void ShowWindow()
         {
-            RecentProjectsWindow.ShowWindow("01 Texture Modding", EditorWindowType.TextureModding);
+            RecentProjectsWindow.ShowWindow(ELT("01_tool"), EditorWindowType.TextureModding);
         }
     }
 }

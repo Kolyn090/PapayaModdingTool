@@ -1,12 +1,23 @@
 {
     "language": "zh",
     "translations": {
-        "recent_projects": "最近项目",
+        "01_tool": "01 材质编辑",
+        "found_projects": "找到的项目",
         "open_project": "打开",
         "create_new_project": "创建",
-        "select_recent_project": "选择最近项目",
+        "select_project": "选择项目",
         "or_create_new": "或者你可以创建一个新项目",
         "fyi_save_project": "友情提示：该项目会被保存在{0}",
-        "project_already_exists": "你已经有一个同名的项目了，换一个名字吧。"
+        "project_already_exists": "你已经有一个同名的项目了，换一个名字吧。",
+        "manage_project": "管理项目",
+        "editing_project": "当前编辑：{0}",
+        "delete_project": "删除项目",
+        "double_confirm_delete_project": "你确定要删除{0}吗？",
+        "cannot_undone": "该操作将不可恢复",
+        "delete_project_button": "确认",
+        "delete_cancel_button": "取消",
+        "fail_to_delete_project": "删除项目失败",
+        "error": "错误",
+        "ok": "好"
     }
 }

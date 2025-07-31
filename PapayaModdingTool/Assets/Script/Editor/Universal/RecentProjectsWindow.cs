@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Universal
 {
-    public class RecentProjectsWindow : EditorWindow
+    public class RecentProjectsWindow : BaseEditorWindow
     {
         private static EditorWindowType _editorWindowType;
         private string _newProjectName = "";
@@ -25,15 +25,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 
         private void OnGUI()
         {
-            GUILayout.Label(EL.T("select_recent_project"), EditorStyles.boldLabel);
+            GUILayout.Label(ELT("select_project"), EditorStyles.boldLabel);
             List<string> recentProjects = RecentProjectsFinder.FindRecentProjects();
             List<string> renderRecentProjects = recentProjects.Select(x => Path.GetFileName(x)).ToList();
-            selectedIndex = EditorGUILayout.Popup(EL.T("recent_projects"), selectedIndex, renderRecentProjects.ToArray());
+            selectedIndex = EditorGUILayout.Popup(ELT("found_projects"), selectedIndex, renderRecentProjects.ToArray());
 
             GUILayout.Space(20);
 
             EditorGUI.BeginDisabledGroup(recentProjects.Count == 0 || selectedIndex < 0);
-            if (GUILayout.Button(EL.T("open_project")) && selectedIndex >= 0)
+            if (GUILayout.Button(ELT("open_project")) && selectedIndex >= 0)
             {
                 string projectName = recentProjects[selectedIndex];
                 OpenEditorForProject(projectName);
@@ -48,23 +48,34 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
             // Show warning if the name already exists
             if (nameExists)
             {
-                EditorGUILayout.HelpBox(EL.T("project_already_exists"), MessageType.Warning);
+                EditorGUILayout.HelpBox(ELT("project_already_exists"), MessageType.Warning);
             }
-            GUILayout.Label(EL.T("or_create_new"), EditorStyles.boldLabel);
+            GUILayout.Label(ELT("or_create_new"), EditorStyles.boldLabel);
             _newProjectName = EditorGUILayout.TextField("", _newProjectName);
             EditorGUI.BeginDisabledGroup(!canCreate);
-            if (GUILayout.Button(EL.T("create_new_project")))
+            if (GUILayout.Button(ELT("create_new_project")))
             {
                 CreateNewProject();
             }
-            GUILayout.Label(string.Format(EL.T("fyi_save_project"), PredefinedPaths.ProjectsPath), EditorStyles.miniBoldLabel);
+            GUILayout.Label(string.Format(ELT("fyi_save_project"), PredefinedPaths.ProjectsPath), EditorStyles.miniBoldLabel);
             EditorGUI.EndDisabledGroup();
         }
 
         private void OpenEditorForProject(string projectName)
         {
-            // Open the other EditorWindow
+            GoToNextWindow(projectName);
+            Close();
+        }
 
+        private void CreateNewProject()
+        {
+            string newProjectPath = Path.Combine(PredefinedPaths.ProjectsPath, _newProjectName);
+            Directory.CreateDirectory(newProjectPath);
+            OpenEditorForProject(newProjectPath);
+        }
+
+        private void GoToNextWindow(string projectName)
+        {
             switch (_editorWindowType)
             {
                 case EditorWindowType.TextureModding:
@@ -73,14 +84,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
                 default:
                     throw new NotImplementedException($"{_editorWindowType}'s main window has not been implemented yet.");
             }
-
-            // Close this window
-            Close();
-        }
-
-        private void CreateNewProject()
-        {
-            Directory.CreateDirectory(Path.Combine(PredefinedPaths.ProjectsPath, _newProjectName));
         }
     }
 }

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
@@ -5,7 +6,7 @@ using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Wrapper.Json;
 using UnityEngine;
 
-public class EL // EditorLocalization
+public static class EditorLocalization
 {
     public static string CurrentLanguage = "zh";
 
@@ -29,7 +30,7 @@ public class EL // EditorLocalization
         return localization.translations ?? new Dictionary<string, string>();
     }
 
-    public static string T(string key)
+    public static string ELT(string key)
     {
         if (localizedTexts.TryGetValue(CurrentLanguage, out var table) &&
             table.TryGetValue(key, out var value))
@@ -40,3 +41,4 @@ public class EL // EditorLocalization
         return key; // fallback
     }
 }
+#endif

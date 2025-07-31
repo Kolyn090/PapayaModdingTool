@@ -1,10 +1,9 @@
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Universal
 {
-    public abstract class MainWindow : EditorWindow
+    public abstract class MainWindow : BaseEditorWindow
     {
         protected string _projectName;
 
@@ -15,7 +14,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 
         protected virtual void OnGUI()
         {
-            GUILayout.Label($"Editing Project: {_projectName}", EditorStyles.boldLabel);
+            GUILayout.Label(string.Format(ELT("editing_project"), _projectName), EditorStyles.boldLabel);
         }
     }
 }

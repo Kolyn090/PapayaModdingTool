@@ -1,12 +1,23 @@
 {
     "language": "en",
     "translations": {
-        "recent_projects": "Recent Projects",
+        "01_tool": "01 Texture Modding",
+        "found_projects": "Found Projects",
         "open_project": "Open",
         "create_new_project": "Create New",
-        "select_recent_project": "Select a Recent Project",
+        "select_project": "Select a Project",
         "or_create_new": "Or you can create a new project",
         "fyi_save_project": "Just FYI, this project is saved under {0}",
-        "project_already_exists": "A project with this name already exists."
+        "project_already_exists": "A project with this name already exists.",
+        "manage_project": "Manage Project",
+        "editing_project": "Editing Project: {0}",
+        "delete_project": "Delete Project",
+        "double_confirm_delete_project": "Are you sure you want to delete the project {0}?",
+        "cannot_undone": "This cannot be undone.",
+        "delete_project_button": "Delete",
+        "delete_cancel_button": "Cancel",
+        "fail_to_delete_project": "Failed to delete project",
+        "error": "Error",
+        "ok": "OK"
     }
 }
