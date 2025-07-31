@@ -94,7 +94,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
             if (image == null)
                 return false;
 
-            SaveImageAtPath(image, imagePath);
+            // SaveImageAtPath(image, imagePath);
             return true;
         }
 

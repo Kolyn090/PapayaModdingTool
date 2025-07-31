@@ -11,6 +11,7 @@ namespace PapayaModdingTool.Assets.Script.Misc.AppCore
         public TextureEncoderDecoder TextureEncoderDecoder { get; } = new();
         public readonly TextureImportExport TextureImportExport;
         public StandaloneFileBrowserWrapper FileBrowser { get; } = new();
+        public BcDecoderWrapper BcDecoderWrapper { get; } = new();
 
         public AppWrapper()
         {

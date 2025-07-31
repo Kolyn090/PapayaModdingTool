@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using AssetsTools.NET.Texture;
 using PapayaModdingTool.Assets.Script.__Test__;
@@ -352,10 +353,12 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode
                 case TextureFormat.BC6H:
                 case TextureFormat.BC4:
                 case TextureFormat.BC5:
-                case TextureFormat.RGB9e5Float:
-                case TextureFormat.RGBA64:
+                    // case TextureFormat.RGB9e5Float:
+                    // case TextureFormat.RGBA64:
                     {
-                        byte[] res = DecodeAssetRipperTex(data, width, height, format);
+                        // !!! Due to dll issue, write my own decoder 
+                        // byte[] res = DecodeAssetRipperTex(data, width, height, format);
+                        byte[] res = DecodeBCTex(data, width, height, format);
                         return res;
                     }
                 default:
@@ -481,6 +484,12 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode
             }
 
             return rawDataStream.ToArray();
+        }
+
+        private byte[] DecodeBCTex(byte[] data, int width, int height, TextureFormat format)
+        {
+            BcDecoderWrapper bcDecoderWrapper = new();
+            return bcDecoderWrapper.Decode(data, width, height, format);
         }
     }
 }
