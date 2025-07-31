@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
+using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
 using PapayaModdingTool.Assets.Script.Writer.ProjectUtil;
 using UnityEditor;
@@ -64,10 +65,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                                         _appEnvironment.Wrapper.JsonSerializer);
             if (loadInfo == null)
                 return;
+
+            AttemptToLoadTexture((LoadFileInfo)loadInfo);
         }
 
-        private void AttemptToLoadTexture()
+        private void AttemptToLoadTexture(LoadFileInfo loadInfo)
         {
+            string textureDir = PredefinedPaths.PapayaTextureDir;
+            string saveDir = Path.Combine(textureDir, loadInfo.folder);
+            Directory.CreateDirectory(saveDir);
             
         }
     }
