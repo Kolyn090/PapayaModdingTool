@@ -113,3 +113,5 @@ Packages/*
 .idea
 
 Papaya_External
+*/Assets/Papaya
+*/Assets/Papaya.meta

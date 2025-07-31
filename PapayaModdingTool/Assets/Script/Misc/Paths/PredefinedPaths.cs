@@ -12,7 +12,7 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
         public static readonly string LocalizationPath = Path.Combine(Application.streamingAssetsPath, "Localization");
 
 
-        public const string PapayaUnityDir = "Assets";
+        public const string PapayaUnityDir = "Assets/Papaya";
         public static readonly string PapayaTextureDir = Path.Combine(PapayaUnityDir, "Texture");
     }
 }

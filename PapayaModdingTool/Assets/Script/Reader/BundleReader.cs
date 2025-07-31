@@ -32,8 +32,8 @@ namespace PapayaModdingTool.Assets.Script.Reader
             else
             {
                 // Load as bundle
-                var assetsInst = _assetsReader.ReadValidAssetsFileInst(path, false);
                 var bunInst = _assetsManager.LoadBundleFile(path, true);
+                var assetsInst = _assetsReader.ReadAssetsFileInstFromBundle(bunInst);
                 // _dispatcher.Dispatch(new BundleReadEvent(bunInst, path, assetsInst));
                 return (bunInst, assetsInst);
             }

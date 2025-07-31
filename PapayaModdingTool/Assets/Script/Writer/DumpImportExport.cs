@@ -16,12 +16,12 @@ namespace PapayaModdingTool.Assets.Script.Writer
             _assetsManager = assetsManager;
         }
 
-        public void SingleExportJsonDumpInBundle(AssetsFileInstance assetInst,
+        public AssetTypeValueField SingleExportJsonDumpInBundle(AssetsFileInstance assetsInst,
                                             long pathID,
                                             string writeTo)
         {
-            AssetFileInfo info = assetInst.file.GetAssetInfo(pathID);
-            AssetTypeValueField baseField = _assetsManager.GetBaseField(assetInst, info);
+            AssetFileInfo info = assetsInst.file.GetAssetInfo(pathID);
+            AssetTypeValueField baseField = _assetsManager.GetBaseField(assetsInst, info);
             AssetImportExport exporter = new();
 
             using (FileStream fs = File.Open(writeTo, FileMode.Create))
@@ -29,14 +29,16 @@ namespace PapayaModdingTool.Assets.Script.Writer
             {
                 exporter.DumpJsonAsset(sw, baseField);
             }
+
+            return baseField;
         }
 
         public void SingleImportJsonDumpInBundle(long pathID,
-                                            AssetsFileInstance assetInst,
+                                            AssetsFileInstance assetsInst,
                                             string replaceFilePath,
                                             string bundlePath)
         {
-            AssetFileInfo info = assetInst.file.GetAssetInfo(pathID);
+            AssetFileInfo info = assetsInst.file.GetAssetInfo(pathID);
 
             using (FileStream fs = File.OpenRead(replaceFilePath))
             using (StreamReader sr = new(fs))
@@ -44,11 +46,11 @@ namespace PapayaModdingTool.Assets.Script.Writer
                 AssetImportExport importer = new();
                 byte[] bytes = null;
 
-                AssetTypeTemplateField tempField = _assetsManager.GetTemplateBaseField(assetInst,
-                                                                            assetInst.file.Reader,
+                AssetTypeTemplateField tempField = _assetsManager.GetTemplateBaseField(assetsInst,
+                                                                            assetsInst.file.Reader,
                                                                             info.AbsoluteByteStart,
                                                                             info.TypeId,
-                                                                            assetInst.file.GetScriptIndex(info),
+                                                                            assetsInst.file.GetScriptIndex(info),
                                                                             AssetReadFlags.None);
                 bytes = importer.ImportJsonAsset(tempField, sr, out string exceptionMessage);
 
@@ -60,10 +62,10 @@ namespace PapayaModdingTool.Assets.Script.Writer
 
                 AssetsReplacer replacer = AssetImportExport.CreateAssetReplacer(info.PathId,
                                                                                 info.TypeId,
-                                                                                assetInst.file.GetScriptIndex(info),
+                                                                                assetsInst.file.GetScriptIndex(info),
                                                                                 bytes);
 
-                AssetsFile file = assetInst.file;
+                AssetsFile file = assetsInst.file;
                 List<AssetsReplacer> replacers = new() { replacer };
 
                 string tempPath = bundlePath + ".tmp";
@@ -76,7 +78,7 @@ namespace PapayaModdingTool.Assets.Script.Writer
 
                 // Unload the file from AssetsManager before replacing
                 _assetsManager.UnloadBundleFile(bundlePath);
-                _assetsManager.UnloadAssetsFile(assetInst);
+                _assetsManager.UnloadAssetsFile(assetsInst);
 
                 File.Replace(tempPath, bundlePath, null); // replace original with modified
             }

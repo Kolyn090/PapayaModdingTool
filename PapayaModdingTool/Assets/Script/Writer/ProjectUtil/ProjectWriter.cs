@@ -62,7 +62,9 @@ namespace PapayaModdingTool.Assets.Script.Writer.ProjectUtil
                 File.WriteAllText(infoJsonPath, jsonContent);
 
                 // Create file folder
-                Directory.CreateDirectory(Path.Combine(projectPath, fileFolderName));
+                string newFileFolderPath = Path.Combine(projectPath, fileFolderName);
+                if (!Directory.Exists(newFileFolderPath))
+                    Directory.CreateDirectory(newFileFolderPath);
 
                 return loadFileInfo;
             }

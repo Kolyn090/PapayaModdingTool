@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -5,7 +6,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 {
     public abstract class MainWindow : BaseEditorWindow
     {
-        protected string _projectPath;
+        private string _projectPath;
+        public string ProjectPath => _projectPath;
+        public string ProjectName => Path.GetFileName(_projectPath);
 
         public void Initialize(string projectPath)
         {
