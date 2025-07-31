@@ -1,21 +1,26 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using PapayaModdingTool.Assets.Script.DataStruct.EditorWindow;
+using PapayaModdingTool.Assets.Script.Editor.TextureModding;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Editor
+namespace PapayaModdingTool.Assets.Script.Editor.Universal
 {
     public class RecentProjectsWindow : EditorWindow
     {
+        private static EditorWindowType _editorWindowType;
         private string _newProjectName = "";
         private int selectedIndex = -1;
 
-        public static void ShowWindow(string title)
+        public static void ShowWindow(string title, EditorWindowType editorWindowType)
         {
             GetWindow<RecentProjectsWindow>(title);
+            _editorWindowType = editorWindowType;
         }
 
         private void OnGUI()
@@ -59,7 +64,15 @@ namespace PapayaModdingTool.Assets.Script.Editor
         private void OpenEditorForProject(string projectName)
         {
             // Open the other EditorWindow
-            MainWindow.Open(projectName);
+
+            switch (_editorWindowType)
+            {
+                case EditorWindowType.TextureModding:
+                    TextureModdingMainWindow.Open(projectName);
+                    break;
+                default:
+                    throw new NotImplementedException($"{_editorWindowType}'s main window has not been implemented yet.");
+            }
 
             // Close this window
             Close();
