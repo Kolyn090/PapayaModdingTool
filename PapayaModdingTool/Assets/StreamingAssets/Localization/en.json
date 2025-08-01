@@ -25,6 +25,8 @@
         "project_deleted_message": "{0} has been deleted from your PC.",
         "loaded_files": "Loaded Files:",
         "load_new": "Load New File (.assets, .bundle, .ab, ...)",
-        "remove_loaded": "Remove loaded (Copy-paste for the path above to remove it)"
+        "remove_loaded": "Remove loaded (Copy-paste for the path above to remove it)",
+        "remove_file": "Remove File",
+        "enter_exact_path_to_delete": "You must enter the exact path to remove a loaded file"
     }
 }

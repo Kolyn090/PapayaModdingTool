@@ -7,5 +7,6 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.FileRead
     {
         public string absolute_path;
         public string folder;
+        public string type;
     }
 }

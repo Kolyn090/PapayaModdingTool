@@ -10,7 +10,7 @@ namespace PapayaModdingTool.Assets.Script.Writer.ProjectUtil
 {
     public class ProjectWriter
     {
-        public LoadFileInfo? LoadNewFile(string projectName, IFileBrowser fileBrowser, IJsonSerializer jsonSerializer)
+        public LoadFileInfo? LoadNewFile(string projectName, IFileBrowser fileBrowser, IJsonSerializer jsonSerializer, LoadType loadType)
         {
             string[] selections = fileBrowser.OpenFilePanel(
                 "Search bundle file",
@@ -52,7 +52,8 @@ namespace PapayaModdingTool.Assets.Script.Writer.ProjectUtil
                 LoadFileInfo loadFileInfo = new()
                 {
                     absolute_path = selection,
-                    folder = fileFolderName
+                    folder = fileFolderName,
+                    type = loadType.ToString()
                 };
                 string newJsonContent = jsonSerializer.Serialize(loadFileInfo);
                 IJsonObject newJsonObject = jsonSerializer.DeserializeToObject(newJsonContent);

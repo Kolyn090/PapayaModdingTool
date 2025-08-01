@@ -25,6 +25,8 @@
         "project_deleted_message": "\"{0}\"已从你的电脑上删除",
         "loaded_files": "已载入文件：",
         "load_new": "载入新文件（.assets, .bundle, .ab, ...）",
-        "remove_loaded": "移除已载入文件（复制粘贴以上路径来移除）"
+        "remove_loaded": "移除已载入文件（复制粘贴以上路径来移除）",
+        "remove_file": "移除",
+        "enter_exact_path_to_delete": "你需要输入和路径保存一致才能移除已载入文件"
     }
 }

@@ -45,5 +45,23 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
 
             return fullPathA.StartsWith(fullPathB);
         }
+
+        public static void DeleteAllContents(string targetDir)
+        {
+            if (!Directory.Exists(targetDir))
+                return;
+
+            // Delete files
+            foreach (string file in Directory.GetFiles(targetDir))
+            {
+                File.Delete(file);
+            }
+
+            // Delete subdirectories
+            foreach (string dir in Directory.GetDirectories(targetDir))
+            {
+                Directory.Delete(dir, true); // true = recursive delete
+            }
+        }
     }
 }

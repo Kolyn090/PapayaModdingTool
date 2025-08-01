@@ -6,6 +6,7 @@ using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
 using PapayaModdingTool.Assets.Script.Writer.ProjectUtil;
 using PapayaModdingTool.Assets.Script.Writer.TextureModding;
+using PapayaModdingTool.Assets.Script.Writer.Universal;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
     {
         private readonly ProjectLoader _projectLoader = new();
         private readonly ProjectWriter _projectWriter = new();
+        private static ProjectRemover _projectRemover;
         private readonly TextureAssetsLoader _textureAssetsLoader = new(_appEnvironment);
         private Vector2 _scrollPos;
         private string _removeLoadedPath;
@@ -26,6 +28,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             var window = GetWindow<TextureModdingMainWindow>(Path.GetFileName(projectPath));
             window.Initialize(projectPath);
             window.Show();
+
+            _projectRemover ??= new(_appEnvironment.Wrapper.JsonSerializer);
         }
 
         protected override void OnGUI()
@@ -63,14 +67,26 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
 
             GUILayout.Label(ELT("remove_loaded"), EditorStyles.boldLabel);
             _removeLoadedPath = EditorGUILayout.TextField("", _removeLoadedPath);
-
+            bool isRemoveValid = _loadedPaths.Contains(_removeLoadedPath);
+            if (!isRemoveValid)
+            {
+                EditorGUILayout.HelpBox(ELT("enter_exact_path_to_delete"), MessageType.Info);
+            }
+            EditorGUI.BeginDisabledGroup(!isRemoveValid);
+            if (GUILayout.Button(ELT("remove_file")))
+            {
+                RemoveTypedFile();
+                _loadedPathsChanged = true;
+            }
+            EditorGUI.EndDisabledGroup();
         }
 
         private void LoadNewFile()
         {
             LoadFileInfo? loadInfo = _projectWriter.LoadNewFile(ProjectName,
                                         _appEnvironment.Wrapper.FileBrowser,
-                                        _appEnvironment.Wrapper.JsonSerializer);
+                                        _appEnvironment.Wrapper.JsonSerializer,
+                                        LoadType.Texture);
             if (loadInfo == null)
                 return;
 
@@ -85,6 +101,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             if (!Directory.Exists(textureSaveDir))
                 Directory.CreateDirectory(textureSaveDir);
             _textureAssetsLoader.LoadTextureAssets(loadInfo, ProjectName, textureSaveDir);
+        }
+
+        private void RemoveTypedFile()
+        {
+            _projectRemover.RemoveFileFromProject(_removeLoadedPath, ProjectName, LoadType.Texture);
         }
     }
 }
