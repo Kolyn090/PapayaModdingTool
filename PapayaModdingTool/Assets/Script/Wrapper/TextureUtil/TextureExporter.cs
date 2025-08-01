@@ -33,7 +33,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
         }
 
 
-        public void ExportTextureWithPathIdTo(string savePath,
+        public string ExportTextureWithPathIdTo(string savePath,
                                                 AssetsFileInstance assetInst,
                                                 AssetTypeValueField texBase)
         {
@@ -45,7 +45,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
             if (!_textureHelper.GetResSTexture(texFile, assetInst))
             {
                 UnityEngine.Debug.LogError("Texture uses resS, but the resS file wasn't found");
-                return;
+                return "";
             }
 
             byte[] data = _textureHelper.GetRawTextureBytes(texFile, assetInst);
@@ -59,7 +59,9 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
-            TextureImportExport.SaveImageAtPath(imageToExport, Path.Combine(savePath, texFile.m_Name + ".png"));
+            string fullPath = Path.Combine(savePath, texFile.m_Name + ".png");
+            TextureImportExport.SaveImageAtPath(imageToExport, fullPath);
+            return fullPath;
         }
     }
 }

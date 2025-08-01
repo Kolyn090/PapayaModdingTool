@@ -52,5 +52,8 @@
         "Temp/": true
     },
     "dotnet.defaultSolution": "PapayaModdingTool.sln",
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "cSpell.words": [
+        "Spritesheet"
+    ]
 }

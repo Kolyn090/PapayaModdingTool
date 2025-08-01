@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using AssetsTools.NET;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
@@ -44,7 +46,7 @@ namespace PapayaModdingTool.Assets.Script.Reader
         {
             return ReadDumps(_assetsManager.LoadAssetsFileFromBundle(bunInst, 0, false), assetType);
         }
-        
+
         private List<DumpInfo> ReadDumps(AssetsFileInstance fileInst, AssetClassID assetType)
         {
             List<DumpInfo> result = new();
@@ -59,11 +61,55 @@ namespace PapayaModdingTool.Assets.Script.Reader
                 result.Add(new()
                 {
                     dumpJson = new NewtonsoftJsonObject(JsonDumper.RecurseJsonDump(assetBase, true)),
-                    pathID=assetInfo.PathId
+                    pathID = assetInfo.PathId
                 });
             }
 
             return result;
+        }
+        
+        public static string ReadCABCode(string filePath)
+        {
+            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            using var br = new BinaryReader(fs);
+
+            byte[] buffer = new byte[fs.Length];
+            br.Read(buffer, 0, buffer.Length);
+
+            byte[] cabPrefix = Encoding.ASCII.GetBytes("CAB-");
+
+            for (int i = 0; i <= buffer.Length - cabPrefix.Length; i++)
+            {
+                bool match = true;
+                for (int j = 0; j < cabPrefix.Length; j++)
+                {
+                    if (buffer[i + j] != cabPrefix[j])
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+
+                if (match)
+                {
+                    int start = i;
+                    int end = start;
+
+                    // Read until whitespace or non-printable ASCII
+                    while (end < buffer.Length)
+                    {
+                        byte b = buffer[end];
+                        if (b < 0x21 || b > 0x7E) // non-printable ASCII
+                            break;
+                        end++;
+                    }
+
+                    string cab = Encoding.ASCII.GetString(buffer, start, end - start - 1);
+                    return cab;
+                }
+            }
+
+            return "";
         }
     }
 }
