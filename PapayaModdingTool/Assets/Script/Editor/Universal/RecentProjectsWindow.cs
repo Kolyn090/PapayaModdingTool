@@ -17,6 +17,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
         private static EditorWindowType _editorWindowType;
         private string _newProjectName = "";
         private int selectedIndex = -1;
+        private List<string> _recentProjects = null;
+        private List<string> _renderRecentProjects = null;
 
         public static void ShowWindow(string title, EditorWindowType editorWindowType)
         {
@@ -27,16 +29,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
         private void OnGUI()
         {
             GUILayout.Label(ELT("select_project"), EditorStyles.boldLabel);
-            List<string> recentProjects = RecentProjectsFinder.FindRecentProjects();
-            List<string> renderRecentProjects = recentProjects.Select(x => Path.GetFileName(x)).ToList();
-            selectedIndex = EditorGUILayout.Popup(ELT("found_projects"), selectedIndex, renderRecentProjects.ToArray());
+            if (_recentProjects == null)
+            {
+                _recentProjects = RecentProjectsFinder.FindRecentProjects();
+                _renderRecentProjects = _recentProjects.Select(x => Path.GetFileName(x)).ToList();
+            }
+            selectedIndex = EditorGUILayout.Popup(ELT("found_projects"), selectedIndex, _renderRecentProjects.ToArray());
 
             GUILayout.Space(20);
 
-            EditorGUI.BeginDisabledGroup(recentProjects.Count == 0 || selectedIndex < 0);
+            EditorGUI.BeginDisabledGroup(_recentProjects.Count == 0 || selectedIndex < 0);
             if (GUILayout.Button(ELT("open_project")) && selectedIndex >= 0)
             {
-                string projectName = recentProjects[selectedIndex];
+                string projectName = _recentProjects[selectedIndex];
                 OpenEditorForProject(projectName);
             }
             EditorGUI.EndDisabledGroup();
@@ -44,7 +49,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
             GUILayout.Space(20);
 
             bool isNameEmpty = string.IsNullOrWhiteSpace(_newProjectName);
-            bool nameExists = recentProjects.Contains(_newProjectName);
+            bool nameExists = _recentProjects.Contains(_newProjectName);
             bool canCreate = !isNameEmpty && !nameExists;
             // Show warning if the name already exists
             if (nameExists)

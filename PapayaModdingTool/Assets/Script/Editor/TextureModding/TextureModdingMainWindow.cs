@@ -18,6 +18,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         private readonly TextureAssetsLoader _textureAssetsLoader = new(_appEnvironment);
         private Vector2 _scrollPos;
         private string _removeLoadedPath;
+        private static List<string> _loadedPaths = null;
+        private bool _loadedPathsChanged = true;
 
         public static void Open(string projectPath)
         {
@@ -35,14 +37,18 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 alignment = TextAnchor.MiddleRight
             };
 
-            List<string> loadedPaths = _projectLoader.FindLoadedPaths(ProjectName, _appEnvironment.Wrapper.JsonSerializer);
+            if (_loadedPaths == null || _loadedPathsChanged)
+            {
+                _loadedPaths = _projectLoader.FindLoadedPaths(ProjectName, _appEnvironment.Wrapper.JsonSerializer);
+                _loadedPathsChanged = false;
+            }
 
             GUILayout.Space(20);
 
             // Scroll view for loaded paths
             GUILayout.Label(ELT("loaded_files"), EditorStyles.boldLabel);
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.Height(50));
-            foreach (var item in loadedPaths)
+            foreach (var item in _loadedPaths)
             {
                 EditorGUILayout.SelectableLabel(item, rightAlignedStyle, GUILayout.Height(15));
             }
@@ -69,12 +75,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 return;
 
             AttemptToLoadTexture((LoadFileInfo)loadInfo);
+            _loadedPathsChanged = true;
         }
 
         private void AttemptToLoadTexture(LoadFileInfo loadInfo)
         {
             string textureDir = PredefinedPaths.PapayaTextureDir;
-            string textureSaveDir = Path.Combine(textureDir, loadInfo.folder);
+            string textureSaveDir = Path.Combine(textureDir, ProjectName, loadInfo.folder);
             if (!Directory.Exists(textureSaveDir))
                 Directory.CreateDirectory(textureSaveDir);
             _textureAssetsLoader.LoadTextureAssets(loadInfo, ProjectName, textureSaveDir);
