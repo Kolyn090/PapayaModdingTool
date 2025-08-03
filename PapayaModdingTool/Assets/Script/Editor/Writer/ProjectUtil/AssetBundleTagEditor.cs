@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Writer.ProjectUtil
+namespace PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil
 {
     public class AssetBundleTagEditor
     {

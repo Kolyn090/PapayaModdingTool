@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.IO;
 using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
+using PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding;
+using PapayaModdingTool.Assets.Script.Editor.Writer.Universal;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
 using PapayaModdingTool.Assets.Script.Writer.ProjectUtil;
-using PapayaModdingTool.Assets.Script.Writer.TextureModding;
-using PapayaModdingTool.Assets.Script.Writer.Universal;
 using UnityEditor;
 using UnityEngine;
 

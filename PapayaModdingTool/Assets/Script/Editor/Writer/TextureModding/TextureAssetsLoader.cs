@@ -7,10 +7,11 @@ using PapayaModdingTool.Assets.Script.Misc.AppCore;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureUtil;
+using PapayaModdingTool.Assets.Script.Writer;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Writer.TextureModding
+namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
 {
     public class TextureAssetsLoader
     {

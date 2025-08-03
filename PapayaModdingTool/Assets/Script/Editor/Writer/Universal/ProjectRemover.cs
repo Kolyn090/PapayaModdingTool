@@ -6,7 +6,7 @@ using PapayaModdingTool.Assets.Script.Wrapper.Json;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Writer.Universal
+namespace PapayaModdingTool.Assets.Script.Editor.Writer.Universal
 {
     public class ProjectRemover
     {

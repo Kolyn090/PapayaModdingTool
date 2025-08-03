@@ -1,6 +1,7 @@
 {
     "language": "en",
     "translations": {
+        "dev_only": "Warning: This interface is for the tool developer only! For your safety, please close this window.",
         "01_tool": "01 Texture Modding",
         "found_projects": "Found Projects",
         "open_project": "Open",

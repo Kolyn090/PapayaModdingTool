@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Writer.TextureModding
+namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
 {
     public class SpritesheetFromDump
     {
