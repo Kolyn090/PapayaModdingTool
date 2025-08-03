@@ -26,19 +26,32 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.Universal
                                                         loadType.ToString(),
                                                         projectName);
             string _removeFolderInUnity = Path.Combine(_textureUnityFolder, _removeLoadedFileName);
-            PathUtils.DeleteAllContents(_removeFolderInUnity);
-            Directory.Delete(_removeFolderInUnity);
-            File.Delete(_removeFolderInUnity + ".meta");
-            AssetDatabase.Refresh();
+            if (Directory.Exists(_removeFolderInUnity))
+            {
+                PathUtils.DeleteAllContents(_removeFolderInUnity);
+                Directory.Delete(_removeFolderInUnity);
+                File.Delete(_removeFolderInUnity + ".meta");
+                AssetDatabase.Refresh();
+            }
+            else
+            {
+                Debug.LogWarning($"Missing {_removeFolderInUnity}. Abort.");
+            }
 
             // From External
-            string _textureProjectFolder = Path.Combine(PredefinedPaths.ProjectsPath,
+            string _removeFolderInProject = Path.Combine(PredefinedPaths.ProjectsPath,
                                                         projectName,
-                                                        loadType.ToString());
-            string _removeFolderInProject = Path.Combine(_textureProjectFolder, _removeLoadedFileName);
-            PathUtils.DeleteAllContents(_removeFolderInProject);
-            Directory.Delete(_removeFolderInProject);
-            AssetDatabase.Refresh();
+                                                        _removeLoadedFileName);
+            if (Directory.Exists(_removeFolderInProject))
+            {
+                PathUtils.DeleteAllContents(_removeFolderInProject);
+                Directory.Delete(_removeFolderInProject);
+                AssetDatabase.Refresh();
+            }
+            else
+            {
+                Debug.LogWarning($"Missing {_removeFolderInProject}. Abort.");
+            }
 
             // From info.json (make sure you only delete the one with type Texture)
             string projectPath = Path.Combine(PredefinedPaths.ProjectsPath, projectName);
@@ -64,10 +77,32 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.Universal
             }
             if (indexToRemove != -1)
                 currLoaded.RemoveAt(indexToRemove);
-            
+
             jsonObject.SetArray("loaded", currLoaded);
             jsonContent = _jsonSerializer.SerializeNoFirstLayer(jsonObject);
             File.WriteAllText(infoJsonPath, jsonContent);
+
+            // From AssetBundle
+            string assetBundlePath = Path.Combine(PredefinedPaths.PapayaUnityDir, "AssetBundle");
+            string removePrefix = projectName + "_" + loadType.ToString().ToLower();
+            var files = Directory.GetFiles(assetBundlePath);
+
+            foreach (var filePath in files)
+            {
+                string fileName = Path.GetFileName(filePath);
+                if (fileName.StartsWith(removePrefix))
+                {
+                    try
+                    {
+                        File.Delete(filePath);
+                        Debug.Log($"Deleted file: {filePath}");
+                    }
+                    catch (IOException ex)
+                    {
+                        Debug.LogError($"Failed to delete {filePath}: {ex.Message}");
+                    }
+                }
+            }
         }
     }
 }

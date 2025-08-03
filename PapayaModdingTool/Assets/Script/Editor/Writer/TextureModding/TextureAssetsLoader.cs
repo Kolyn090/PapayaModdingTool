@@ -68,9 +68,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
             // !!! Assume it's one Texture2D + many Sprites
             // 1. Create Source Dump folder
             string projectPath = Path.Combine(PredefinedPaths.ProjectsPath, projectName);
-            string texturePath = Path.Combine(projectPath, "Texture");
-            string fileFolderPath = Path.Combine(texturePath, loadInfo.folder);
-            string sourceDumpsPath = Path.Combine(fileFolderPath, "Source Dump");
+            string fileFolderPath = Path.Combine(projectPath, loadInfo.folder);
+            string texturePath = Path.Combine(fileFolderPath, "Texture");
+            string sourceDumpsPath = Path.Combine(texturePath, "Source Dump");
             if (!Directory.Exists(sourceDumpsPath))
                 Directory.CreateDirectory(sourceDumpsPath);
             // 2. Look for and export all Sprite Dumps

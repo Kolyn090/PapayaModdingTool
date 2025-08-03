@@ -28,6 +28,10 @@
         "load_new": "Load New File (.assets, .bundle, .ab, ...)",
         "remove_loaded": "Remove loaded (Copy-paste for the path above to remove it)",
         "remove_file": "Remove File",
-        "enter_exact_path_to_delete": "You must enter the exact path to remove a loaded file"
+        "enter_exact_path_to_delete": "You must enter the exact path to remove a loaded file",
+        "install_modified": "Install Modified File",
+        "install_modified_file": "Install",
+        "enter_exact_path_to_install": "You must enter the exact path to install a modified file",
+        "build_target": "Build Target"
     }
 }

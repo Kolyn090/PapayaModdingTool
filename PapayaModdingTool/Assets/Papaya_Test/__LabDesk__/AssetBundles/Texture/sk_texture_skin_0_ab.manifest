@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 4180322117
+CRC: 3499079151
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 5813bcc7da39a5010f70512bab98a4a5
+    Hash: 41aa4a9551bcbc2e1415d46cac0586ad
   TypeTreeHash:
     serializedVersion: 2
     Hash: c21d61fe394c58399df3c6fb5c7c99b3
@@ -15,5 +15,5 @@ ClassTypes:
   Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
-- Assets/Papaya_Test/__DoNotOverwrite__/For_AssetBundleBuild/alchemist_0.png
+- Assets/Papaya/Texture/sk/skin_0_ab/alchemist_0.png
 Dependencies: []

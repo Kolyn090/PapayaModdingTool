@@ -73,14 +73,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.EditorTimeTest
             {
                 string assetBundlesPath = Path.Combine(PredefinedTestPaths.UnityLabDeskPath, "AssetBundles");
                 string texturePath = Path.Combine(assetBundlesPath, "Texture");
-                string sourceFolderPath = Path.Combine(PredefinedTestPaths.UnityDoNotOverridePath,
-                                                        "For_AssetBundleBuild");
 
-                // ! If the last parameter is omitted, it will attempt to search the entire unity assets. 
-                AssetBundleBuilder.BuildAllAssetBundles("alchemist",
-                                                        texturePath,
-                                                        BuildTarget.StandaloneWindows64,
-                                                        sourceFolderPath);
+                AssetBundleBuilder.BuildAllAssetBundles(texturePath,
+                                                        BuildTarget.StandaloneWindows64);
                 onComplete?.Invoke();
             },
             PredefinedTestPaths.UnityDoNotOverridePath,

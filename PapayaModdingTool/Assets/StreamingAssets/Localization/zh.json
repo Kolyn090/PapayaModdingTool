@@ -28,6 +28,10 @@
         "load_new": "载入新文件（.assets, .bundle, .ab, ...）",
         "remove_loaded": "移除已载入文件（复制粘贴以上路径来移除）",
         "remove_file": "移除",
-        "enter_exact_path_to_delete": "你的输入需要和路径保存完全一致才能移除已载入文件"
+        "enter_exact_path_to_delete": "你的输入需要和路径保存完全一致才能移除已载入文件",
+        "install_modified": "安装修改过的文件（复制粘贴以上路径来移除）",
+        "install_modified_file": "安装",
+        "enter_exact_path_to_install": "你的输入需要和路径保存完全一致才能安装修改过的文件",
+        "build_target": "对象平台"
     }
 }

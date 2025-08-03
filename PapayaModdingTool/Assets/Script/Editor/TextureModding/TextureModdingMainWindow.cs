@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
+using PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil;
 using PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding;
 using PapayaModdingTool.Assets.Script.Editor.Writer.Universal;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
@@ -20,8 +21,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         private readonly TextureAssetsLoader _textureAssetsLoader = new(_appEnvironment);
         private Vector2 _scrollPos;
         private string _removeLoadedPath;
+        private string _installLoadedPath;
         private static List<string> _loadedPaths = null;
         private bool _loadedPathsChanged = true;
+        private BuildTarget _buildPlatform = BuildTarget.StandaloneWindows64;
 
         public static void Open(string projectPath)
         {
@@ -65,6 +68,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
 
             GUILayout.Space(20);
 
+            // * Remove
             GUILayout.Label(ELT("remove_loaded"), EditorStyles.boldLabel);
             _removeLoadedPath = EditorGUILayout.TextField("", _removeLoadedPath);
             bool isRemoveValid = _loadedPaths.Contains(_removeLoadedPath);
@@ -82,7 +86,23 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
 
             GUILayout.Space(20);
 
-            
+            // * Install
+            _buildPlatform = (BuildTarget)EditorGUILayout.EnumPopup(ELT("build_target"), _buildPlatform);
+            GUILayout.Space(5);
+            GUILayout.Label(ELT("install_modified"), EditorStyles.boldLabel);
+            _installLoadedPath = EditorGUILayout.TextField("", _installLoadedPath);
+            bool isInstallValid = _loadedPaths.Contains(_installLoadedPath);
+            if (!isInstallValid)
+            {
+                EditorGUILayout.HelpBox(ELT("enter_exact_path_to_install"), MessageType.Info);
+            }
+            EditorGUI.BeginDisabledGroup(!isInstallValid);
+            if (GUILayout.Button(ELT("install_modified_file")))
+            {
+                AssignTag();
+                BuildAssetBundle();
+            }
+            EditorGUI.EndDisabledGroup();
         }
 
         private void LoadNewFile()
@@ -110,6 +130,43 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         private void RemoveTypedFile()
         {
             _projectRemover.RemoveFileFromProject(_removeLoadedPath, ProjectName, LoadType.Texture);
+        }
+
+        // Assign asset bundle tag for Texture2D / Atlas (in the future)
+        private void AssignTag()
+        {
+            // Find all existing Texture assets under install loading path
+            string unityTexturePath = Path.Combine(PredefinedPaths.PapayaUnityDir,
+                                                    "Texture",
+                                                    ProjectName);
+
+            string[] texturePaths = Directory.GetDirectories(unityTexturePath, "*", SearchOption.TopDirectoryOnly);
+            foreach (string path in texturePaths)
+            {
+                string assetBundleTag = string.Join('_', new string[] {
+                    ProjectName,
+                    "Texture",
+                    Path.GetFileName(path)
+                });
+                string[] files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
+                foreach (string file in files)
+                {
+                    // Only assign tag if it has meta file
+                    string metaForFile = file + ".meta";
+                    if (File.Exists(metaForFile))
+                    {
+                        AssetBundleTagEditor.SetAssetBundleTag(file, assetBundleTag);
+                    }
+                }
+            }
+        }
+
+        private void BuildAssetBundle()
+        {
+            string assetBundlePath = Path.Combine(PredefinedPaths.PapayaUnityDir,
+                                                    "AssetBundle");
+            string savingPath = assetBundlePath;
+            AssetBundleBuilder.BuildAllAssetBundles(savingPath, _buildPlatform);
         }
     }
 }
