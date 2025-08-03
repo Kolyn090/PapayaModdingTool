@@ -1,15 +1,29 @@
 using System;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.__Test__.TestUtil
 {
     public class TestHelper
     {
-        public static void TestOnCleanLabDesk(Action onCleanComplete)
+        public static void TestOnCleanLabDesk(Action onCleanComplete,
+                                                string doNotOverwritePath = null,
+                                                string labDeskPath = null,
+                                                bool isUnityFolder = false)
         {
-            SafeClearDirectoryContents(PredefinedTestPaths.LabDeskPath);
-            CopyDirectory(PredefinedTestPaths.DoNotOverridePath, PredefinedTestPaths.LabDeskPath, onCleanComplete);
+            doNotOverwritePath ??= PredefinedTestPaths.DoNotOverridePath;
+            labDeskPath ??= PredefinedTestPaths.LabDeskPath;
+
+            SafeClearDirectoryContents(labDeskPath);
+            if (!isUnityFolder)
+            {
+                CopyDirectory(doNotOverwritePath, labDeskPath, onCleanComplete);
+            }
+            else
+            {
+                CopyUnityDirectory(doNotOverwritePath, labDeskPath, onCleanComplete);
+            }
         }
 
         private static void CopyDirectory(string sourceDir, string targetDir, Action onComplete)
@@ -36,6 +50,40 @@ namespace PapayaModdingTool.Assets.Script.__Test__.TestUtil
             }
 
             onComplete?.Invoke();
+        }
+
+        public static void CopyUnityDirectory(string sourceDir, string targetDir, Action onComplete)
+        {
+            if (!Directory.Exists(sourceDir))
+            {
+                Debug.LogError("Source dir does not exist: " + sourceDir);
+                return;
+            }
+
+            CopyAll(new DirectoryInfo(sourceDir), new DirectoryInfo(targetDir));
+
+            // Convert full paths to relative Unity paths for refresh
+            AssetDatabase.Refresh();
+            onComplete?.Invoke();
+        }
+
+        private static void CopyAll(DirectoryInfo source, DirectoryInfo target)
+        {
+            Directory.CreateDirectory(target.FullName);
+
+            // Copy all files (including .meta)
+            foreach (FileInfo fi in source.GetFiles())
+            {
+                string destFile = Path.Combine(target.FullName, fi.Name);
+                fi.CopyTo(destFile, true);
+            }
+
+            // Recursively copy subfolders
+            foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
+            {
+                DirectoryInfo nextTargetSubDir = target.CreateSubdirectory(diSourceSubDir.Name);
+                CopyAll(diSourceSubDir, nextTargetSubDir);
+            }
         }
 
         private static void SafeDeleteDirectory(string path)
