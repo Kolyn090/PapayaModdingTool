@@ -1,25 +1,52 @@
-using UnityEditor;
-using UnityEngine;
 using System.IO;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil
 {
     public class AssetBundleBuilder
     {
-        public static void BuildAllAssetBundles(string bundleTag, string destination, BuildTarget target)
+        // If search path is empty, search entire unity instead
+        public static void BuildAllAssetBundles(string bundleTag, string destination, BuildTarget target, string searchPath = "")
         {
-            // Find all asset paths with the given bundle tag
-            string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            var assetsInBundle = allAssetPaths
-                .Where(path => AssetImporter.GetAtPath(path)?.assetBundleName == bundleTag)
-                .ToArray();
-
-            if (assetsInBundle.Length == 0)
+            // Make sure the search path is within Assets/
+            if (!string.IsNullOrWhiteSpace(searchPath) && !searchPath.StartsWith("Assets/"))
             {
-                Debug.LogWarning("No assets found with bundle name: " + bundleTag);
+                Debug.LogError("Search path must start with 'Assets/'");
                 return;
             }
+
+            string[] assetPaths = null;
+            // Find all asset paths with the given bundle tag
+            if (string.IsNullOrWhiteSpace(searchPath))
+            {
+                assetPaths = AssetDatabase.GetAllAssetPaths();
+            }
+            else
+            {
+                assetPaths = AssetDatabase.FindAssets("", new[] { searchPath });
+            }
+            string[] assetsInBundle = null;
+
+            if (string.IsNullOrWhiteSpace(searchPath))
+            {
+                assetsInBundle = assetPaths
+                    .Where(path => AssetImporter.GetAtPath(path)?.assetBundleName == bundleTag)
+                    .ToArray();
+            }
+            else
+            {
+                assetsInBundle = assetPaths
+                    .Where(path => AssetImporter.GetAtPath(AssetDatabase.GUIDToAssetPath(path))?.assetBundleName == bundleTag)
+                    .ToArray();
+            }
+
+            if (assetsInBundle.Length == 0)
+                {
+                    Debug.LogWarning("No assets found with bundle name: " + bundleTag);
+                    return;
+                }
 
             // Define the build map using only the tagged assets
             AssetBundleBuild[] buildMap = new AssetBundleBuild[]

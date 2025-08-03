@@ -20,6 +20,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.EditorTimeTest
         {
             EditorGUILayout.HelpBox(ELT("dev_only"), MessageType.Warning);
 
+            GUILayout.Label("Don't forget to refresh.", EditorStyles.boldLabel);
+
             GUILayout.Space(20);
 
             if (GUILayout.Button("Test Build Asset Bundles"))
@@ -35,7 +37,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.EditorTimeTest
 
             GUILayout.Space(20);
 
-            if (GUILayout.Button("Test Build Asset Tag"))
+            if (GUILayout.Button("Test Assign Asset Bundle Tag"))
             {
                 TestAssetBundleTag(() =>
                 {
@@ -71,8 +73,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.EditorTimeTest
             {
                 string assetBundlesPath = Path.Combine(PredefinedTestPaths.UnityLabDeskPath, "AssetBundles");
                 string texturePath = Path.Combine(assetBundlesPath, "Texture");
+                string sourceFolderPath = Path.Combine(PredefinedTestPaths.UnityDoNotOverridePath,
+                                                        "For_AssetBundleBuild");
 
-                AssetBundleBuilder.BuildAllAssetBundles("alchemist", texturePath, BuildTarget.StandaloneWindows64);
+                // ! If the last parameter is omitted, it will attempt to search the entire unity assets. 
+                AssetBundleBuilder.BuildAllAssetBundles("alchemist",
+                                                        texturePath,
+                                                        BuildTarget.StandaloneWindows64,
+                                                        sourceFolderPath);
                 onComplete?.Invoke();
             },
             PredefinedTestPaths.UnityDoNotOverridePath,

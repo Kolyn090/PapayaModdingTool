@@ -79,6 +79,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 _loadedPathsChanged = true;
             }
             EditorGUI.EndDisabledGroup();
+
+            GUILayout.Space(20);
+
+            
         }
 
         private void LoadNewFile()
