@@ -35,6 +35,7 @@
         "build_target": "Build Target",
         "ppu": "Pixel Per Unit",
         "catalog_patch": "Catalog.json Patch Path",
-        "browse": "Browse Files"
+        "browse": "Browse Files",
+        "copy": "Copy"
     }
 }

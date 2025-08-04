@@ -62,7 +62,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.Height(50));
             foreach (var item in _loadedPaths)
             {
+                EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.SelectableLabel(item, rightAlignedStyle, GUILayout.Height(15));
+                if (GUILayout.Button(ELT("copy"), GUILayout.Width(50), GUILayout.Height(15)))
+                {
+                    EditorGUIUtility.systemCopyBuffer = item;
+                    Debug.Log("Copied: " + item);
+                }
+                EditorGUILayout.EndHorizontal();
             }
             EditorGUILayout.EndScrollView();
             GUILayout.Space(5);

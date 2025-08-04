@@ -35,6 +35,7 @@
         "build_target": "对象平台",
         "ppu": "像素单位数",
         "catalog_patch": "Catalog.json 修复路径",
-        "browse": "浏览文件"
+        "browse": "浏览文件",
+        "copy": "拷贝"
     }
 }
