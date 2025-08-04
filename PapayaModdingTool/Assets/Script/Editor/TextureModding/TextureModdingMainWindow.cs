@@ -94,7 +94,22 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             // * Install
             _buildPlatform = (BuildTarget)EditorGUILayout.EnumPopup(ELT("build_target"), _buildPlatform);
             GUILayout.Space(5);
+            // Patch catalog.json
+            EditorGUILayout.BeginHorizontal();
             _catalogPath = EditorGUILayout.TextField(ELT("catalog_patch"), _catalogPath);
+            if (GUILayout.Button(ELT("browse"), GUILayout.Width(60)))
+            {
+                string[] results = _appEnvironment.Wrapper.FileBrowser.OpenFilePanel("Search catalog.json", "", new[] { "json" }, false);
+                if (results.Length > 0)
+                {
+                    _catalogPath = results[0];
+                }
+                else
+                {
+                    Debug.LogWarning("Failed to find catalog.json.");
+                }
+            }
+            EditorGUILayout.EndHorizontal();
             GUILayout.Space(5);
             GUILayout.Label(ELT("install_modified"), EditorStyles.boldLabel);
             _installLoadedPath = EditorGUILayout.TextField("", _installLoadedPath);
@@ -108,13 +123,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             {
                 AssignTag();
                 BuildAssetBundle();
+                if (!string.IsNullOrWhiteSpace(_catalogPath) && Directory.Exists(_catalogPath))
+                {
+                    AddrTool.PatchCrc(_catalogPath);
+                }
             }
             EditorGUI.EndDisabledGroup();
-
-            if (GUILayout.Button("Patch Catalog Test"))
-            {
-                AddrTool.PatchCrc(_catalogPath);
-            }
         }
 
         private void LoadNewFile()

@@ -34,6 +34,7 @@
         "enter_exact_path_to_install": "You must enter the exact path to install a modified file",
         "build_target": "Build Target",
         "ppu": "Pixel Per Unit",
-        "catalog_patch": "Catalog.json Patch Path"
+        "catalog_patch": "Catalog.json Patch Path",
+        "browse": "Browse Files"
     }
 }
