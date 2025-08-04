@@ -271,10 +271,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             // use install loaded file to find the original bundle
             foreach ((string, string) bundleFileName in bundleFileNames)
             {
-                (string bundleName, string fileName) = bundleFileName;
+                (string _, string fileName) = bundleFileName;
+                string owningDumpsFolder = string.Format(PredefinedPaths.ExternalFileTextureOwningDumpFolder, ProjectName, fileName);
                 string bundlePath = _installLoadedPath;
                 // import the sprite dumps from owning dumps
-
+                _textureAssetsLoader.ImportFixedSpriteDumps(bundlePath, owningDumpsFolder);
             }
         }
     }

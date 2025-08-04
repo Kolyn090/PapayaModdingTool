@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using AssetsTools.NET;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
@@ -166,9 +168,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
 
         public void ImportTexture(string bundlePath, string importTexturePath)
         {
-            // The names of the texture are unchanged after everything
-            // Just import by matching name 
-
             // There could be multiple textures in the given texture path
             // Import them all
 
@@ -176,6 +175,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
             string[] allImages = Directory.GetFiles(importTexturePath, "*", SearchOption.TopDirectoryOnly);
             foreach (string image in allImages)
             {
+                _assetsManager.UnloadAll();
+                bundlePath = @$"{bundlePath}";
                 (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = _bundleReader.ReadBundle(bundlePath);
                 // !!! The image must have path id in its last regex underscore
                 // Extract the path id
@@ -187,6 +188,93 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                 _texture2dReplacer.ReplaceTextureInBundle(assetsInst, bunInst, pathID, image);
                 Debug.Log($"Replaced texture {imageName}");
             }
+        }
+
+        public void ImportFixedSpriteDumps(string bundlePath, string importDumpsFolder)
+        {
+            long? GetPathIDFromDumpName(string dumpNameNoExt)
+            {
+                string input = dumpNameNoExt;
+                Match match = Regex.Match(input, @"-(?<num>-?\d+)$");
+                if (match.Success)
+                {
+                    if (long.TryParse(match.Groups["num"].Value, out long number))
+                    {
+                        return number;
+                    }
+                }
+                return null;
+            }
+
+            bundlePath = @$"{bundlePath}";
+            string tempPath = bundlePath + ".tmp";
+            string[] allDumps = Directory.GetFiles(importDumpsFolder, "*.json", SearchOption.TopDirectoryOnly);
+            List<AssetsReplacer> replacers = new();
+            (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = _bundleReader.ReadBundle(bundlePath);
+            foreach (string dump in allDumps)
+            {
+                string dumpName = Path.GetFileNameWithoutExtension(dump);
+                long? _pathID = GetPathIDFromDumpName(dumpName);
+                if (_pathID == null)
+                {
+                    Debug.Log($"Failed to extract path id from {dump}");
+                    continue;
+                }
+                long pathID = (long)_pathID;
+                // Debug.Log(pathID);
+
+                AssetsReplacer replacer = _dumpImportExport.SingleImportJsonDumpInBundle(pathID, assetsInst, dump, bundlePath, tempPath);
+                if (replacer != null)
+                    replacers.Add(replacer);
+            }
+
+            AssetsFile file = assetsInst.file;
+            byte[] modifiedAssetsFileBytes;
+            using (MemoryStream ms = new())
+            using (AssetsFileWriter writer = new(ms))
+            {
+                file.Write(writer, 0, replacers);
+                modifiedAssetsFileBytes = ms.ToArray();
+            }
+
+            string assetsFileNameInBundle = assetsInst.name;
+            BundleReplacer bunReplacer = new BundleReplacerFromMemory(
+                assetsFileNameInBundle, // original name inside bundle
+                null,                   // don't rename
+                true,                   // has serialized data
+                modifiedAssetsFileBytes,
+                0,                      // offset
+                modifiedAssetsFileBytes.Length
+            );
+
+            // 4. Write the new bundle to disk
+            string newName = "~" + bunInst.name;
+            string dir = Path.GetDirectoryName(bunInst.path)!;
+            string filePath = Path.Combine(dir, newName);
+            string origFilePath = bunInst.path;
+
+            using (FileStream fs = File.Open(filePath, FileMode.Create))
+            using (AssetsFileWriter w = new(fs))
+            {
+                bunInst.file.Write(w, new List<BundleReplacer> { bunReplacer });
+            }
+
+            // 5. Overwrite original bundle file
+            bunInst.file.Reader.Close();
+            File.Delete(origFilePath);
+            File.Move(filePath, origFilePath);
+
+            // 6. Reload the new bundle
+            bunInst.file = new AssetBundleFile();
+            bunInst.file.Read(new AssetsFileReader(File.OpenRead(origFilePath)));
+
+            _assetsManager.UnloadBundleFile(bunInst.path);
+            _assetsManager.UnloadAssetsFile(assetsInst);
+        }
+
+        private void OnDestroy()
+        {
+            _assetsManager.UnloadAll();
         }
     }
 }
