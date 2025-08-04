@@ -207,9 +207,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
             }
 
             bundlePath = @$"{bundlePath}";
-            string tempPath = bundlePath + ".tmp";
             string[] allDumps = Directory.GetFiles(importDumpsFolder, "*.json", SearchOption.TopDirectoryOnly);
-            List<AssetsReplacer> replacers = new();
+            List<(long, string)> items = new();
             (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = _bundleReader.ReadBundle(bundlePath);
             foreach (string dump in allDumps)
             {
@@ -221,55 +220,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                     continue;
                 }
                 long pathID = (long)_pathID;
-                // Debug.Log(pathID);
-
-                AssetsReplacer replacer = _dumpImportExport.SingleImportJsonDumpInBundle(pathID, assetsInst, dump, bundlePath, tempPath);
-                if (replacer != null)
-                    replacers.Add(replacer);
+                items.Add((pathID, dump));
             }
 
-            AssetsFile file = assetsInst.file;
-            byte[] modifiedAssetsFileBytes;
-            using (MemoryStream ms = new())
-            using (AssetsFileWriter writer = new(ms))
-            {
-                file.Write(writer, 0, replacers);
-                modifiedAssetsFileBytes = ms.ToArray();
-            }
-
-            string assetsFileNameInBundle = assetsInst.name;
-            BundleReplacer bunReplacer = new BundleReplacerFromMemory(
-                assetsFileNameInBundle, // original name inside bundle
-                null,                   // don't rename
-                true,                   // has serialized data
-                modifiedAssetsFileBytes,
-                0,                      // offset
-                modifiedAssetsFileBytes.Length
-            );
-
-            // 4. Write the new bundle to disk
-            string newName = "~" + bunInst.name;
-            string dir = Path.GetDirectoryName(bunInst.path)!;
-            string filePath = Path.Combine(dir, newName);
-            string origFilePath = bunInst.path;
-
-            using (FileStream fs = File.Open(filePath, FileMode.Create))
-            using (AssetsFileWriter w = new(fs))
-            {
-                bunInst.file.Write(w, new List<BundleReplacer> { bunReplacer });
-            }
-
-            // 5. Overwrite original bundle file
-            bunInst.file.Reader.Close();
-            File.Delete(origFilePath);
-            File.Move(filePath, origFilePath);
-
-            // 6. Reload the new bundle
-            bunInst.file = new AssetBundleFile();
-            bunInst.file.Read(new AssetsFileReader(File.OpenRead(origFilePath)));
-
-            _assetsManager.UnloadBundleFile(bunInst.path);
-            _assetsManager.UnloadAssetsFile(assetsInst);
+            _dumpImportExport.BatchImportJsonDumpInBundle(bunInst, assetsInst, items);
         }
 
         private void OnDestroy()

@@ -85,48 +85,84 @@ namespace PapayaModdingTool.Assets.Script.Writer
             }
         }
 
-        public AssetsReplacer SingleImportJsonDumpInBundle(long pathID,
-                                            AssetsFileInstance assetsInst,
-                                            string replaceFilePath,
-                                            string bundlePath,
-                                            string tempPath)
+        public void BatchImportJsonDumpInBundle(BundleFileInstance bunInst,
+                                                AssetsFileInstance assetsInst,
+                                                List<(long, string)> items)
         {
-            AssetFileInfo info = assetsInst.file.GetAssetInfo(pathID);
-
-            using (FileStream fs = File.OpenRead(replaceFilePath))
-            using (StreamReader sr = new(fs))
+            List<AssetsReplacer> replacers = new();
+            foreach (var item in items)
             {
-                AssetImportExport importer = new();
-                byte[] bytes = null;
-
-                AssetTypeTemplateField tempField = _assetsManager.GetTemplateBaseField(assetsInst,
+                (long pathID, string replaceFilePath) = item;
+                AssetFileInfo info = assetsInst.file.GetAssetInfo(pathID);
+                using (FileStream fs = File.OpenRead(replaceFilePath))
+                using (StreamReader sr = new(fs))
+                {
+                    AssetImportExport importer = new();
+                    byte[] bytes = null;
+                    AssetTypeTemplateField tempField = _assetsManager.GetTemplateBaseField(assetsInst,
                                                                             assetsInst.file.Reader,
                                                                             info.AbsoluteByteStart,
                                                                             info.TypeId,
                                                                             assetsInst.file.GetScriptIndex(info),
                                                                             AssetReadFlags.None);
-                bytes = importer.ImportJsonAsset(tempField, sr, out string exceptionMessage);
+                    bytes = importer.ImportJsonAsset(tempField, sr, out string exceptionMessage);
 
-                if (bytes == null)
-                {
-                    Debug.LogError($"Something went wrong when reading the dump file: {exceptionMessage}");
-                    return null;
+                    if (bytes == null)
+                    {
+                        Debug.LogError($"Something went wrong when reading the dump file: {exceptionMessage}");
+                        continue;
+                    }
+
+                    AssetsReplacer replacer = AssetImportExport.CreateAssetReplacer(info.PathId,
+                                                                                    info.TypeId,
+                                                                                    assetsInst.file.GetScriptIndex(info),
+                                                                                    bytes);
+                    replacers.Add(replacer);
                 }
-
-                AssetsReplacer replacer = AssetImportExport.CreateAssetReplacer(info.PathId,
-                                                                                info.TypeId,
-                                                                                assetsInst.file.GetScriptIndex(info),
-                                                                                bytes);
-                return replacer;
-                // AssetsFile file = assetsInst.file;
-                // List<AssetsReplacer> replacers = new() { replacer };
-
-                // using (FileStream outFs = File.Create(tempPath))
-                // using (AssetsFileWriter writer = new(outFs))
-                // {
-                //     file.Write(writer, 0, replacers, _assetsManager.ClassDatabase);
-                // }
             }
+
+            AssetsFile file = assetsInst.file;
+            byte[] modifiedAssetsFileBytes;
+            using (MemoryStream ms = new())
+            using (AssetsFileWriter writer = new(ms))
+            {
+                file.Write(writer, 0, replacers);
+                modifiedAssetsFileBytes = ms.ToArray();
+            }
+
+            string assetsFileNameInBundle = assetsInst.name;
+            BundleReplacer bunReplacer = new BundleReplacerFromMemory(
+                assetsFileNameInBundle, // original name inside bundle
+                null,                   // don't rename
+                true,                   // has serialized data
+                modifiedAssetsFileBytes,
+                0,                      // offset
+                modifiedAssetsFileBytes.Length
+            );
+
+            // 4. Write the new bundle to disk
+            string newName = "~" + bunInst.name;
+            string dir = Path.GetDirectoryName(bunInst.path)!;
+            string filePath = Path.Combine(dir, newName);
+            string origFilePath = bunInst.path;
+
+            using (FileStream fs = File.Open(filePath, FileMode.Create))
+            using (AssetsFileWriter w = new(fs))
+            {
+                bunInst.file.Write(w, new List<BundleReplacer> { bunReplacer });
+            }
+
+            // 5. Overwrite original bundle file
+            bunInst.file.Reader.Close();
+            File.Delete(origFilePath);
+            File.Move(filePath, origFilePath);
+
+            // 6. Reload the new bundle
+            bunInst.file = new AssetBundleFile();
+            bunInst.file.Read(new AssetsFileReader(File.OpenRead(origFilePath)));
+
+            _assetsManager.UnloadBundleFile(bunInst.path);
+            _assetsManager.UnloadAssetsFile(assetsInst);
         }
     }
 }
