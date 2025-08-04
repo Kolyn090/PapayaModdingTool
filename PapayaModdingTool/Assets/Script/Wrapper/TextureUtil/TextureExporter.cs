@@ -35,7 +35,9 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
 
         public string ExportTextureWithPathIdTo(string savePath,
                                                 AssetsFileInstance assetInst,
-                                                AssetTypeValueField texBase)
+                                                AssetTypeValueField texBase,
+                                                bool includePathIDInName=false,
+                                                long pathID=0)
         {
             uint platform = assetInst.file.Metadata.TargetPlatform;
             byte[] platformBlob = _textureHelper.GetPlatformBlob(texBase);
@@ -59,7 +61,9 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
-            string fullPath = Path.Combine(savePath, texFile.m_Name + ".png");
+            string suffix = includePathIDInName ? $"_{pathID}" : "";
+            string fileName = $"{texFile.m_Name}{suffix}.png";
+            string fullPath = Path.Combine(savePath, fileName);
             TextureImportExport.SaveImageAtPath(imageToExport, fullPath);
             return fullPath;
         }

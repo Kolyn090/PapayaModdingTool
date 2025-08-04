@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PapayaModdingTool.Assets.Script.Misc.Paths;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil
@@ -23,19 +23,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil
 
         private (string, string) GetBaseNameFullName(string dumpName)
         {
-            static (string, string) SplitByLastRegex(string input, string pattern)
-            {
-                MatchCollection matches = Regex.Matches(input, pattern);
-                if (matches.Count == 0)
-                    return (input, ""); // No match, return full string and empty
-
-                Match lastMatch = matches[^1];
-                int splitIndex = lastMatch.Index;
-
-                return (input[..splitIndex], input[splitIndex..]);
-            }
-
-            (string, string) splitCab = SplitByLastRegex(Path.GetFileName(dumpName).Replace(".json", ""), "-CAB-");
+            (string, string) splitCab = PathUtils.SplitByLastRegex(Path.GetFileName(dumpName).Replace(".json", ""), "-CAB-");
             return new(splitCab.Item1, dumpName);
         }
 

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Misc.Paths
@@ -62,6 +63,18 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
             {
                 Directory.Delete(dir, true); // true = recursive delete
             }
+        }
+
+        public static (string, string) SplitByLastRegex(string input, string pattern)
+        {
+            MatchCollection matches = Regex.Matches(input, pattern);
+            if (matches.Count == 0)
+                return (input, ""); // No match, return full string and empty
+
+            Match lastMatch = matches[^1];
+            int splitIndex = lastMatch.Index;
+
+            return (input[..splitIndex], input[splitIndex..]);
         }
     }
 }

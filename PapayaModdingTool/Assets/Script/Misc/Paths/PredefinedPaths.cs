@@ -11,10 +11,19 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
         public static readonly string ProjectsPath = Path.Combine(ExternalDir, "Projects");
         public static readonly string LocalizationPath = Path.Combine(Application.streamingAssetsPath, "Localization");
 
+        public static readonly string FileTextureFolder = Path.Combine(
+            ProjectsPath,
+            "{0}", // project name
+            "{1}", // file name
+            "Texture"
+        );
+        public static readonly string ExternalFileTextureFolder = Path.Combine(FileTextureFolder, "Exported");
+        public static readonly string ExternalFileTextureOwningDumpFolder = Path.Combine(FileTextureFolder, "Owning Dump");
+        public static readonly string ExternalFileTextureSourceDumpFolder = Path.Combine(FileTextureFolder, "Source Dump");
 
         public const string PapayaUnityDir = "Assets/Papaya";
         public static readonly string PapayaTextureDir = Path.Combine(PapayaUnityDir, "Texture");
-
+        public static readonly string AssetBundlesPath = Path.Combine(PapayaUnityDir, "AssetBundles");
 
         public const string PapayaUnityTestDir = "Assets/Papaya_Test";
         public static readonly string PapayaTestTextureDir = Path.Combine(PapayaUnityTestDir, "Texture");

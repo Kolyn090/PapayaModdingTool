@@ -126,6 +126,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 ExportTextures(tags);
                 ExportOwningDumps(tags);
                 FixSpriteDumps(tags);
+                ImportTextures(tags);
+                ImportSpriteDumps(tags);
                 if (!string.IsNullOrWhiteSpace(_catalogPath) && Directory.Exists(_catalogPath))
                 {
                     AddrTool.PatchCrc(_catalogPath);
@@ -224,11 +226,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
 
         private void ExportOwningDumps(List<(string, string)> bundleFileNames)
         {
+            // * Remove everything in the existing owning dumps first! 
+
             string assetBundlesPath = Path.Combine(PredefinedPaths.PapayaUnityDir,
                                                     "AssetBundles");
             foreach ((string, string) bundleFileName in bundleFileNames)
             {
                 (string bundleName, string fileName) = bundleFileName;
+                string owningDumpsFolder = string.Format(PredefinedPaths.ExternalFileTextureOwningDumpFolder, ProjectName, fileName);
+                PathUtils.DeleteAllContents(owningDumpsFolder);
+
                 string bundlePath = Path.Combine(assetBundlesPath, bundleName);
                 _textureAssetsLoader.ExportSpriteDumpsOnly(bundlePath, fileName, ProjectName);
             }
@@ -242,6 +249,32 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 string owningDumpsFolder = Path.Combine(PredefinedPaths.ProjectsPath, ProjectName, fileName, "Texture/Owning Dump");
                 string sourceDumpsFolder = Path.Combine(PredefinedPaths.ProjectsPath, ProjectName, fileName, "Texture/Source Dump");
                 new SpriteDumpFixer(owningDumpsFolder, sourceDumpsFolder);
+            }
+        }
+
+        private void ImportTextures(List<(string, string)> bundleFileNames)
+        {
+            foreach ((string, string) bundleFileName in bundleFileNames)
+            {
+                (string _, string fileName) = bundleFileName;
+                string exportedPath = string.Format(PredefinedPaths.ExternalFileTextureFolder, ProjectName, fileName);
+                string bundlePath = _installLoadedPath;
+                _textureAssetsLoader.ImportTexture(bundlePath, exportedPath);
+            }
+        }
+
+        private void ImportSpriteDumps(List<(string, string)> bundleFileNames)
+        {
+            // The path-id is in the end of the json dump file
+            // Need to split
+
+            // use install loaded file to find the original bundle
+            foreach ((string, string) bundleFileName in bundleFileNames)
+            {
+                (string bundleName, string fileName) = bundleFileName;
+                string bundlePath = _installLoadedPath;
+                // import the sprite dumps from owning dumps
+
             }
         }
     }

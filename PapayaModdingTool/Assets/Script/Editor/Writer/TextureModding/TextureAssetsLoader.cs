@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using AssetsTools.NET;
 using AssetsTools.NET.Extra;
@@ -19,6 +21,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
         private readonly BundleReader _bundleReader;
         private readonly TextureExporter _textureExporter;
         private readonly DumpImportExport _dumpImportExport;
+        private readonly Texture2dReplacer _texture2dReplacer;
 
         public TextureAssetsLoader(AppEnvironment appEnvironment)
         {
@@ -26,6 +29,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
             _bundleReader = new(appEnvironment.AssetsManager, appEnvironment.Dispatcher);
             _textureExporter = new(appEnvironment);
             _dumpImportExport = new(appEnvironment.AssetsManager);
+            _texture2dReplacer = new(appEnvironment.AssetsManager, appEnvironment.Wrapper.TextureImportExport);
         }
 
         public void LoadTextureAssets(LoadFileInfo loadInfo, string projectName, string textureSavePath, int gamePPU)
@@ -55,13 +59,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                 foreach (var texInfo in texInfos)
                 {
                     AssetTypeValueField texBase = _assetsManager.GetBaseField(assetsInst, texInfo);
-                    _textureExporter.ExportTextureWithPathIdTo(textureSavePath, assetsInst, texBase);
+                    _textureExporter.ExportTextureWithPathIdTo(textureSavePath, assetsInst, texBase, true, texInfo.PathId);
                 }
                 return;
             }
 
             AssetTypeValueField onlyTexBase = _assetsManager.GetBaseField(assetsInst, texInfos[0]);
-            string textureFullPath = _textureExporter.ExportTextureWithPathIdTo(textureSavePath, assetsInst, onlyTexBase);
+            string textureFullPath = _textureExporter.ExportTextureWithPathIdTo(textureSavePath, assetsInst, onlyTexBase, true, texInfos[0].PathId);
 
             // Read dumps and save them as Source Dumps
             // !!! Don't think Atlas for now
@@ -155,8 +159,33 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                                         cabCode + "-" +
                                         spriteInfo.PathId.ToString() + ".json";
                 string writePath = Path.Combine(sourceDumpsPath, dumpFileName);
-                AssetTypeValueField spriteField = _dumpImportExport.SingleExportJsonDumpInBundle(assetsInst, spriteInfo.PathId, writePath);
+                _dumpImportExport.SingleExportJsonDumpInBundle(assetsInst, spriteInfo.PathId, writePath);
                 // spriteFields.Add(spriteField);
+            }
+        }
+
+        public void ImportTexture(string bundlePath, string importTexturePath)
+        {
+            // The names of the texture are unchanged after everything
+            // Just import by matching name 
+
+            // There could be multiple textures in the given texture path
+            // Import them all
+
+            // Assume files the all images
+            string[] allImages = Directory.GetFiles(importTexturePath, "*", SearchOption.TopDirectoryOnly);
+            foreach (string image in allImages)
+            {
+                (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = _bundleReader.ReadBundle(bundlePath);
+                // !!! The image must have path id in its last regex underscore
+                // Extract the path id
+                string imageName = Path.GetFileNameWithoutExtension(image);
+                (string, string) splitByLastUnderscore = PathUtils.SplitByLastRegex(imageName, "_");
+                (string _, string pathIDStr) = splitByLastUnderscore;
+                long pathID = long.Parse(pathIDStr.Replace("_", ""));
+
+                _texture2dReplacer.ReplaceTextureInBundle(assetsInst, bunInst, pathID, image);
+                Debug.Log($"Replaced texture {imageName}");
             }
         }
     }
