@@ -7,6 +7,7 @@ using PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding;
 using PapayaModdingTool.Assets.Script.Editor.Writer.Universal;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
+using PapayaModdingTool.Assets.Script.Writer.AddressableTools;
 using PapayaModdingTool.Assets.Script.Writer.ProjectUtil;
 using UnityEditor;
 using UnityEngine;
@@ -22,6 +23,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         private Vector2 _scrollPos;
         private string _removeLoadedPath;
         private string _installLoadedPath;
+        private string _catalogPath;
+        private int _ppu = 100;
         private static List<string> _loadedPaths = null;
         private bool _loadedPathsChanged = true;
         private BuildTarget _buildPlatform = BuildTarget.StandaloneWindows64;
@@ -43,6 +46,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             {
                 alignment = TextAnchor.MiddleRight
             };
+
+            _ppu = EditorGUILayout.IntField(ELT("ppu"), _ppu);
 
             if (_loadedPaths == null || _loadedPathsChanged)
             {
@@ -89,6 +94,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             // * Install
             _buildPlatform = (BuildTarget)EditorGUILayout.EnumPopup(ELT("build_target"), _buildPlatform);
             GUILayout.Space(5);
+            _catalogPath = EditorGUILayout.TextField(ELT("catalog_patch"), _catalogPath);
+            GUILayout.Space(5);
             GUILayout.Label(ELT("install_modified"), EditorStyles.boldLabel);
             _installLoadedPath = EditorGUILayout.TextField("", _installLoadedPath);
             bool isInstallValid = _loadedPaths.Contains(_installLoadedPath);
@@ -103,6 +110,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 BuildAssetBundle();
             }
             EditorGUI.EndDisabledGroup();
+
+            if (GUILayout.Button("Patch Catalog Test"))
+            {
+                AddrTool.PatchCrc(_catalogPath);
+            }
         }
 
         private void LoadNewFile()
@@ -124,7 +136,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             string textureSaveDir = Path.Combine(textureDir, ProjectName, loadInfo.folder);
             if (!Directory.Exists(textureSaveDir))
                 Directory.CreateDirectory(textureSaveDir);
-            _textureAssetsLoader.LoadTextureAssets(loadInfo, ProjectName, textureSaveDir);
+            _textureAssetsLoader.LoadTextureAssets(loadInfo, ProjectName, textureSaveDir, _ppu);
         }
 
         private void RemoveTypedFile()
@@ -167,6 +179,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                                                     "AssetBundle");
             string savingPath = assetBundlePath;
             AssetBundleBuilder.BuildAllAssetBundles(savingPath, _buildPlatform);
+        }
+
+        private void ExportOwningDumps()
+        {
+            
         }
     }
 }

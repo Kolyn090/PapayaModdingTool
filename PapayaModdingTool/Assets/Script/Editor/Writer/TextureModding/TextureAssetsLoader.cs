@@ -28,7 +28,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
             _dumpImportExport = new(appEnvironment.AssetsManager);
         }
 
-        public void LoadTextureAssets(LoadFileInfo loadInfo, string projectName, string textureSavePath)
+        public void LoadTextureAssets(LoadFileInfo loadInfo, string projectName, string textureSavePath, int gamePPU)
         {
             // Load the texture from bundle and save it to the correct place
             // 1. Read the bundle, check if valid
@@ -91,7 +91,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
             Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(textureFullPath);
 
             // Use dumps to slice the texture
-            SpritesheetFromDump spritesheetFromDump = new(texture, sourceDumpsPath, gamePPU: 100);
+            SpritesheetFromDump spritesheetFromDump = new(texture, sourceDumpsPath, gamePPU: gamePPU);
             spritesheetFromDump.Import();
         }
     }
