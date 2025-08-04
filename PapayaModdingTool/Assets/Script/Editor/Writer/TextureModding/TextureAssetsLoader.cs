@@ -75,7 +75,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                 Directory.CreateDirectory(sourceDumpsPath);
             // 2. Look for and export all Sprite Dumps
             List<AssetFileInfo> spriteInfos = assetsInst.file.GetAssetsOfType(AssetClassID.Sprite);
-            List<AssetTypeValueField> spriteFields = new();
+            // List<AssetTypeValueField> spriteFields = new();
             foreach (var spriteInfo in spriteInfos)
             {
                 AssetTypeValueField baseField = _assetsManager.GetBaseField(assetsInst, spriteInfo);
@@ -84,7 +84,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                                         spriteInfo.PathId.ToString() + ".json";
                 string writePath = Path.Combine(sourceDumpsPath, dumpFileName);
                 AssetTypeValueField spriteField = _dumpImportExport.SingleExportJsonDumpInBundle(assetsInst, spriteInfo.PathId, writePath);
-                spriteFields.Add(spriteField);
+                // spriteFields.Add(spriteField);
             }
 
             AssetDatabase.ImportAsset(textureFullPath, ImportAssetOptions.ForceSynchronousImport);
@@ -106,7 +106,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                 UnityEngine.Debug.LogWarning($"{completePath} is not a valid file. Abort.");
                 return;
             }
-            string cabCode = DumpReader.ReadCABCode(completePath);
 
             // 2. Read all Texture2D assets from it
             List<AssetFileInfo> texInfos = assetsInst.file.GetAssetsOfType(AssetClassID.Texture2D);
@@ -129,6 +128,36 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
 
             AssetTypeValueField onlyTexBase = _assetsManager.GetBaseField(assetsInst, texInfos[0]);
             _textureExporter.ExportTextureWithPathIdTo(textureSavePath, assetsInst, onlyTexBase);
+        }
+
+        public void ExportSpriteDumpsOnly(string bundlePath, string fileFolder, string projectName)
+        {
+            string cabCode = DumpReader.ReadCABCode(bundlePath);
+            (BundleFileInstance _, AssetsFileInstance assetsInst) = _bundleReader.ReadBundle(bundlePath);
+
+            // Read dumps and save them as Source Dumps
+            // !!! Don't think Atlas for now
+            // !!! Assume it's one Texture2D + many Sprites
+            // 1. Create Source Dump folder
+            string projectPath = Path.Combine(PredefinedPaths.ProjectsPath, projectName);
+            string fileFolderPath = Path.Combine(projectPath, fileFolder);
+            string texturePath = Path.Combine(fileFolderPath, "Texture");
+            string sourceDumpsPath = Path.Combine(texturePath, "Owning Dump");
+            if (!Directory.Exists(sourceDumpsPath))
+                Directory.CreateDirectory(sourceDumpsPath);
+            // 2. Look for and export all Sprite Dumps
+            List<AssetFileInfo> spriteInfos = assetsInst.file.GetAssetsOfType(AssetClassID.Sprite);
+            // List<AssetTypeValueField> spriteFields = new();
+            foreach (var spriteInfo in spriteInfos)
+            {
+                AssetTypeValueField baseField = _assetsManager.GetBaseField(assetsInst, spriteInfo);
+                string dumpFileName = baseField["m_Name"].AsString + "-" +
+                                        cabCode + "-" +
+                                        spriteInfo.PathId.ToString() + ".json";
+                string writePath = Path.Combine(sourceDumpsPath, dumpFileName);
+                AssetTypeValueField spriteField = _dumpImportExport.SingleExportJsonDumpInBundle(assetsInst, spriteInfo.PathId, writePath);
+                // spriteFields.Add(spriteField);
+            }
         }
     }
 }
