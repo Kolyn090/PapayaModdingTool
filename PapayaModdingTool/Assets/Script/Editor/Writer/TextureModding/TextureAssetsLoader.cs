@@ -40,7 +40,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                 return;
             }
             string cabCode = DumpReader.ReadCABCode(completePath);
-            
+
             // 2. Read all Texture2D assets from it
             List<AssetFileInfo> texInfos = assetsInst.file.GetAssetsOfType(AssetClassID.Texture2D);
             if (texInfos.Count == 0)
@@ -93,6 +93,42 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
             // Use dumps to slice the texture
             SpritesheetFromDump spritesheetFromDump = new(texture, sourceDumpsPath, gamePPU: gamePPU);
             spritesheetFromDump.Import();
+        }
+
+        public void LoadTextureOnly(string bundlePath, string textureSavePath)
+        {
+            // Load the texture from bundle and save it to the correct place
+            // 1. Read the bundle, check if valid
+            string completePath = bundlePath;
+            (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = _bundleReader.ReadBundle(completePath);
+            if (bunInst == null && assetsInst == null)
+            {
+                UnityEngine.Debug.LogWarning($"{completePath} is not a valid file. Abort.");
+                return;
+            }
+            string cabCode = DumpReader.ReadCABCode(completePath);
+
+            // 2. Read all Texture2D assets from it
+            List<AssetFileInfo> texInfos = assetsInst.file.GetAssetsOfType(AssetClassID.Texture2D);
+            if (texInfos.Count == 0)
+            {
+                UnityEngine.Debug.LogWarning($"{completePath} has no Texture2D asset. Abort.");
+                return;
+            }
+
+            if (texInfos.Count > 1)
+            {
+                // There is more than one Texture found in the file, just export the textures and stop
+                foreach (var texInfo in texInfos)
+                {
+                    AssetTypeValueField texBase = _assetsManager.GetBaseField(assetsInst, texInfo);
+                    _textureExporter.ExportTextureWithPathIdTo(textureSavePath, assetsInst, texBase);
+                }
+                return;
+            }
+
+            AssetTypeValueField onlyTexBase = _assetsManager.GetBaseField(assetsInst, texInfos[0]);
+            _textureExporter.ExportTextureWithPathIdTo(textureSavePath, assetsInst, onlyTexBase);
         }
     }
 }
