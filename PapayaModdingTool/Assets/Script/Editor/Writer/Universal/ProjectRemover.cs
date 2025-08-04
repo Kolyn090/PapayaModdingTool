@@ -83,7 +83,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.Universal
             File.WriteAllText(infoJsonPath, jsonContent);
 
             // From AssetBundle
-            string assetBundlePath = Path.Combine(PredefinedPaths.PapayaUnityDir, "AssetBundle");
+            string assetBundlePath = Path.Combine(PredefinedPaths.PapayaUnityDir, "AssetBundles");
             string removePrefix = projectName + "_" + loadType.ToString().ToLower();
             var files = Directory.GetFiles(assetBundlePath);
 

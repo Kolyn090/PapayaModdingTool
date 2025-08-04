@@ -125,6 +125,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 BuildAssetBundle();
                 ExportTextures(tags);
                 ExportOwningDumps(tags);
+                FixSpriteDumps(tags);
                 if (!string.IsNullOrWhiteSpace(_catalogPath) && Directory.Exists(_catalogPath))
                 {
                     AddrTool.PatchCrc(_catalogPath);
@@ -230,6 +231,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 (string bundleName, string fileName) = bundleFileName;
                 string bundlePath = Path.Combine(assetBundlesPath, bundleName);
                 _textureAssetsLoader.ExportSpriteDumpsOnly(bundlePath, fileName, ProjectName);
+            }
+        }
+
+        private void FixSpriteDumps(List<(string, string)> bundleFileNames)
+        {
+            foreach ((string, string) bundleFileName in bundleFileNames)
+            {
+                (string _, string fileName) = bundleFileName;
+                string owningDumpsFolder = Path.Combine(PredefinedPaths.ProjectsPath, ProjectName, fileName, "Texture/Owning Dump");
+                string sourceDumpsFolder = Path.Combine(PredefinedPaths.ProjectsPath, ProjectName, fileName, "Texture/Source Dump");
+                new SpriteDumpFixer(owningDumpsFolder, sourceDumpsFolder);
             }
         }
     }
