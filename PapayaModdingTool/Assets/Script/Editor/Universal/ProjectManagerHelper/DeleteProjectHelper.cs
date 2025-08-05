@@ -1,6 +1,7 @@
 
 using System;
 using System.IO;
+using PapayaModdingTool.Assets.Script.Editor.Writer.Universal;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using UnityEditor;
 using UnityEngine;
@@ -10,6 +11,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal.ProjectManagerHelper
     public class DeleteProjectHelper
     {
         public Func<string, string> ELT;
+        public Func<ProjectRemover> GetProjectRemover;
 
         private string _deleteProjectName = "";
 
@@ -30,41 +32,23 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal.ProjectManagerHelper
             EditorGUI.BeginDisabledGroup(!canDelete);
             if (GUILayout.Button(ELT("delete_project_button")))
             {
-                DeleteProject(Path.Combine(PredefinedPaths.ProjectsPath, _deleteProjectName));
+                DeleteProject(_deleteProjectName);
             }
             EditorGUI.EndDisabledGroup();
         }
 
-        private void DeleteProject(string projectPath)
+        private void DeleteProject(string projectName)
         {
             bool confirm = EditorUtility.DisplayDialog(
                 ELT("delete_project"),
-                $"{string.Format(ELT("double_confirm_delete_project"), Path.GetFileName(projectPath))}\n{ELT("cannot_undone")}",
+                $"{string.Format(ELT("double_confirm_delete_project"), projectName)}\n{ELT("cannot_undone")}",
                 ELT("delete_project_button"), ELT("delete_cancel_button")
             );
 
             if (!confirm)
                 return;
 
-            if (Directory.Exists(projectPath))
-            {
-                try
-                {
-                    Directory.Delete(projectPath, true);
-                    File.Delete(projectPath + ".meta");
-
-                    EditorUtility.DisplayDialog(
-                        ELT("project_deleted_title"),
-                        string.Format(ELT("project_deleted_message"), Path.GetFileName(projectPath)),
-                        ELT("ok")
-                    );
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"{ELT("fail_to_delete_project")}: " + ex.Message);
-                    EditorUtility.DisplayDialog(ELT("error"), ELT("fail_to_delete_project"), ELT("ok"));
-                }
-            }
+            GetProjectRemover().RemoveProject(projectName, ELT);
         }
     }
 }

@@ -1,4 +1,5 @@
 using PapayaModdingTool.Assets.Script.Editor.Universal.ProjectManagerHelper;
+using PapayaModdingTool.Assets.Script.Editor.Writer.Universal;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 {
     public class ProjectManagerWindow : BaseEditorWindow
     {
+        private ProjectRemover _projectRemover = new(_appEnvironment.Wrapper.JsonSerializer);
+
         private SwitchLanguageHelper _switchLanguageHelper;
         private DeleteProjectHelper _deleteProjectHelper;
 
@@ -30,7 +33,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 
             _deleteProjectHelper = new()
             {
-                ELT = var => ELT(var)
+                ELT = var => ELT(var),
+                GetProjectRemover = () => _projectRemover
             };
         }
 

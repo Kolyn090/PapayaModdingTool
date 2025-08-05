@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
+using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
 using PapayaModdingTool.Assets.Script.Wrapper.Json;
 using UnityEditor;
 using UnityEngine;
@@ -15,6 +17,49 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.Universal
         public ProjectRemover(IJsonSerializer jsonSerializer)
         {
             _jsonSerializer = jsonSerializer;
+        }
+
+        public void RemoveProject(string projectName, Func<string, string> ELT)
+        {
+            ProjectLoader projectLoader = new();
+            List<string> filePaths = projectLoader.FindLoadedPaths(projectName, _jsonSerializer);
+            foreach (string path in filePaths)
+            {
+                foreach (LoadType loadType in Enum.GetValues(typeof(LoadType)))
+                {
+                    RemoveFileFromProject(path, projectName, loadType);
+                }
+            }
+
+            // ! Remove the paths in unity - Texture
+            string textureProjectPath = string.Format(PredefinedPaths.PapayaTextureProjectPath, projectName);
+            if (Directory.Exists(textureProjectPath))
+                Directory.Delete(textureProjectPath);
+            string textureProjectMeta = textureProjectPath + ".meta";
+            if (File.Exists(textureProjectMeta))
+                File.Delete(textureProjectMeta);
+            
+            string projectPath = Path.Combine(PredefinedPaths.ProjectsPath, projectName);
+            if (Directory.Exists(projectPath))
+            {
+                try
+                {
+                    Directory.Delete(projectPath, true);
+                    if (File.Exists(projectPath + ".meta"))
+                        File.Delete(projectPath + ".meta");
+
+                    EditorUtility.DisplayDialog(
+                        ELT("project_deleted_title"),
+                        string.Format(ELT("project_deleted_message"), Path.GetFileName(projectPath)),
+                        ELT("ok")
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"{ELT("fail_to_delete_project")}: " + ex.Message);
+                    EditorUtility.DisplayDialog(ELT("error"), ELT("fail_to_delete_project"), ELT("ok"));
+                }
+            }
         }
 
         public void RemoveFileFromProject(string removeLoadedPath, string projectName, LoadType loadType)
