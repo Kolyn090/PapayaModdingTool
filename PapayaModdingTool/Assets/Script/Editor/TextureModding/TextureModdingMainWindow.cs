@@ -52,6 +52,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 GetProjectName = () => ProjectName,
                 GetTextureAssetsLoader = () => _textureAssetsLoader
             };
+            Initialize();
         }
 
         public static void Open(string projectPath)

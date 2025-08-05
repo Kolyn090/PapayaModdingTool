@@ -9,10 +9,12 @@ namespace PapayaModdingTool.Assets.Script.Misc.AppCore
         public EventDispatcher Dispatcher { get; } = new();
         public AssetsManager AssetsManager { get; } = new();
         public AppWrapper Wrapper { get; } = new();
+        public AppSettingsManager AppSettingsManager;
 
         public AppEnvironment()
         {
             AssetsManager.LoadClassPackage(PredefinedPaths.ClassDataPath);
+            AppSettingsManager = new(Wrapper.JsonSerializer);
         }
     }
 }

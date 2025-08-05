@@ -38,6 +38,10 @@
         "browse": "浏览文件",
         "copy": "拷贝",
         "search_catalog": "搜索 catalog.json 文件",
-        "failed_finding_catalog": "错误：未找到 catalog.json"
+        "failed_finding_catalog": "错误：未找到 catalog.json",
+        "copied:": "复制了: {0}",
+        "file_not_found:": "未找到文件: {0}",
+        "switch_language": "切换语言",
+        "set_language_success": "成功切换语言为 {0}"
     }
 }

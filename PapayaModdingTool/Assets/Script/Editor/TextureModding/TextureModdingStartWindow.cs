@@ -10,6 +10,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         public static void ShowWindow()
         {
             RecentProjectsWindow.ShowWindow(ELT("01_tool"), EditorWindowType.TextureModding);
+            Initialize();
         }
     }
 }

@@ -38,6 +38,10 @@
         "browse": "Browse Files",
         "copy": "Copy",
         "search_catalog": "Search catalog.json",
-        "failed_finding_catalog": "Failed to find catalog.json."
+        "failed_finding_catalog": "Failed to find catalog.json.",
+        "copied:": "Copied: {0}",
+        "file_not_found:": "File not found: {0}",
+        "switch_language": "Switch Language",
+        "set_language_success": "Successfully set language to {0}"
     }
 }

@@ -16,7 +16,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
     {
         private static EditorWindowType _editorWindowType;
         private string _newProjectName = "";
-        private int selectedIndex = -1;
+        private int _selectedIndex = -1;
         private List<string> _recentProjects = null;
         private List<string> _renderRecentProjects = null;
 
@@ -24,6 +24,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
         {
             GetWindow<RecentProjectsWindow>(title);
             _editorWindowType = editorWindowType;
+            Initialize();
         }
 
         private void OnGUI()
@@ -34,14 +35,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
                 _recentProjects = RecentProjectsFinder.FindRecentProjects();
                 _renderRecentProjects = _recentProjects.Select(x => Path.GetFileName(x)).ToList();
             }
-            selectedIndex = EditorGUILayout.Popup(ELT("found_projects"), selectedIndex, _renderRecentProjects.ToArray());
+            _selectedIndex = EditorGUILayout.Popup(ELT("found_projects"), _selectedIndex, _renderRecentProjects.ToArray());
 
             GUILayout.Space(20);
 
-            EditorGUI.BeginDisabledGroup(_recentProjects.Count == 0 || selectedIndex < 0);
-            if (GUILayout.Button(ELT("open_project")) && selectedIndex >= 0)
+            EditorGUI.BeginDisabledGroup(_recentProjects.Count == 0 || _selectedIndex < 0);
+            if (GUILayout.Button(ELT("open_project")) && _selectedIndex >= 0)
             {
-                string projectName = _recentProjects[selectedIndex];
+                string projectName = _recentProjects[_selectedIndex];
                 OpenEditorForProject(projectName);
             }
             EditorGUI.EndDisabledGroup();

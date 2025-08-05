@@ -54,7 +54,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWIndowHelper
                 if (GUILayout.Button(ELT("copy"), GUILayout.Width(50), GUILayout.Height(15)))
                 {
                     EditorGUIUtility.systemCopyBuffer = item;
-                    Debug.Log("Copied: " + item);
+                    Debug.Log(string.Format(ELT("copied:"), item));
                 }
                 EditorGUILayout.EndHorizontal();
             }
