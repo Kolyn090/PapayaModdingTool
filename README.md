@@ -43,3 +43,6 @@ git clone https://github.com/Kolyn090/PapayaModdingTool.git
 | [ISPCTextureCompressor](https://github.com/GameTechDev/ISPCTextureCompressor) | MIT |
 | [AddressablesTools](https://github.com/nesrak1/AddressablesTool) | 正在请求 |
 | [unity crunch](https://github.com/Unity-Technologies/crunch/tree/unity) (尚未使用) | [ZLIB](https://github.com/Unity-Technologies/crunch/tree/unity?tab=License-1-ov-file) |
+| [UABEA](https://github.com/nesrak1/UABEA) | MIT |
+| [StandaloneFileBrowser](https://github.com/gkngkc/UnityStandaloneFileBrowser) | MIT |
+| [Newtonsoft.Json-for-Unity](https://github.com/applejag/Newtonsoft.Json-for-Unity) | MIT |
