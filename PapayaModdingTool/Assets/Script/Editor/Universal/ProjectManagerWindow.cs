@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using PapayaModdingTool.Assets.Script.Misc.Localization;
+using PapayaModdingTool.Assets.Script.Editor.Universal.ProjectManagerHelper;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using UnityEditor;
 using UnityEngine;
@@ -9,9 +9,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 {
     public class ProjectManagerWindow : BaseEditorWindow
     {
-        private Language _language;
-        private Language _lastLanguage;
         private string _deleteProjectName = "";
+
+        private SwitchLanguageHelper _switchLanguageHelper;
 
         [MenuItem("Tools/__ Project Manager", false, 99)]
         public static void ShowWindow()
@@ -22,39 +22,20 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 
         private void OnEnable()
         {
-            _language = _appEnvironment.AppSettingsManager.Reader.ReadLanguage();
-            _lastLanguage = _language;
+            _switchLanguageHelper = new()
+            {
+                ELT = var => ELT(var),
+                CloseCurrWindow = Close,
+                ShowCurrWindow = ShowWindow,
+                ReadLanguage = _appEnvironment.AppSettingsManager.Reader.ReadLanguage,
+                SetLanguage = _appEnvironment.AppSettingsManager.Writer.SetLanguage
+            };
+            _switchLanguageHelper.Initialize();
         }
 
         private void OnGUI()
         {
-            // _language = (Language)EditorGUILayout.EnumPopup(ELT("switch_language"), _language);
-
-            Language[] values = (Language[])Enum.GetValues(typeof(Language));
-            string[] displayNames = Array.ConvertAll(values, v => LanguageUtil.GetDescription(v));
-
-            int selectedIndex = Array.IndexOf(values, _language);
-            int newIndex = EditorGUILayout.Popup(ELT("switch_language"), selectedIndex, displayNames);
-
-            if (newIndex != selectedIndex)
-            {
-                _language = values[newIndex];
-            }
-
-            if (_lastLanguage != _language)
-            {
-                _lastLanguage = _language;
-                bool setLanguageSuccess = _appEnvironment.AppSettingsManager.Writer.SetLanguage(_language);
-                if (setLanguageSuccess)
-                {
-                    setLanguageSuccess = false;
-                    Debug.Log(string.Format(ELT("set_language_success"), LanguageUtil.LanguageToStr(_language)));
-
-                    // ! Close and reopen the window
-                    Close();
-                    EditorApplication.delayCall += () => ShowWindow();
-                }
-            }
+            _switchLanguageHelper?.CreateSwitchLanguagePanel();
 
             GUILayout.Space(20);
 
