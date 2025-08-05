@@ -41,7 +41,7 @@ git clone https://github.com/Kolyn090/PapayaModdingTool.git
 | &nbsp;&nbsp;&nbsp;&nbsp; - [System.Runtime.CompilerServices.Unsafe](https://www.nuget.org/packages/system.runtime.compilerservices.unsafe/) | MIT |
 | [PVRTexLib](https://github.com/YingFengTingYu/PVRTexLib.NET) | MIT |
 | [ISPCTextureCompressor](https://github.com/GameTechDev/ISPCTextureCompressor) | MIT |
-| [AddressablesTools](https://github.com/nesrak1/AddressablesTool) | 正在请求 |
+| [AddressablesTools](https://github.com/nesrak1/AddressablesTools) | 正在请求 |
 | [unity crunch](https://github.com/Unity-Technologies/crunch/tree/unity) (尚未使用) | [ZLIB](https://github.com/Unity-Technologies/crunch/tree/unity?tab=License-1-ov-file) |
 | [UABEA](https://github.com/nesrak1/UABEA) | MIT |
 | [StandaloneFileBrowser](https://github.com/gkngkc/UnityStandaloneFileBrowser) | MIT |
