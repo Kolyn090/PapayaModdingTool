@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PapayaModdingTool.Assets.Script.Misc.Localization
 {
@@ -6,13 +7,32 @@ namespace PapayaModdingTool.Assets.Script.Misc.Localization
     {
         private static readonly Dictionary<string, Language> StrToLanguageTable = new()
         {
-            { "zh", Language.zh },
-            { "en", Language.en }
+            { "Simplified Chinese", Language.zh },
+            { "English", Language.en },
+            { "Spanish", Language.es }
         };
+
+        private static Dictionary<Language, string> _languageToStrTable;
+        private static Dictionary<Language, string> LanguageToStrTable
+        {
+            get
+            {
+                _languageToStrTable ??= StrToLanguageTable.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+                return _languageToStrTable;
+            }
+        }
 
         public static string LanguageToStr(Language language)
         {
-            return language.ToString().ToLower();
+            if (LanguageToStrTable.ContainsKey(language))
+            {
+                return LanguageToStrTable[language];
+            }
+            else
+            {
+                // Fall back to English
+                return LanguageToStrTable[Language.en];
+            }
         }
 
         public static Language StrToLanguage(string s)

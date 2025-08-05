@@ -14,6 +14,7 @@ public class EditorLocalization
     {
         _localizedTexts[LanguageUtil.LanguageToStr(Language.en)] = LoadTranslations(Path.Combine(PredefinedPaths.LocalizationPath, "en.json"), jsonSerializer);
         _localizedTexts[LanguageUtil.LanguageToStr(Language.zh)] = LoadTranslations(Path.Combine(PredefinedPaths.LocalizationPath, "zh.json"), jsonSerializer);
+        _localizedTexts[LanguageUtil.LanguageToStr(Language.es)] = LoadTranslations(Path.Combine(PredefinedPaths.LocalizationPath, "es.json"), jsonSerializer);
     }
 
     public IJsonObject LoadTranslations(string path, IJsonSerializer jsonSerializer)
