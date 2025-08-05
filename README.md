@@ -19,7 +19,6 @@ Project written with 💖. If you like this project please consider giving the r
 ## ✨ Features
 1. Edit game textures, without limitation! ([Bilibili video (Mandarin)](https://www.bilibili.com/video/BV1oTN7zuEm3/?share_source=copy_web&vd_source=7386bc2c7dbfc678277dc2383823cbbb))
 2. Save time and energy by making the toolkit manage the projects for you.
-3. Supports English, Simplified Chinese.
 
 ## 📦 Installation
 You will need Unity to use this project.The recommended version is 2021.3.33f1. In an empty folder, run:
@@ -27,6 +26,15 @@ You will need Unity to use this project.The recommended version is 2021.3.33f1. 
 git clone https://github.com/Kolyn090/PapayaModdingTool.git
 ```
 and in Unity open `[Your save path]\PapayaModdingTool\PapayaModdingTool` to use.
+
+## 🌐 Localization
+| Language | Translator |
+| --- | --- |
+| English | Me |
+| Simplified Chinese | Me |
+| Traditional Chinese | ai |
+| Spanish | ai |
+| Japanese | ai |
 
 ## 📄 License Agreement
 
