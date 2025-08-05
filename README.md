@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <b>Unity 模组制作</b><br>
+  <b>Unity Mods-Making</b><br>
   <i>UABE + AddressablesTools + modding tools in Unity！<br/> Allows you to effortlessly make mods in unity. It manages your projects and pursues SPEED! </i>
 </p>
 
