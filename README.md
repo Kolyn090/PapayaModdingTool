@@ -11,7 +11,7 @@
 用爱发⚡写出来的，如果你喜欢请给该项目一颗🌟，非常感谢！
 
 <a href="https://github.com/kolyn090/PapayaModdingTool/blob/main/LICENSE">
-  <img src="https://img.shields.io/github/license/kolyn090/PapayaModdingTool.svg" alt="License">
+  <img src="https://img.shields.io/github/license/kolyn090/papayamoddingtool.svg" alt="LICENSE">
 </a>
 
 
