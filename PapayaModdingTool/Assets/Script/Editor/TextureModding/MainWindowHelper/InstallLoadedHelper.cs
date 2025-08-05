@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
 using PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil;
 using PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding;
 using PapayaModdingTool.Assets.Script.Misc.AppCore;
+using PapayaModdingTool.Assets.Script.Misc.Naming;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Writer.AddressableTools;
 using UnityEditor;
@@ -32,14 +34,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper
             _catalogPath = EditorGUILayout.TextField(ELT("catalog_patch"), _catalogPath);
             if (GUILayout.Button(ELT("browse"), GUILayout.Width(60)))
             {
-                string[] results = GetAppEnvironment().Wrapper.FileBrowser.OpenFilePanel("Search catalog.json", "", new[] { "json" }, false);
+                string[] results = GetAppEnvironment().Wrapper.FileBrowser.OpenFilePanel(ELT("search_catalog"), "", new[] { "json" }, false);
                 if (results.Length > 0)
                 {
                     _catalogPath = results[0];
                 }
                 else
                 {
-                    Debug.LogWarning("Failed to find catalog.json.");
+                    Debug.LogWarning(ELT("failed_finding_catalog"));
                 }
             }
             EditorGUILayout.EndHorizontal();
@@ -76,20 +78,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper
             List<(string, string)> result = new();
 
             // Find all existing Texture assets under install loading path
-            string unityTexturePath = Path.Combine(PredefinedPaths.PapayaUnityDir,
-                                                    "Texture",
-                                                    GetProjectName());
-
-            string[] texturePaths = Directory.GetDirectories(unityTexturePath, "*", SearchOption.TopDirectoryOnly);
+            string textureProjectPath = string.Format(PredefinedPaths.PapayaTextureProjectPath, GetProjectName());
+            string[] texturePaths = Directory.GetDirectories(textureProjectPath, "*", SearchOption.TopDirectoryOnly);
             foreach (string path in texturePaths)
             {
-                string assetBundleTag = string.Join('_', new string[] {
-                    GetProjectName(),
-                    "texture",
-                    Path.GetFileName(path)
-                });
-                result.Add((assetBundleTag, Path.GetFileName(path)));
+                string fileName = Path.GetFileName(path);
+                string assetBundleTag = NameMaker.AssetBundleTag(GetProjectName(), fileName, LoadType.Texture);
+                result.Add((assetBundleTag, fileName));
                 string[] files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
+                // TODO: Not all files are tagged. Texture2D / Atlas
                 foreach (string file in files)
                 {
                     // Only assign tag if it has meta file
@@ -105,9 +102,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper
 
         private void BuildAssetBundle()
         {
-            string assetBundlesPath = Path.Combine(PredefinedPaths.PapayaUnityDir,
-                                                    "AssetBundles");
-            string savingPath = assetBundlesPath;
+            string savingPath = PredefinedPaths.AssetBundlesPath;
             AssetBundleBuilder.BuildAllAssetBundles(savingPath, _buildPlatform);
         }
 
@@ -116,16 +111,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper
         {
             // Save to External/Project/Texture/Exported
             // Load from Papaya_Unity/AssetBundles
-            string assetBundlesPath = Path.Combine(PredefinedPaths.PapayaUnityDir,
-                                                    "AssetBundles");
+            string assetBundlesPath = PredefinedPaths.AssetBundlesPath;
             foreach ((string, string) bundleFileName in bundleFileNames)
             {
                 (string bundleName, string fileName) = bundleFileName;
                 string bundlePath = Path.Combine(assetBundlesPath, bundleName);
-                string textureSavePath = Path.Combine(PredefinedPaths.ProjectsPath,
-                                                        GetProjectName(),
-                                                        fileName,
-                                                        "Texture/Exported");
+                string textureSavePath = string.Format(PredefinedPaths.ExternalFileTextureExportedFolder, GetProjectName(), fileName);
                 GetTextureAssetsLoader().LoadTextureOnly(bundlePath, textureSavePath);
             }
         }
@@ -134,8 +125,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper
         {
             // * Remove everything in the existing owning dumps first! 
 
-            string assetBundlesPath = Path.Combine(PredefinedPaths.PapayaUnityDir,
-                                                    "AssetBundles");
+            string assetBundlesPath = PredefinedPaths.AssetBundlesPath;
             foreach ((string, string) bundleFileName in bundleFileNames)
             {
                 (string bundleName, string fileName) = bundleFileName;
@@ -152,8 +142,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper
             foreach ((string, string) bundleFileName in bundleFileNames)
             {
                 (string _, string fileName) = bundleFileName;
-                string owningDumpsFolder = Path.Combine(PredefinedPaths.ProjectsPath, GetProjectName(), fileName, "Texture/Owning Dump");
-                string sourceDumpsFolder = Path.Combine(PredefinedPaths.ProjectsPath, GetProjectName(), fileName, "Texture/Source Dump");
+                string owningDumpsFolder = string.Format(PredefinedPaths.ExternalFileTextureOwningDumpFolder, GetProjectName(), fileName);
+                string sourceDumpsFolder = string.Format(PredefinedPaths.ExternalFileTextureSourceDumpFolder, GetProjectName(), fileName);
                 new SpriteDumpFixer(owningDumpsFolder, sourceDumpsFolder);
             }
         }
@@ -163,7 +153,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper
             foreach ((string, string) bundleFileName in bundleFileNames)
             {
                 (string _, string fileName) = bundleFileName;
-                string exportedPath = string.Format(PredefinedPaths.ExternalFileTextureFolder, GetProjectName(), fileName);
+                string exportedPath = string.Format(PredefinedPaths.ExternalFileTextureExportedFolder, GetProjectName(), fileName);
                 string bundlePath = _installLoadedPath;
                 GetTextureAssetsLoader().ImportTexture(bundlePath, exportedPath);
             }

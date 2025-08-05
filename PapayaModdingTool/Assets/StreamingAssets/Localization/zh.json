@@ -36,6 +36,8 @@
         "ppu": "像素单位数",
         "catalog_patch": "Catalog.json 修复路径",
         "browse": "浏览文件",
-        "copy": "拷贝"
+        "copy": "拷贝",
+        "search_catalog": "搜索 catalog.json 文件",
+        "failed_finding_catalog": "错误：未找到 catalog.json"
     }
 }

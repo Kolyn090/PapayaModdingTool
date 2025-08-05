@@ -36,6 +36,8 @@
         "ppu": "Pixel Per Unit",
         "catalog_patch": "Catalog.json Patch Path",
         "browse": "Browse Files",
-        "copy": "Copy"
+        "copy": "Copy",
+        "search_catalog": "Search catalog.json",
+        "failed_finding_catalog": "Failed to find catalog.json."
     }
 }
