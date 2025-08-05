@@ -10,6 +10,9 @@ namespace PapayaModdingTool.Assets.Script.Reader.ProjectUtil
         public static List<string> FindRecentProjects()
         {
             string searchPath = PredefinedPaths.ProjectsPath;
+            if (!Directory.Exists(searchPath))
+                Directory.CreateDirectory(searchPath);
+            
             string[] topLevelFolders = Directory.GetDirectories(searchPath, "*", SearchOption.TopDirectoryOnly);
             return topLevelFolders.ToList();
         }
