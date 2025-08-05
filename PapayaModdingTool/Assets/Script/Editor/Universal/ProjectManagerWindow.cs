@@ -28,7 +28,18 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 
         private void OnGUI()
         {
-            _language = (Language)EditorGUILayout.EnumPopup(ELT("switch_language"), _language);
+            // _language = (Language)EditorGUILayout.EnumPopup(ELT("switch_language"), _language);
+
+            Language[] values = (Language[])Enum.GetValues(typeof(Language));
+            string[] displayNames = Array.ConvertAll(values, v => LanguageUtil.GetDescription(v));
+
+            int selectedIndex = Array.IndexOf(values, _language);
+            int newIndex = EditorGUILayout.Popup(ELT("switch_language"), selectedIndex, displayNames);
+
+            if (newIndex != selectedIndex)
+            {
+                _language = values[newIndex];
+            }
 
             if (_lastLanguage != _language)
             {

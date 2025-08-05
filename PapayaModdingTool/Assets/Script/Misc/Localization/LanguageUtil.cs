@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 
 namespace PapayaModdingTool.Assets.Script.Misc.Localization
 {
@@ -8,8 +11,10 @@ namespace PapayaModdingTool.Assets.Script.Misc.Localization
         private static readonly Dictionary<string, Language> StrToLanguageTable = new()
         {
             { "Simplified Chinese", Language.zh },
+            { "Traditional Chinese", Language.zh_hant },
             { "English", Language.en },
-            { "Spanish", Language.es }
+            { "Spanish", Language.es },
+            { "Japanese", Language.ja }
         };
 
         private static Dictionary<Language, string> _languageToStrTable;
@@ -46,6 +51,14 @@ namespace PapayaModdingTool.Assets.Script.Misc.Localization
                 // Fall back to English
                 return Language.en;
             }
+        }
+
+        public static string GetDescription(Enum value)
+        {
+            FieldInfo fi = value.GetType().GetField(value.ToString());
+            DescriptionAttribute[] attributes = (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+            return (attributes.Length > 0) ? attributes[0].Description : value.ToString();
         }
     }
 }
