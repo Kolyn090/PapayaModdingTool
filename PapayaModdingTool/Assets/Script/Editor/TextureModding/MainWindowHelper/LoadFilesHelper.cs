@@ -35,7 +35,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWIndowHelper
 
             _ppu = EditorGUILayout.IntField(ELT("ppu"), _ppu);
 
-            GUILayout.Space(20);
+            GUILayout.Space(5);
 
             // Only update when necessary
             if (GetLoadedPaths == null || GetLoadedPathsChanged())

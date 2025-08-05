@@ -1,16 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
-using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
 using PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper;
 using PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWIndowHelper;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
-using PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil;
 using PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding;
-using PapayaModdingTool.Assets.Script.Editor.Writer.Universal;
-using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
-using PapayaModdingTool.Assets.Script.Writer.AddressableTools;
-using UnityEditor;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
@@ -18,16 +12,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
     public class TextureModdingMainWindow : MainWindow
     {
         private readonly ProjectLoader _projectLoader = new();
-        private static ProjectRemover _projectRemover;
         private readonly TextureAssetsLoader _textureAssetsLoader = new(_appEnvironment);
-        private string _installLoadedPath;
-        private string _catalogPath;
         private static List<string> _loadedPaths = null;
         private bool _loadedPathsChanged = true;
-        private BuildTarget _buildPlatform = BuildTarget.StandaloneWindows64;
 
         private LoadFilesHelper _loadFilesHelper;
         private RemoveLoadedHelper _removeLoadedHelper;
+        private InstallLoadedHelper _installLoadedHelper;
 
         private void OnEnable()
         {
@@ -52,6 +43,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 GetJsonSerializer = () => _appEnvironment.Wrapper.JsonSerializer,
                 GetProjectName = () => ProjectName
             };
+
+            _installLoadedHelper = new()
+            {
+                ELT = var => ELT(var),
+                GetAppEnvironment = () => _appEnvironment,
+                GetLoadedPaths = () => _loadedPaths,
+                GetProjectName = () => ProjectName,
+                GetTextureAssetsLoader = () => _textureAssetsLoader
+            };
         }
 
         public static void Open(string projectPath)
@@ -59,8 +59,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             var window = GetWindow<TextureModdingMainWindow>(Path.GetFileName(projectPath));
             window.Initialize(projectPath);
             window.Show();
-
-            _projectRemover ??= new(_appEnvironment.Wrapper.JsonSerializer);
         }
 
         protected override void OnGUI()
@@ -71,170 +69,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
 
             GUILayout.Space(20);
 
-            // * Remove
             _removeLoadedHelper.CreateRemoveLoadedPanel();
 
             GUILayout.Space(20);
 
-            // * Install
-            _buildPlatform = (BuildTarget)EditorGUILayout.EnumPopup(ELT("build_target"), _buildPlatform);
-            GUILayout.Space(5);
-            // Patch catalog.json
-            EditorGUILayout.BeginHorizontal();
-            _catalogPath = EditorGUILayout.TextField(ELT("catalog_patch"), _catalogPath);
-            if (GUILayout.Button(ELT("browse"), GUILayout.Width(60)))
-            {
-                string[] results = _appEnvironment.Wrapper.FileBrowser.OpenFilePanel("Search catalog.json", "", new[] { "json" }, false);
-                if (results.Length > 0)
-                {
-                    _catalogPath = results[0];
-                }
-                else
-                {
-                    Debug.LogWarning("Failed to find catalog.json.");
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-            GUILayout.Space(5);
-            GUILayout.Label(ELT("install_modified"), EditorStyles.boldLabel);
-            _installLoadedPath = EditorGUILayout.TextField("", _installLoadedPath);
-            bool isInstallValid = _loadedPaths.Contains(_installLoadedPath);
-            if (!isInstallValid)
-            {
-                EditorGUILayout.HelpBox(ELT("enter_exact_path_to_install"), MessageType.Info);
-            }
-            EditorGUI.BeginDisabledGroup(!isInstallValid);
-            if (GUILayout.Button(ELT("install_modified_file")))
-            {
-                List<(string, string)> tags = AssignTag();
-                BuildAssetBundle();
-                ExportTextures(tags);
-                ExportOwningDumps(tags);
-                FixSpriteDumps(tags);
-                ImportTextures(tags);
-                ImportSpriteDumps(tags);
-                if (!string.IsNullOrWhiteSpace(_catalogPath) && Directory.Exists(_catalogPath))
-                {
-                    AddrTool.PatchCrc(_catalogPath);
-                }
-            }
-            EditorGUI.EndDisabledGroup();
-        }
-
-        // Assign asset bundle tag for Texture2D / Atlas (in the future)
-        // Return the processed tags (which are the names of the built AssetBundles)
-        private List<(string, string)> AssignTag()
-        {
-            List<(string, string)> result = new();
-
-            // Find all existing Texture assets under install loading path
-            string unityTexturePath = Path.Combine(PredefinedPaths.PapayaUnityDir,
-                                                    "Texture",
-                                                    ProjectName);
-
-            string[] texturePaths = Directory.GetDirectories(unityTexturePath, "*", SearchOption.TopDirectoryOnly);
-            foreach (string path in texturePaths)
-            {
-                string assetBundleTag = string.Join('_', new string[] {
-                    ProjectName,
-                    "texture",
-                    Path.GetFileName(path)
-                });
-                result.Add((assetBundleTag, Path.GetFileName(path)));
-                string[] files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
-                foreach (string file in files)
-                {
-                    // Only assign tag if it has meta file
-                    string metaForFile = file + ".meta";
-                    if (File.Exists(metaForFile))
-                    {
-                        AssetBundleTagEditor.SetAssetBundleTag(file, assetBundleTag);
-                    }
-                }
-            }
-            return result;
-        }
-
-        private void BuildAssetBundle()
-        {
-            string assetBundlesPath = Path.Combine(PredefinedPaths.PapayaUnityDir,
-                                                    "AssetBundles");
-            string savingPath = assetBundlesPath;
-            AssetBundleBuilder.BuildAllAssetBundles(savingPath, _buildPlatform);
-        }
-
-        // Export the Texture from the AssetBundle created by program to External
-        private void ExportTextures(List<(string, string)> bundleFileNames)
-        {
-            // Save to External/Project/Texture/Exported
-            // Load from Papaya_Unity/AssetBundles
-            string assetBundlesPath = Path.Combine(PredefinedPaths.PapayaUnityDir,
-                                                    "AssetBundles");
-            foreach ((string, string) bundleFileName in bundleFileNames)
-            {
-                (string bundleName, string fileName) = bundleFileName;
-                string bundlePath = Path.Combine(assetBundlesPath, bundleName);
-                string textureSavePath = Path.Combine(PredefinedPaths.ProjectsPath,
-                                                        ProjectName,
-                                                        fileName,
-                                                        "Texture/Exported");
-                _textureAssetsLoader.LoadTextureOnly(bundlePath, textureSavePath);
-            }
-        }
-
-        private void ExportOwningDumps(List<(string, string)> bundleFileNames)
-        {
-            // * Remove everything in the existing owning dumps first! 
-
-            string assetBundlesPath = Path.Combine(PredefinedPaths.PapayaUnityDir,
-                                                    "AssetBundles");
-            foreach ((string, string) bundleFileName in bundleFileNames)
-            {
-                (string bundleName, string fileName) = bundleFileName;
-                string owningDumpsFolder = string.Format(PredefinedPaths.ExternalFileTextureOwningDumpFolder, ProjectName, fileName);
-                PathUtils.DeleteAllContents(owningDumpsFolder);
-
-                string bundlePath = Path.Combine(assetBundlesPath, bundleName);
-                _textureAssetsLoader.ExportSpriteDumpsOnly(bundlePath, fileName, ProjectName);
-            }
-        }
-
-        private void FixSpriteDumps(List<(string, string)> bundleFileNames)
-        {
-            foreach ((string, string) bundleFileName in bundleFileNames)
-            {
-                (string _, string fileName) = bundleFileName;
-                string owningDumpsFolder = Path.Combine(PredefinedPaths.ProjectsPath, ProjectName, fileName, "Texture/Owning Dump");
-                string sourceDumpsFolder = Path.Combine(PredefinedPaths.ProjectsPath, ProjectName, fileName, "Texture/Source Dump");
-                new SpriteDumpFixer(owningDumpsFolder, sourceDumpsFolder);
-            }
-        }
-
-        private void ImportTextures(List<(string, string)> bundleFileNames)
-        {
-            foreach ((string, string) bundleFileName in bundleFileNames)
-            {
-                (string _, string fileName) = bundleFileName;
-                string exportedPath = string.Format(PredefinedPaths.ExternalFileTextureFolder, ProjectName, fileName);
-                string bundlePath = _installLoadedPath;
-                _textureAssetsLoader.ImportTexture(bundlePath, exportedPath);
-            }
-        }
-
-        private void ImportSpriteDumps(List<(string, string)> bundleFileNames)
-        {
-            // The path-id is in the end of the json dump file
-            // Need to split
-
-            // use install loaded file to find the original bundle
-            foreach ((string, string) bundleFileName in bundleFileNames)
-            {
-                (string _, string fileName) = bundleFileName;
-                string owningDumpsFolder = string.Format(PredefinedPaths.ExternalFileTextureOwningDumpFolder, ProjectName, fileName);
-                string bundlePath = _installLoadedPath;
-                // import the sprite dumps from owning dumps
-                _textureAssetsLoader.ImportFixedSpriteDumps(bundlePath, owningDumpsFolder);
-            }
+            _installLoadedHelper.CreateInstallLoadedPanel();
         }
     }
 }
