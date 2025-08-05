@@ -42,7 +42,7 @@ and in Unity open `[Your save path]\PapayaModdingTool\PapayaModdingTool` to use.
 | &nbsp;&nbsp;&nbsp;&nbsp; - [System.Runtime.CompilerServices.Unsafe](https://www.nuget.org/packages/system.runtime.compilerservices.unsafe/) | MIT |
 | [PVRTexLib](https://github.com/YingFengTingYu/PVRTexLib.NET) | MIT |
 | [ISPCTextureCompressor](https://github.com/GameTechDev/ISPCTextureCompressor) | MIT |
-| [AddressablesTools](https://github.com/nesrak1/AddressablesTools) | Requesting |
+| [AddressablesTools](https://github.com/nesrak1/AddressablesTools) | MIT |
 | [unity crunch](https://github.com/Unity-Technologies/crunch/tree/unity) (Unused) | [ZLIB](https://github.com/Unity-Technologies/crunch/tree/unity?tab=License-1-ov-file) |
 | [UABEA](https://github.com/nesrak1/UABEA) | MIT |
 | [StandaloneFileBrowser](https://github.com/gkngkc/UnityStandaloneFileBrowser) | MIT |
