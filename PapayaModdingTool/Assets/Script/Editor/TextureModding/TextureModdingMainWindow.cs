@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using PapayaModdingTool.Assets.Script.DataStruct.FileRead;
+using PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper;
 using PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWIndowHelper;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil;
@@ -19,7 +20,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         private readonly ProjectLoader _projectLoader = new();
         private static ProjectRemover _projectRemover;
         private readonly TextureAssetsLoader _textureAssetsLoader = new(_appEnvironment);
-        private string _removeLoadedPath;
         private string _installLoadedPath;
         private string _catalogPath;
         private static List<string> _loadedPaths = null;
@@ -27,8 +27,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         private BuildTarget _buildPlatform = BuildTarget.StandaloneWindows64;
 
         private LoadFilesHelper _loadFilesHelper;
+        private RemoveLoadedHelper _removeLoadedHelper;
 
-        private void OnEnable() {
+        private void OnEnable()
+        {
             _loadFilesHelper = new()
             {
                 GetLoadedPaths = () => _loadedPaths,
@@ -40,6 +42,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 GetTextureAssetsLoader = () => _textureAssetsLoader,
                 GetAppEnvironment = () => _appEnvironment,
                 ELT = var => ELT(var)
+            };
+
+            _removeLoadedHelper = new()
+            {
+                ELT = var => ELT(var),
+                GetLoadedPaths = () => _loadedPaths,
+                SetLoadedPathsChangedToTrue = () => _loadedPathsChanged = true,
+                GetJsonSerializer = () => _appEnvironment.Wrapper.JsonSerializer,
+                GetProjectName = () => ProjectName
             };
         }
 
@@ -61,20 +72,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
             GUILayout.Space(20);
 
             // * Remove
-            GUILayout.Label(ELT("remove_loaded"), EditorStyles.boldLabel);
-            _removeLoadedPath = EditorGUILayout.TextField("", _removeLoadedPath);
-            bool isRemoveValid = _loadedPaths.Contains(_removeLoadedPath);
-            if (!isRemoveValid)
-            {
-                EditorGUILayout.HelpBox(ELT("enter_exact_path_to_delete"), MessageType.Info);
-            }
-            EditorGUI.BeginDisabledGroup(!isRemoveValid);
-            if (GUILayout.Button(ELT("remove_file")))
-            {
-                RemoveTypedFile();
-                _loadedPathsChanged = true;
-            }
-            EditorGUI.EndDisabledGroup();
+            _removeLoadedHelper.CreateRemoveLoadedPanel();
 
             GUILayout.Space(20);
 
@@ -121,33 +119,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
                 }
             }
             EditorGUI.EndDisabledGroup();
-        }
-
-        // private void LoadNewFile()
-        // {
-        //     LoadFileInfo? loadInfo = _projectWriter.LoadNewFile(ProjectName,
-        //                                 _appEnvironment.Wrapper.FileBrowser,
-        //                                 _appEnvironment.Wrapper.JsonSerializer,
-        //                                 LoadType.Texture);
-        //     if (loadInfo == null)
-        //         return;
-
-        //     AttemptToLoadTexture((LoadFileInfo)loadInfo);
-        //     _loadedPathsChanged = true;
-        // }
-
-        // private void AttemptToLoadTexture(LoadFileInfo loadInfo)
-        // {
-        //     string textureDir = PredefinedPaths.PapayaTextureDir;
-        //     string textureSaveDir = Path.Combine(textureDir, ProjectName, loadInfo.folder);
-        //     if (!Directory.Exists(textureSaveDir))
-        //         Directory.CreateDirectory(textureSaveDir);
-        //     _textureAssetsLoader.LoadTextureAssets(loadInfo, ProjectName, textureSaveDir, _ppu);
-        // }
-
-        private void RemoveTypedFile()
-        {
-            _projectRemover.RemoveFileFromProject(_removeLoadedPath, ProjectName, LoadType.Texture);
         }
 
         // Assign asset bundle tag for Texture2D / Atlas (in the future)
