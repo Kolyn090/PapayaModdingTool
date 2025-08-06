@@ -135,7 +135,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.Universal
             foreach (var filePath in files)
             {
                 string fileName = Path.GetFileName(filePath);
-                if (fileName.StartsWith(removePrefix))
+                if (fileName.StartsWith(removePrefix)) // TODO: this will not work in case of 'abc' and 'abc2', delete 1 will also delete 2
                 {
                     try
                     {

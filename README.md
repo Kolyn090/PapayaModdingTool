@@ -4,7 +4,7 @@
 
 <p align="center">
   <b>Unity Mods-Making</b><br>
-  <i>UABE + AddressablesTools + modding tools in Unity！<br/> Allows you to effortlessly make mods in unity. It manages your projects and pursues SPEED! </i>
+  <i>UABEA + AddressablesTools + modding tools in Unity！<br/> Allows you to effortlessly make mods in unity. It manages your projects and pursues SPEED! </i>
 </p>
 
 👉 中文版在[这里](./README_zh.md)！
