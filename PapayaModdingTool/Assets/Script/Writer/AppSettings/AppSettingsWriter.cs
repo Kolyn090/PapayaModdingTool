@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using PapayaModdingTool.Assets.Script.Misc.Localization;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
