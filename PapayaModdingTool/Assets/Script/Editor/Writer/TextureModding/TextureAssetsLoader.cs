@@ -88,8 +88,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                 string dumpFileName = baseField["m_Name"].AsString + "-" +
                                         cabCode + "-" +
                                         spriteInfo.PathId.ToString() + ".json";
-                string writePath = Path.Combine(sourceDumpsPath, dumpFileName);
-                AssetTypeValueField spriteField = _dumpImportExport.SingleExportJsonDumpInBundle(assetsInst, spriteInfo.PathId, writePath);
+                string writePath = PathUtils.ToLongPath(Path.Combine(sourceDumpsPath, dumpFileName));
+                _dumpImportExport.SingleExportJsonDumpInBundle(assetsInst, spriteInfo.PathId, writePath);
                 // spriteFields.Add(spriteField);
             }
 
@@ -97,7 +97,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
             Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(textureFullPath);
 
             // Use dumps to slice the texture
-            SpritesheetFromDump spritesheetFromDump = new(texture, sourceDumpsPath, gamePPU: gamePPU);
+            SpritesheetFromDump spritesheetFromDump = new(texture, PathUtils.ToLongPath(sourceDumpsPath), gamePPU: gamePPU);
             spritesheetFromDump.Import();
         }
 

@@ -22,7 +22,7 @@ namespace PapayaModdingTool.Assets.Script.Reader.ProjectUtil
             string jsonContent = File.ReadAllText(infoJsonPath);
             IJsonObject jsonObject = jsonSerializer.DeserializeToObject(jsonContent);
             List<IJsonObject> loaded = jsonObject.GetArray("loaded");
-            return loaded.Select(x => x.GetString("absolute_path")).ToList();
+            return loaded.Select(x => PathUtils.ToLongPath(x.GetString("absolute_path"))).ToList();
         }
     }
 }

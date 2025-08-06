@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,7 +12,7 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         private static extern uint GetLongPathName(string shortPath, StringBuilder longPath, uint bufferLength);
 
-        public static string GetLongPath(string shortPath)
+        public static string GetRawPath(string shortPath)
         {
             if (!Directory.Exists(shortPath) && !File.Exists(shortPath))
             {
@@ -24,7 +25,7 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
 
             if (result == 0)
             {
-                Debug.LogWarning("GetLongPathName failed for: " + shortPath);
+                Debug.LogWarning("GetRawPathName failed for: " + shortPath);
                 return shortPath;
             }
 
@@ -75,6 +76,30 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
             int splitIndex = lastMatch.Index;
 
             return (input[..splitIndex], input[splitIndex..]);
+        }
+
+        public static string ToLongPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Path cannot be null or empty.", nameof(path));
+
+            // Normalize to full absolute path
+            path = Path.GetFullPath(path);
+
+            // Already long path?
+            if (path.StartsWith(@"\\?\") || path.StartsWith(@"\\.\"))
+                return path;
+
+            if (path.StartsWith(@"\\"))
+            {
+                // UNC path (e.g. \\server\share)
+                return @"\\?\UNC\" + path[2..];
+            }
+            else
+            {
+                // Local path (e.g. C:\folder\file)
+                return @"\\?\" + path;
+            }
         }
     }
 }
