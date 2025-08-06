@@ -28,7 +28,7 @@ namespace PapayaModdingTool.Assets.Script.Reader.AppSettings
             if (settings == null)
                 return Language.en; // Fall back to en
             
-            string language = settings.GetString("language");
+            string language = settings.GetObject("settings").GetString("language");
             return LanguageUtil.StrToLanguage(language);
         }
 
@@ -39,6 +39,9 @@ namespace PapayaModdingTool.Assets.Script.Reader.AppSettings
                 return null;
 
             string content = File.ReadAllText(settingsFile);
+            if (string.IsNullOrWhiteSpace(content.Trim()))
+                return null;
+
             IJsonObject deserialized = _jsonSerializer.DeserializeToObject(content);
             return deserialized;
         }

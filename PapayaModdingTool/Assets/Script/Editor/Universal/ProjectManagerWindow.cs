@@ -12,6 +12,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
         private SwitchLanguageHelper _switchLanguageHelper;
         private DeleteProjectHelper _deleteProjectHelper;
 
+        private bool _hasInit = false;
+
         [MenuItem("Tools/__ Project Manager", false, 99)]
         public static void ShowWindow()
         {
@@ -36,10 +38,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
                 ELT = var => ELT(var),
                 GetProjectRemover = () => _projectRemover
             };
+
+            _hasInit = true;
         }
 
         private void OnGUI()
         {
+            if (!_hasInit)
+                OnEnable();
+
             _switchLanguageHelper?.CreateSwitchLanguagePanel();
 
             GUILayout.Space(20);

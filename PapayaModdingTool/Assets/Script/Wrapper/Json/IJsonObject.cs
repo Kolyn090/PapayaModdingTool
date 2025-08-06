@@ -19,5 +19,6 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.Json
         public List<string> GetStringArray(string key);
         public bool SetString(string key, string val);
         public bool SetArray(string key, List<IJsonObject> values);
+        public bool SetObject(string key, IJsonObject value);
     }
 }
