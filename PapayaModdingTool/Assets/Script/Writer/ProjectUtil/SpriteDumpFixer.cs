@@ -35,7 +35,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil
             string[] sourceJsonFiles = Directory.GetFiles(_sourceSpriteDumpsFolderPath, "*.json", SearchOption.TopDirectoryOnly);
             foreach (string jsonFile in sourceJsonFiles)
             {
-                JObject spriteJson = JObject.Parse(File.ReadAllText(jsonFile));
+                JObject spriteJson = JObject.Parse(File.ReadAllText(PathUtils.ToLongPath(jsonFile)));
                 if (spriteJson.ContainsKey("m_Rect")) // Make sure it's a Sprite Dump File
                 {
                     string fileName = Path.GetFileName(jsonFile);
@@ -49,7 +49,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil
             string[] owningJsonFiles = Directory.GetFiles(_owningSpriteDumpsFolderPath, "*.json", SearchOption.TopDirectoryOnly);
             foreach (string jsonFile in owningJsonFiles)
             {
-                JObject spriteJson = JObject.Parse(File.ReadAllText(jsonFile));
+                JObject spriteJson = JObject.Parse(File.ReadAllText(PathUtils.ToLongPath(jsonFile)));
                 if (spriteJson.ContainsKey("m_Rect")) // Make sure it's a Sprite Dump File
                 {
                     string fileName = Path.GetFileName(jsonFile);
@@ -79,7 +79,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil
             long? replacePathID = null;
             foreach (string jsonFile in sourceJsonFiles)
             {
-                JObject spriteJson = JObject.Parse(File.ReadAllText(jsonFile));
+                JObject spriteJson = JObject.Parse(File.ReadAllText(PathUtils.ToLongPath(jsonFile)));
                 if (spriteJson.ContainsKey("m_Rect")) // Make sure it's a Sprite Dump File
                 {
                     replacePathID = long.Parse(spriteJson["m_RD"]["texture"]["m_PathID"].ToString());
@@ -97,13 +97,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.ProjectUtil
             string[] jsonFiles = Directory.GetFiles(_owningSpriteDumpsFolderPath, "*.json", SearchOption.TopDirectoryOnly);
             foreach (string jsonFile in jsonFiles)
             {
-                JObject spriteJson = JObject.Parse(File.ReadAllText(jsonFile));
+                JObject spriteJson = JObject.Parse(File.ReadAllText(PathUtils.ToLongPath(jsonFile)));
                 if (spriteJson.ContainsKey("m_Rect")) // Make sure it's a Sprite Dump File
                 {
                     spriteJson["m_RD"]["texture"]["m_PathID"] = replacePathID;
                     numOfSuccess++;
                 }
-                File.WriteAllText(jsonFile, JsonConvert.SerializeObject(spriteJson, Formatting.Indented));
+                File.WriteAllText(PathUtils.ToLongPath(jsonFile), JsonConvert.SerializeObject(spriteJson, Formatting.Indented));
             }
 
             Debug.Log($"Fixed Path ID of {numOfSuccess} Sprite Dump Files in {_owningSpriteDumpsFolderPath}.");

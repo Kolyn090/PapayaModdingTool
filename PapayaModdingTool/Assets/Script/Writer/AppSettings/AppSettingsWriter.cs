@@ -25,8 +25,10 @@ namespace PapayaModdingTool.Assets.Script.Writer.AppSettings
         private bool WriteToSettings(string field, string value)
         {
             IJsonObject settings = ReadExternalSettings();
-            bool writeSuccess = settings.SetString(field, value);
+            IJsonObject settingsField = settings.GetObject("settings");
+            bool writeSuccess = settingsField.SetString(field, value);
             if (!writeSuccess) return false;
+            settings.SetObject("settings", settingsField);
             string serialized = _jsonSerializer.SerializeNoFirstLayer(settings);
             File.WriteAllText(PredefinedPaths.AppSettingsFile, serialized);
             return true;
@@ -41,10 +43,10 @@ namespace PapayaModdingTool.Assets.Script.Writer.AppSettings
             }
             if (!File.Exists(settingsFile))
             {
-                File.Create(settingsFile);
+                using (File.Create(settingsFile)) { }
             }
 
-            string content = File.ReadAllText(settingsFile);
+            string content = File.ReadAllText(settingsFile).Trim();
             if (string.IsNullOrWhiteSpace(content))
                 content = MakeNewSettingsContent();
             IJsonObject deserialized = _jsonSerializer.DeserializeToObject(content);
@@ -53,7 +55,7 @@ namespace PapayaModdingTool.Assets.Script.Writer.AppSettings
 
         private string MakeNewSettingsContent()
         {
-            return "{ \"settings\": {}}";
+            return "{ \"settings\": { \"language\": \"English\"}}";
         }
     }
 }

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using AssetsTools.NET;
 using AssetsTools.NET.Extra;
+using PapayaModdingTool.Assets.Script.Misc.Paths;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Writer
@@ -25,7 +26,7 @@ namespace PapayaModdingTool.Assets.Script.Writer
             AssetTypeValueField baseField = _assetsManager.GetBaseField(assetsInst, info);
             AssetImportExport exporter = new();
 
-            using (FileStream fs = File.Open(writeTo, FileMode.Create))
+            using (FileStream fs = File.Open(PathUtils.ToLongPath(writeTo), FileMode.Create))
             using (StreamWriter sw = new(fs))
             {
                 exporter.DumpJsonAsset(sw, baseField);
@@ -94,7 +95,7 @@ namespace PapayaModdingTool.Assets.Script.Writer
             {
                 (long pathID, string replaceFilePath) = item;
                 AssetFileInfo info = assetsInst.file.GetAssetInfo(pathID);
-                using (FileStream fs = File.OpenRead(replaceFilePath))
+                using (FileStream fs = File.OpenRead(PathUtils.ToLongPath(replaceFilePath)))
                 using (StreamReader sr = new(fs))
                 {
                     AssetImportExport importer = new();

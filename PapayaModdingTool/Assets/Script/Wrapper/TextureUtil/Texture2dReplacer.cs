@@ -4,6 +4,7 @@ using AssetsTools.NET;
 using AssetsTools.NET.Extra;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using PapayaModdingTool.Assets.Script.Misc.Paths;
 using UnityEngine;
 
 using TextureFormat = AssetsTools.NET.Texture.TextureFormat;
@@ -34,7 +35,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
             // EditDialog.axaml.cs - BtnSave_Click
             uint platform = assetInst.file.Metadata.TargetPlatform;
             byte[] platformBlob = textureHelper.GetPlatformBlob(texBase);
-            Image<Rgba32> imgToImport = Image.Load<Rgba32>(textureImagePath);
+            Image<Rgba32> imgToImport = Image.Load<Rgba32>(PathUtils.ToLongPath(textureImagePath));
             int format = texBase["m_TextureFormat"].AsInt;
 
             int mips = 1;

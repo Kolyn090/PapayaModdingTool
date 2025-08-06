@@ -23,7 +23,7 @@ namespace PapayaModdingTool.Assets.Script.Writer.ProjectUtil
             }
             else
             {
-                string selection = PathUtils.GetLongPath(selections[0]);
+                string selection = PathUtils.GetRawPath(selections[0]);
                 string fileFolderName = Path.GetFileName(selection).Replace(".", "_"); // !!! Assume name won't have duplicate
 
                 // Read info.json
@@ -51,7 +51,7 @@ namespace PapayaModdingTool.Assets.Script.Writer.ProjectUtil
 
                 LoadFileInfo loadFileInfo = new()
                 {
-                    absolute_path = selection,
+                    absolute_path = PathUtils.ToLongPath(selection),
                     folder = fileFolderName,
                     type = loadType.ToString()
                 };

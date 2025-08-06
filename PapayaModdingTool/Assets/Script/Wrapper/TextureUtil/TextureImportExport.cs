@@ -1,6 +1,7 @@
 using System.IO;
 using AssetsTools.NET.Texture;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
+using PapayaModdingTool.Assets.Script.Misc.Paths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Tga;
 using SixLabors.ImageSharp.PixelFormats;
@@ -156,7 +157,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
             switch (ext)
             {
                 case ".png":
-                    image.SaveAsPng(path);
+                    image.SaveAsPng(PathUtils.ToLongPath(path));
                     break;
                 case ".tga":
                     var encoder = new TgaEncoder() { BitsPerPixel = TgaBitsPerPixel.Pixel32 };
