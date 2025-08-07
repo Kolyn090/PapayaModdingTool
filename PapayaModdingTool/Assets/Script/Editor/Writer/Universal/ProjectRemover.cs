@@ -129,7 +129,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.Universal
 
             // From AssetBundle
             string assetBundlePath = Path.Combine(PredefinedPaths.PapayaUnityDir, "AssetBundles");
-            string removePrefix = projectName + "_" + loadType.ToString().ToLower();
+            string removePrefix = projectName + "_" + loadType.ToString();
             var files = Directory.GetFiles(assetBundlePath);
 
             foreach (var filePath in files)

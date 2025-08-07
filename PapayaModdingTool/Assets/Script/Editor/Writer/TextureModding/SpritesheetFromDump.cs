@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
+using PapayaModdingTool.Assets.Script.Misc.Paths;
 using UnityEditor;
 using UnityEngine;
 
@@ -347,7 +348,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
             }
 
             // Read and process meta file lines
-            string[] lines = File.ReadAllLines(metaPath);
+            string[] lines = File.ReadAllLines(PathUtils.ToLongPath(metaPath));
             List<string> newLines = new();
             bool insideTable = false;
             int removed = 0;
@@ -388,7 +389,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding
                 }
             }
 
-            File.WriteAllLines(metaPath, newLines);
+            File.WriteAllLines(PathUtils.ToLongPath(metaPath), newLines);
             Debug.Log($"Cleaned {removed} dangling entries from nameFileIdTable in: {metaPath}");
 
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
