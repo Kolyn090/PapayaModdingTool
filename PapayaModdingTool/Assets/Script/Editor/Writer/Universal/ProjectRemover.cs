@@ -128,26 +128,26 @@ namespace PapayaModdingTool.Assets.Script.Editor.Writer.Universal
             File.WriteAllText(infoJsonPath, jsonContent);
 
             // From AssetBundle
-            string assetBundlePath = Path.Combine(PredefinedPaths.PapayaUnityDir, "AssetBundles");
-            string removePrefix = projectName + "_" + loadType.ToString();
-            var files = Directory.GetFiles(assetBundlePath);
+            // string assetBundlePath = Path.Combine(PredefinedPaths.PapayaUnityDir, "AssetBundles");
+            // string removePrefix = projectName + "_" + loadType.ToString();
+            // var files = Directory.GetFiles(assetBundlePath);
 
-            foreach (var filePath in files)
-            {
-                string fileName = Path.GetFileName(filePath);
-                if (fileName.StartsWith(removePrefix)) // TODO: this will not work in case of 'abc' and 'abc2', delete 1 will also delete 2
-                {
-                    try
-                    {
-                        File.Delete(filePath);
-                        Debug.Log($"Deleted file: {filePath}");
-                    }
-                    catch (IOException ex)
-                    {
-                        Debug.LogError($"Failed to delete {filePath}: {ex.Message}");
-                    }
-                }
-            }
+            // foreach (var filePath in files)
+            // {
+            //     string fileName = Path.GetFileName(filePath);
+            //     if (fileName.StartsWith(removePrefix)) // TODO: this will not work in case of 'abc' and 'abc2', delete 1 will also delete 2
+            //     {
+            //         try
+            //         {
+            //             File.Delete(filePath);
+            //             Debug.Log($"Deleted file: {filePath}");
+            //         }
+            //         catch (IOException ex)
+            //         {
+            //             Debug.LogError($"Failed to delete {filePath}: {ex.Message}");
+            //         }
+            //     }
+            // }
         }
     }
 }
