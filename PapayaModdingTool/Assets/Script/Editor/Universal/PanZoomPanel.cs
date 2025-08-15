@@ -5,8 +5,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 {
     public class PanZoomPanel
     {
-        private const float ZOOM_MIN = 0.2f;
-        private const float ZOOM_MAX = 2.0f;
+        private const float ZOOM_MIN = 0.5f;
+        private const float ZOOM_MAX = 4.0f;
 
         private Vector2 _panOffset;
         private readonly float _panFactor = 1.5f;
