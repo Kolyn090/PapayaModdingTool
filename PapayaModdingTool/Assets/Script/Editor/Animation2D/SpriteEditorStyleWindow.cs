@@ -35,28 +35,26 @@ public class SpriteEditorPanelUI : EditorWindow
         GUILayout.BeginHorizontal();
 
         Rect previewRect = new Rect(50, 150, 400, 300);
-        Vector2 previewCenter = new Vector2(previewRect.width * 0.5f, previewRect.height * 0.5f);
 
-        float oldZoom = zoom;
-
+        // Zoom In
         if (GUILayout.Button("Zoom In"))
         {
-            zoom = Mathf.Min(zoom * 1.2f, ZOOM_MAX);
-            panOffset += (previewCenter - panOffset) * (1 - oldZoom / zoom);
+            ZoomAtCenter(1.2f, previewRect);
         }
 
+        // Zoom Out
         if (GUILayout.Button("Zoom Out"))
         {
-            zoom = Mathf.Max(zoom / 1.2f, ZOOM_MIN);
-            panOffset += (previewCenter - panOffset) * (1 - oldZoom / zoom);
+            ZoomAtCenter(1f / 1.2f, previewRect);
         }
 
         GUILayout.EndHorizontal();
 
-        // Limit pan based on zoomed texture size
+        // Compute pan bounds based on zoomed image size
         float panWidth = Mathf.Max(testTexture.width * zoom - previewRect.width, 0f) / 2f;
         float panHeight = Mathf.Max(testTexture.height * zoom - previewRect.height, 0f) / 2f;
 
+        // Pan sliders
         panOffset.x = EditorGUILayout.Slider("Pan X", panOffset.x, -panWidth, panWidth);
         panOffset.y = EditorGUILayout.Slider("Pan Y", panOffset.y, -panHeight, panHeight);
 
@@ -68,6 +66,40 @@ public class SpriteEditorPanelUI : EditorWindow
         UpdatePreviewTexture((int)previewRect.width, (int)previewRect.height);
         GUI.DrawTexture(new Rect(0, 0, previewRect.width, previewRect.height), previewTexture, ScaleMode.StretchToFill, true);
         GUI.EndGroup();
+    }
+
+    private void ZoomAtCenter(float zoomFactor, Rect previewRect)
+    {
+        float oldZoom = zoom;
+        zoom = Mathf.Clamp(zoom * zoomFactor, ZOOM_MIN, ZOOM_MAX);
+
+        // Compute half sizes
+        Vector2 halfPreview = new Vector2(previewRect.width, previewRect.height) * 0.5f;
+        Vector2 halfImageOld = new Vector2(testTexture.width, testTexture.height) * 0.5f * oldZoom;
+        Vector2 halfImageNew = new Vector2(testTexture.width, testTexture.height) * 0.5f * zoom;
+
+        // Compute old min/max pan
+        float oldPanMinX = halfPreview.x - halfImageOld.x;
+        float oldPanMaxX = halfImageOld.x - halfPreview.x;
+        float oldPanMinY = halfPreview.y - halfImageOld.y;
+        float oldPanMaxY = halfImageOld.y - halfPreview.y;
+
+        // Compute new min/max pan
+        float newPanMinX = halfPreview.x - halfImageNew.x;
+        float newPanMaxX = halfImageNew.x - halfPreview.x;
+        float newPanMinY = halfPreview.y - halfImageNew.y;
+        float newPanMaxY = halfImageNew.y - halfPreview.y;
+
+        // Adjust panOffset to preserve edge-relative position
+        float tX = (panOffset.x - oldPanMinX) / (oldPanMaxX - oldPanMinX);
+        float tY = (panOffset.y - oldPanMinY) / (oldPanMaxY - oldPanMinY);
+
+        panOffset.x = Mathf.Lerp(newPanMinX, newPanMaxX, tX);
+        panOffset.y = Mathf.Lerp(newPanMinY, newPanMaxY, tY);
+
+        // Clamp again to be safe
+        panOffset.x = Mathf.Clamp(panOffset.x, newPanMinX, newPanMaxX);
+        panOffset.y = Mathf.Clamp(panOffset.y, newPanMinY, newPanMaxY);
     }
 
     private void UpdatePreviewTexture(int previewWidth, int previewHeight)
