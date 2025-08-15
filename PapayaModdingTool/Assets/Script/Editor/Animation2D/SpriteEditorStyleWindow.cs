@@ -40,6 +40,8 @@ public class SpriteEditorPanelUI : EditorWindow
             Color.gray * 0.4f, Color.gray * 0.6f
         });
         checkerTexture.Apply();
+
+        panOffset = new(0, -testTexture.height / 2);
     }
 
     private void OnGUI()
