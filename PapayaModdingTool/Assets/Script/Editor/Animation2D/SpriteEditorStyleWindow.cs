@@ -12,6 +12,8 @@ public class SpriteEditorPanelUI : EditorWindow
     private float zoom = 1f;
     private const float ZOOM_MIN = 1f;
     private const float ZOOM_MAX = 4f;
+    private Texture2D checkerTexture;
+
 
     [MenuItem("Window/SpriteEditor UI Controls")]
     public static void Open() => GetWindow<SpriteEditorPanelUI>("Sprite Editor UI");
@@ -27,6 +29,17 @@ public class SpriteEditorPanelUI : EditorWindow
         testTexture.LoadImage(imageData);
         testTexture.Apply();
         testTexture.filterMode = FilterMode.Point;
+
+        // Create checker texture
+        checkerTexture = new Texture2D(2, 2);
+        checkerTexture.filterMode = FilterMode.Point;
+        checkerTexture.wrapMode = TextureWrapMode.Repeat;
+        checkerTexture.SetPixels(new Color[]
+        {
+            Color.gray * 0.6f, Color.gray * 0.4f,
+            Color.gray * 0.4f, Color.gray * 0.6f
+        });
+        checkerTexture.Apply();
     }
 
     private void OnGUI()
@@ -63,6 +76,12 @@ public class SpriteEditorPanelUI : EditorWindow
 
         // Update and draw the preview texture
         GUI.BeginGroup(previewRect);
+        GUI.DrawTextureWithTexCoords(
+            new Rect(0, 0, previewRect.width, previewRect.height),
+            checkerTexture,
+            new Rect(0, 0, previewRect.width / 16f, previewRect.height / 16f) 
+        );
+
         UpdatePreviewTexture((int)previewRect.width, (int)previewRect.height);
         GUI.DrawTexture(new Rect(0, 0, previewRect.width, previewRect.height), previewTexture, ScaleMode.StretchToFill, true);
         GUI.EndGroup();
