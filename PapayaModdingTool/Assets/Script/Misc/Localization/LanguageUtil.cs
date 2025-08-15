@@ -12,10 +12,10 @@ namespace PapayaModdingTool.Assets.Script.Misc.Localization
         private static readonly Dictionary<string, Language> StrToLanguageTable = new()
         {
             { "Simplified Chinese", Language.zh },
-            { "Traditional Chinese", Language.zh_hant },
             { "English", Language.en },
-            { "Spanish", Language.es },
-            { "Japanese", Language.ja }
+            // { "Traditional Chinese", Language.zh_hant },
+            // { "Spanish", Language.es },
+            // { "Japanese", Language.ja }
         };
 
         private static Dictionary<Language, string> _languageToStrTable;

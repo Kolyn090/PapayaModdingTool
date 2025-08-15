@@ -3,6 +3,7 @@
     "translations": {
         "dev_only": "Warning: This interface is for the tool developer only! For your safety, please close this window.",
         "01_tool": "01 Texture Modding",
+        "02_tool": "02 2D Animation",
         "found_projects": "Found Projects",
         "open_project": "Open",
         "create_new_project": "Create New",

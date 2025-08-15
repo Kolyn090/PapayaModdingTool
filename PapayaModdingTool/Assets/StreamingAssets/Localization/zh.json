@@ -3,6 +3,7 @@
     "translations": {
         "dev_only": "警告：该界面是为工具开发者设计的！为了你的安全请关闭该窗口。",
         "01_tool": "01 材质编辑",
+        "02_tool": "02 2D动画",
         "found_projects": "找到的项目",
         "open_project": "打开",
         "create_new_project": "创建",

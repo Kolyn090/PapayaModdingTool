@@ -9,7 +9,7 @@ using PapayaModdingTool.Assets.Script.Writer.ProjectUtil;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWIndowHelper
+namespace PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper
 {
     public class LoadFilesHelper
     {

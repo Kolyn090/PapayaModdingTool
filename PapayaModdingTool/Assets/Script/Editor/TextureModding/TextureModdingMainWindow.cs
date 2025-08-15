@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWindowHelper;
-using PapayaModdingTool.Assets.Script.Editor.TextureModding.MainWIndowHelper;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using PapayaModdingTool.Assets.Script.Editor.Writer.TextureModding;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
