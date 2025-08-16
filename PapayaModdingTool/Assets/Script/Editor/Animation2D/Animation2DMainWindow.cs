@@ -27,7 +27,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                 GetTexture = () => _previewTexture,
                 ELT = var => ELT(var)
             };
-            _previewPanel.Initialize(new(800, 100, 350, 600));
+            _previewPanel.Initialize(new(800, 10, 350, 800));
+            _previewPanel.SetPanOffset(new(0, _previewTexture != null ? -_previewTexture.height / 2f : 0f));
         }
 
         public static void Open(string projectPath)

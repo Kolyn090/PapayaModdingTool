@@ -12,8 +12,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
         public Func<string, string> ELT;
         public Func<Texture2D> GetTexture;
 
-        private Rect _guiRect; // 20% preview rect
-        private Rect _imageRect; // 80% preview rect
+        private Rect _guiRect; // 10% preview rect
+        private Rect _imageRect; // 90% preview rect
 
         private bool _hasInit;
 
@@ -30,12 +30,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                 return;
             }
             float totalHeight = previewRect.height;
-            float guiHeight = totalHeight * 0.2f;   // 20% for controls
-            float imageHeight = totalHeight - guiHeight; // remaining 80% for image
+            float guiHeight = totalHeight * 0.1f;
+            float imageHeight = totalHeight - guiHeight;
             _guiRect = new Rect(previewRect.x, previewRect.y, previewRect.width, guiHeight);
             _imageRect = new Rect(previewRect.x, previewRect.y + guiHeight, previewRect.width, imageHeight);
 
-            GetTexture().filterMode = FilterMode.Point;
+            // GetTexture().filterMode = FilterMode.Point;
 
             _checkerBoardTexture = new(2, 2)
             {
@@ -49,7 +49,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             });
             _checkerBoardTexture.Apply();
 
-            _panOffset = new(0, -GetTexture().height / 2f);
+            // _panOffset = new(0, -GetTexture().height / 2f);
             _hasInit = true;
         }
 
@@ -62,6 +62,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             GUILayout.BeginHorizontal();
 
             // Set buttons to a fixed width
+            EditorGUI.BeginDisabledGroup(GetTexture() == null);
             float buttonWidth = _guiRect.width * 0.5f - 10f; 
             if (GUILayout.Button(ELT("zoom_in"), GUILayout.Width(buttonWidth)))
             {
@@ -75,12 +76,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             GUILayout.EndHorizontal();
 
             // Compute pan bounds based on zoomed image size
-            float panWidth = Mathf.Max(GetTexture().width * _zoom - _imageRect.width, 0f) / 2f;
-            float panHeight = Mathf.Max(GetTexture().height * _zoom - _imageRect.height, 0f) / 2f;
+            float panWidth = Mathf.Max((GetTexture() != null ? GetTexture().width : 0f) * _zoom - _imageRect.width, 0f) / 2f;
+            float panHeight = Mathf.Max((GetTexture() != null ? GetTexture().height : 0f) * _zoom - _imageRect.height, 0f) / 2f;
             float sliderWidth = _guiRect.width - 20f;
             _panOffset.x = EditorGUILayout.Slider(ELT("pan_x"), _panOffset.x, -panWidth, panWidth, GUILayout.Width(sliderWidth));
             _panOffset.y = EditorGUILayout.Slider(ELT("pan_y"), _panOffset.y, -panHeight, panHeight, GUILayout.Width(sliderWidth));
-
+            EditorGUI.EndDisabledGroup();
             GUI.EndGroup();
 
             // --- Preview Panel ---
@@ -93,9 +94,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                 _checkerBoardTexture,
                 new Rect(0, 0, _imageRect.width / 16f, _imageRect.height / 16f)
             );
-            UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
-            GUI.DrawTexture(new Rect(0, 0, _imageRect.width, _imageRect.height), _renderTexture, ScaleMode.StretchToFill, true);
+            if (GetTexture() != null)
+            {
+                UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
+                GUI.DrawTexture(new Rect(0, 0, _imageRect.width, _imageRect.height), _renderTexture, ScaleMode.StretchToFill, true);
+            }
             GUI.EndGroup();
+        }
+
+        public void SetPanOffset(Vector2 panOffset)
+        {
+            _panOffset = panOffset;
         }
 
         private void ZoomAtCenter(float zoomFactor, Rect previewRect)
