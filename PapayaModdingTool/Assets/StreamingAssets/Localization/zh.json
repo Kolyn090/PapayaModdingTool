@@ -43,6 +43,11 @@
         "copied:": "复制了: {0}",
         "file_not_found:": "未找到文件: {0}",
         "switch_language": "切换语言",
-        "set_language_success": "成功切换语言为 {0}"
+        "set_language_success": "成功切换语言为 {0}",
+        "zoom_in": "放大",
+        "zoom_out": "缩小",
+        "pan_x": "平移 X",
+        "pan_y": "平移 Y",
+        "preview": "预览"
     }
 }

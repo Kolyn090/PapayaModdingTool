@@ -43,6 +43,11 @@
         "copied:": "Copied: {0}",
         "file_not_found:": "File not found: {0}",
         "switch_language": "Switch Language",
-        "set_language_success": "Successfully set language to {0}"
+        "set_language_success": "Successfully set language to {0}",
+        "zoom_in": "Zoom In",
+        "zoom_out": "Zoom Out",
+        "pan_x": "Pan X",
+        "pan_y": "Pan Y",
+        "preview": "Preview"
     }
 }
