@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
+namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 {
     public class PreviewTexturePanel
     {

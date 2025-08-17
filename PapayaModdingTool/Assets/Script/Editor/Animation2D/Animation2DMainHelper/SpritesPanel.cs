@@ -4,7 +4,7 @@ using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
+namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 {
     public class SpritesPanel
     {
@@ -26,7 +26,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                 return;
 
             // Draw background
-            EditorGUI.DrawRect(_bound, new Color(0.2f, 0.25f, 0.3f));
+            EditorGUI.DrawRect(_bound, new Color(0.2f, 0.2f, 0.2f));
 
             GUILayout.BeginArea(_bound);
             {
@@ -34,25 +34,23 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
 
                 _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
-                int buttonsPerRow = 6; // how many per row
-                int totalButtons = 130;
+                int buttonsPerRow = 4; // how many per row
                 int index = 0;
 
-                // while (index < totalButtons)
-                // {
-                //     EditorGUILayout.BeginHorizontal();
+                if (GetSpriteButtonDatas() != null)
+                {
+                    while (index < GetSpriteButtonDatas().Count)
+                    {
+                        EditorGUILayout.BeginHorizontal();
 
-                //     for (int col = 0; col < buttonsPerRow && index < totalButtons; col++, index++)
-                //     {
-                //         DrawImageButton(new ButtonData
-                //         {
-                //             icon = EditorGUIUtility.IconContent("console.infoicon").image,
-                //             label = "Button " + index
-                //         }, GUILayout.Width(80));
-                //     }
+                        for (int col = 0; col < buttonsPerRow && index < GetSpriteButtonDatas().Count; col++, index++)
+                        {
+                            DrawImageButton(GetSpriteButtonDatas()[index]);
+                        }
 
-                //     EditorGUILayout.EndHorizontal();
-                // }
+                        EditorGUILayout.EndHorizontal();
+                    }
+                }
 
                 EditorGUILayout.EndScrollView();
             }
@@ -76,9 +74,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             GUILayout.EndHorizontal();
 
             // Center the text horizontally
-            GUILayout.Label(data.label, EditorStyles.centeredGreyMiniLabel, GUILayout.ExpandWidth(true));
+            GUILayout.Label(TruncateToEnd(data.label, 15), EditorStyles.centeredGreyMiniLabel, GUILayout.ExpandWidth(true));
 
             GUILayout.EndVertical();
+        }
+
+        private string TruncateToEnd(string s, int len=20)
+        {
+            return s.Length > len ? $"...{s[^len..]}" : s;
         }
     }
 }

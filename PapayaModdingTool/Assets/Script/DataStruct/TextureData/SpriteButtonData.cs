@@ -2,9 +2,15 @@ using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.DataStruct.TextureData
 {
-    public struct SpriteButtonData
+    public class SpriteButtonData
     {
-        public Texture sprite;
+        public Texture2D sprite;
         public string label;
+        public float width;
+        public float height;
+        public Vector2 pivot = Vector2.zero;
+        public int level = -1;
+        public int order = -1;
+        public string animation = "";
     }
 }

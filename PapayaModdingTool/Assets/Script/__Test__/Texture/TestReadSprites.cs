@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.__Test__.TestUtil;
+using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Misc.AppCore;
 using PapayaModdingTool.Assets.Script.Reader;
 using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
@@ -23,7 +25,7 @@ namespace PapayaModdingTool.Assets.Script.__Test__.Texture
                 string bundlePath = Path.Combine(DATA_PATH, "spriteassetgroup_assets_assets/needdynamicloadresources/spritereference/unit_hero_gangdan.asset_266134690b1c6daffbecb67815ff8868.bundle");
                 (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = bundleReader.ReadBundle(bundlePath);
 
-                List<Texture2D> bytes = ImageReader.ReadSprites(assetsInst, appEnvironment.AssetsManager, appEnvironment.Wrapper.TextureEncoderDecoder);
+                List<Texture2D> bytes = ImageReader.ReadSpriteButtonDatas(assetsInst, appEnvironment.AssetsManager, appEnvironment.Wrapper.TextureEncoderDecoder).Select(x=>x.sprite).ToList();
                 string ASSET_EXPORT_PATH = Path.Combine(PredefinedTestPaths.LabDeskPath, "Assets_Export");
                 string exportImageDestination = Path.Combine(ASSET_EXPORT_PATH, "spriteassetgroup_assets_assets/needdynamicloadresources/spritereference");
 

@@ -1,8 +1,14 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
+using PapayaModdingTool.Assets.Script.Reader;
+using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
@@ -39,11 +45,29 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
         {
             _spritesPanel = new()
             {
-                ELT = var => ELT(var)
+                ELT = var => ELT(var),
+                GetSpriteButtonDatas = () => _spriteButtonDatas
             };
             _spritesPanel.Initialize(new(270, 90, 530, 600));
             _spriteButtonDatas = new();
-            
+
+            // ! Make an example
+            BundleReader bundleReader = new(_appEnvironment.AssetsManager, _appEnvironment.Dispatcher);
+            string bundlePath = PathUtils.ToLongPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Otherworld Legends\\Otherworld Legends_Data\\StreamingAssets\\aa\\StandaloneWindows64\\unitspritesgroup_assets_assets\\sprites\\herounit\\hero_quanhuying\\unit_hero_quanhuying.psd_97f99a64c4a18168a8314aebe66b4d28.bundle");
+            (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = bundleReader.ReadBundle(bundlePath);
+            _spriteButtonDatas = ImageReader.ReadSpriteButtonDatas(assetsInst,
+                                                                    _appEnvironment.AssetsManager,
+                                                                    _appEnvironment.Wrapper.TextureEncoderDecoder);
+            _spriteButtonDatas = _spriteButtonDatas.OrderBy(o =>
+            {
+                var match = Regex.Match(o.label, @"\d+$");
+                if (match.Success && int.TryParse(match.Value, out int num))
+                    return num;
+                else
+                    return int.MaxValue; // no number → push to end
+            })
+            .ThenBy(o => o.label) // optional: sort alphabetically among "no-number" names
+            .ToList();
         }
 
         public static void Open(string projectPath)

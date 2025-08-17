@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using AssetsTools.NET;
 using AssetsTools.NET.Extra;
+using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
 using UnityEngine;
 
@@ -13,18 +14,16 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
     public class ImageReader
     {
         // ? Assume no atlas for now
-        public static List<Texture2D> ReadSprites(AssetsFileInstance assetsFileInst,
+        public static List<SpriteButtonData> ReadSpriteButtonDatas(AssetsFileInstance assetsFileInst,
                                                 AssetsManager assetsManager,
                                                 ITextureDecoder textureDecoder)
         {
-            List<Texture2D> result = new();
             List<AssetFileInfo> spriteInfos = assetsFileInst.file.AssetInfos;
-            result = spriteInfos.Select(x => SpriteToImage(assetsFileInst, x, assetsManager, textureDecoder)).Where(x => x != null).ToList();
-
-            return result;
+            return spriteInfos.Select(x => SpriteToImage(assetsFileInst, x, assetsManager, textureDecoder))
+                                .Where(x => x != null).ToList();
         }
 
-        private static Texture2D SpriteToImage(AssetsFileInstance assetsFileInst,
+        private static SpriteButtonData SpriteToImage(AssetsFileInstance assetsFileInst,
                                             AssetFileInfo assetFileInfo,
                                             AssetsManager assetsManager,
                                             ITextureDecoder textureDecoder)
@@ -57,7 +56,15 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
                                                         assetsManager);
             AssetTypeValueField texBase = assetsManager.GetBaseField(texAsset.file, texAsset.info);
 
-            return ExtractImage(texBase, assetsFileInst, assetsFileInst.parentBundle, spriteRect, textureDecoder);
+            Texture2D tex = ExtractImage(texBase, assetsFileInst, assetsFileInst.parentBundle, spriteRect, textureDecoder);
+            return new()
+            {
+                sprite = tex,
+                label = spriteBase["m_Name"].AsString,
+                width = spriteBase["m_Rect"]["width"].AsFloat,
+                height = spriteBase["m_Rect"]["height"].AsFloat,
+                pivot = new(spriteBase["m_Pivot"]["x"].AsFloat, spriteBase["m_Pivot"]["y"].AsFloat)
+            };
         }
 
         private static AssetExternal GetExternalAsset(AssetsFileInstance currentFile,
@@ -135,6 +142,7 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
                 //     handle.Free();
                 // }
 
+                // Debug.Log(GetAssetTypeValueFieldString(texBase));
                 return texture;
             }
 
