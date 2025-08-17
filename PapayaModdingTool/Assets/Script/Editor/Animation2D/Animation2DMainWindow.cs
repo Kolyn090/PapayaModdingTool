@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using UnityEngine;
@@ -8,7 +10,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
     public class Animation2DMainWindow : MainWindow
     {
         private Texture2D _previewTexture;
+        private List<SpriteButtonData> _spriteButtonDatas;
         private PreviewTexturePanel _previewPanel;
+        private SpritesPanel _spritesPanel;
 
         private void InitPreviewPanel()
         {
@@ -31,6 +35,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             _previewPanel.SetPanOffset(new(0, _previewTexture != null ? -_previewTexture.height / 2f : 0f));
         }
 
+        private void InitSpritesPanel()
+        {
+            _spritesPanel = new()
+            {
+                ELT = var => ELT(var)
+            };
+            _spritesPanel.Initialize(new(270, 90, 530, 600));
+            _spriteButtonDatas = new();
+            
+        }
+
         public static void Open(string projectPath)
         {
             var window = GetWindow<Animation2DMainWindow>(Path.GetFileName(projectPath));
@@ -45,8 +60,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             {
                 InitPreviewPanel();
             }
+            if (_spritesPanel == null)
+            {
+                InitSpritesPanel();
+            }
 
             _previewPanel?.CreatePanel();
+            _spritesPanel?.CreatePanel();
         }
     }
 }

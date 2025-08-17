@@ -54,6 +54,7 @@
     "dotnet.defaultSolution": "PapayaModdingTool.sln",
     "git.ignoreLimitWarning": true,
     "cSpell.words": [
+        "Datas",
         "Spritesheet"
     ]
 }

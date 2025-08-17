@@ -42,7 +42,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode
             {
                 return null;
             }
-            return DecodeToBytes(data, width, height, compressFormat);
+            return DecodeToBcBytes(data, width, height, compressFormat);
         }
 
         public IColor[] DecodeRaw(byte[] imageBytes, int width, int height, TextureCompressionFormat format)
@@ -51,7 +51,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode
             return decoded.Select(c => new ColorRgba32Wrapper(c) as IColor).ToArray();
         }
 
-        public byte[] DecodeToBytes(byte[] imageBytes, int width, int height, TextureCompressionFormat format)
+        public byte[] DecodeToBcBytes(byte[] imageBytes, int width, int height, TextureCompressionFormat format)
         {
             var libFormat = format.ToLibraryFormat();
             var decoded = _decoder.DecodeRaw(imageBytes, width, height, libFormat);

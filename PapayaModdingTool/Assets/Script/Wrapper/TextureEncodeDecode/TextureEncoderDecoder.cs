@@ -491,5 +491,11 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode
             BcDecoderWrapper bcDecoderWrapper = new();
             return bcDecoderWrapper.Decode(data, width, height, format);
         }
+
+        public byte[] DecodeToBcBytes(byte[] imageBytes, int width, int height, TextureCompressionFormat format)
+        {
+            BcDecoderWrapper bcDecoderWrapper = new();
+            return bcDecoderWrapper.DecodeToBcBytes(imageBytes, width, height, format);
+        }
     }
 }
