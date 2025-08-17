@@ -22,18 +22,18 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
         private Vector2 _panOffset = Vector2.zero;
         private float _zoom = 1f;
 
-        public void Initialize(Rect previewRect)
+        public void Initialize(Rect bound)
         {
             if (GetTexture == null)
             {
                 Debug.LogError("You need to assign GetTexture first!");
                 return;
             }
-            float totalHeight = previewRect.height;
+            float totalHeight = bound.height;
             float guiHeight = totalHeight * 0.1f;
             float imageHeight = totalHeight - guiHeight;
-            _guiRect = new Rect(previewRect.x, previewRect.y, previewRect.width, guiHeight);
-            _imageRect = new Rect(previewRect.x, previewRect.y + guiHeight, previewRect.width, imageHeight);
+            _guiRect = new Rect(bound.x, bound.y, bound.width, guiHeight);
+            _imageRect = new Rect(bound.x, bound.y + guiHeight, bound.width, imageHeight);
 
             // GetTexture().filterMode = FilterMode.Point;
 
