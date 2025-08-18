@@ -14,21 +14,21 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
     public class ImageReader
     {
         // ? Assume no atlas for now
-        public static List<SpriteButtonData> ReadSpriteButtonDatas(AssetsFileInstance assetsFileInst,
+        public static List<SpriteButtonData> ReadSpriteButtonDatas(AssetsFileInstance assetsInst,
                                                 AssetsManager assetsManager,
                                                 ITextureDecoder textureDecoder)
         {
-            List<AssetFileInfo> spriteInfos = assetsFileInst.file.AssetInfos;
-            return spriteInfos.Select(x => SpriteToImage(assetsFileInst, x, assetsManager, textureDecoder))
+            List<AssetFileInfo> spriteInfos = assetsInst.file.AssetInfos;
+            return spriteInfos.Select(x => SpriteToImage(assetsInst, x, assetsManager, textureDecoder))
                                 .Where(x => x != null).ToList();
         }
 
-        private static SpriteButtonData SpriteToImage(AssetsFileInstance assetsFileInst,
+        private static SpriteButtonData SpriteToImage(AssetsFileInstance assetsInst,
                                             AssetFileInfo assetFileInfo,
                                             AssetsManager assetsManager,
                                             ITextureDecoder textureDecoder)
         {
-            AssetTypeValueField spriteBase = assetsManager.GetBaseField(assetsFileInst, assetFileInfo);
+            AssetTypeValueField spriteBase = assetsManager.GetBaseField(assetsInst, assetFileInfo);
 
             if (spriteBase["m_Rect"].IsDummy)
                 return null;
@@ -50,13 +50,13 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
             }
 
             AssetTypeValueField texRefField = spriteBase["m_RD"]["texture"];
-            AssetExternal texAsset = GetExternalAsset(assetsFileInst,
-                                                        assetsFileInst.parentBundle,
+            AssetExternal texAsset = GetExternalAsset(assetsInst,
+                                                        assetsInst.parentBundle,
                                                         texRefField,
                                                         assetsManager);
             AssetTypeValueField texBase = assetsManager.GetBaseField(texAsset.file, texAsset.info);
 
-            Texture2D tex = ExtractImage(texBase, assetsFileInst, assetsFileInst.parentBundle, spriteRect, textureDecoder);
+            Texture2D tex = ExtractImage(texBase, assetsInst, assetsInst.parentBundle, spriteRect, textureDecoder);
             return new()
             {
                 sprite = tex,
@@ -99,7 +99,7 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
         }
 
         private static Texture2D ExtractImage(AssetTypeValueField texBase,
-                                                AssetsFileInstance assetsFileInst,
+                                                AssetsFileInstance assetsInst,
                                                 BundleFileInstance bunInst,
                                                 Rect? cropRect,
                                                 ITextureDecoder textureDecoder)
@@ -107,7 +107,7 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
             int width = texBase["m_Width"].AsInt;
             int height = texBase["m_Height"].AsInt;
             int format = texBase["m_TextureFormat"].AsInt;
-            byte[] imageBytes = GetImageData(texBase, assetsFileInst, bunInst);
+            byte[] imageBytes = GetImageData(texBase, assetsInst, bunInst);
 
             if (imageBytes == null || imageBytes.Length == 0)
             {
