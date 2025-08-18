@@ -108,7 +108,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
         {
             int width = image.Width;
             int height = image.Height;
-            int bytesPerPixel = 4; // R, G, B, A
+            int bytesPerPixel = 4;
 
             byte[] result = new byte[width * height * bytesPerPixel];
 
@@ -117,9 +117,11 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.TextureUtil
                 for (int y = 0; y < height; y++)
                 {
                     var row = accessor.GetRowSpan(y);
+                    int flippedY = height - 1 - y; // flip vertically
+
                     for (int x = 0; x < width; x++)
                     {
-                        int idx = (y * width + x) * bytesPerPixel;
+                        int idx = (flippedY * width + x) * bytesPerPixel;
                         Rgba32 pixel = row[x];
                         result[idx + 0] = pixel.R;
                         result[idx + 1] = pixel.G;

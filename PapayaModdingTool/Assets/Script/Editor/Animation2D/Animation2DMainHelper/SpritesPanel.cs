@@ -32,7 +32,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             EditorGUI.DrawRect(_bound, new Color(0.2f, 0.2f, 0.2f));
 
             GUILayout.BeginArea(_bound);
-            EditorGUILayout.LabelField("Scrollable Button Grid", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Found Sprites", EditorStyles.boldLabel);
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
