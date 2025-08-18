@@ -7,28 +7,57 @@ using AssetsTools.NET;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
+using PapayaModdingTool.Assets.Script.Wrapper.TextureUtil;
 using UnityEngine;
+
+using AssetsToolsTexture = AssetsTools.NET.Texture; 
 
 namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
 {
     public class ImageReader
     {
+        // !!! TEXTURE START
+
+        public static List<Texture2DButtonData> ReadTexture2DButtonDatas(AssetsFileInstance assetsInst,
+                                                                        AssetsManager assetsManager,
+                                                                        TextureExporter textureExporter)
+        {
+            List<Texture2DButtonData> result = new();
+            List<AssetFileInfo> texInfos = assetsInst.file.GetAssetsOfType(AssetClassID.Texture2D);
+            foreach (var texInfo in texInfos)
+            {
+                AssetTypeValueField texBase = assetsManager.GetBaseField(assetsInst, texInfo);
+                Texture2D texture = textureExporter.ExportTextureWithPathIdAsTexture2D(assetsInst, texBase);
+                AssetsToolsTexture.TextureFile texFile = AssetsToolsTexture.TextureFile.ReadTextureFile(texBase);
+                result.Add(new()
+                {
+                    texture = texture,
+                    label = texFile.m_Name,
+                    assetsInst = assetsInst,
+                    assetInfo = texInfo
+                });
+            }
+            return result;
+        }
+
+        // !!! TEXTURE END
+
         // ? Assume no atlas for now
         public static List<SpriteButtonData> ReadSpriteButtonDatas(AssetsFileInstance assetsInst,
                                                 AssetsManager assetsManager,
                                                 ITextureDecoder textureDecoder)
         {
-            List<AssetFileInfo> spriteInfos = assetsInst.file.AssetInfos;
-            return spriteInfos.Select(x => SpriteToImage(assetsInst, x, assetsManager, textureDecoder))
+            List<AssetFileInfo> assetInfos = assetsInst.file.AssetInfos;
+            return assetInfos.Select(x => SpriteToImage(assetsInst, x, assetsManager, textureDecoder))
                                 .Where(x => x != null).ToList();
         }
 
         private static SpriteButtonData SpriteToImage(AssetsFileInstance assetsInst,
-                                            AssetFileInfo assetFileInfo,
+                                            AssetFileInfo assetInfo,
                                             AssetsManager assetsManager,
                                             ITextureDecoder textureDecoder)
         {
-            AssetTypeValueField spriteBase = assetsManager.GetBaseField(assetsInst, assetFileInfo);
+            AssetTypeValueField spriteBase = assetsManager.GetBaseField(assetsInst, assetInfo);
 
             if (spriteBase["m_Rect"].IsDummy)
                 return null;

@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.EventListener;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,7 +9,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 {
     public class TexturesPanel
     {
+        private const int BUTTONS_PER_ROW = 1;
+
         public Func<string, string> ELT;
+        public Func<List<Texture2DButtonData>> GetTexture2DButtonDatas;
+        public Func<ITexture2DButtonDataListener> GetListener;
 
         private Rect _bound;
         private bool _hasInit;
@@ -31,10 +38,55 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
-            
+            int index = 0;
+            if (GetTexture2DButtonDatas() != null)
+            {
+                while (index < GetTexture2DButtonDatas().Count)
+                {
+                    EditorGUILayout.BeginHorizontal();
+
+                    for (int col = 0; col < BUTTONS_PER_ROW && index < GetTexture2DButtonDatas().Count; col++, index++)
+                    {
+                        DrawImageButton(GetTexture2DButtonDatas()[index]);
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
 
             EditorGUILayout.EndScrollView();
             GUILayout.EndArea();
+        }
+
+        private void DrawImageButton(Texture2DButtonData data, params GUILayoutOption[] options)
+        {
+            GUILayout.BeginVertical("box", options);
+
+            // Center the button horizontally
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button(data.texture, GUILayout.Width(64), GUILayout.Height(64)))
+            {
+                Debug.Log("Clicked: " + data.label);
+                if (GetListener != null)
+                {
+                    GetListener()?.Update(data);
+                }
+            }
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            // Center the text horizontally
+            GUILayout.Label(TruncateToEnd(data.label, 35), EditorStyles.centeredGreyMiniLabel, GUILayout.ExpandWidth(true));
+
+            GUILayout.EndVertical();
+        }
+
+        private string TruncateToEnd(string s, int len=20)
+        {
+            return s.Length > len ? $"...{s[^len..]}" : s;
         }
     }
 }

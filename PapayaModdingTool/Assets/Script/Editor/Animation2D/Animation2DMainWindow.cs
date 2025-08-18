@@ -20,6 +20,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
     {
         private Texture2D _previewTexture;
         private List<SpriteButtonData> _spriteButtonDatas;
+        private List<Texture2DButtonData> _texture2DButtonDatas;
+        private readonly TextureExporter _textureExporter = new(_appEnvironment);
 
         private PreviewTexturePanel _previewPanel;
         private SpritesPanel _spritesPanel;
@@ -33,8 +35,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             string bundlePath = PathUtils.ToLongPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Otherworld Legends\\Otherworld Legends_Data\\StreamingAssets\\aa\\StandaloneWindows64\\unitspritesgroup_assets_assets\\sprites\\herounit\\hero_quanhuying\\unit_hero_quanhuying.psd_97f99a64c4a18168a8314aebe66b4d28.bundle");
             (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = bundleReader.ReadBundle(bundlePath);
             List<AssetFileInfo> texInfos = assetsInst.file.GetAssetsOfType(AssetClassID.Texture2D);
-            TextureExporter textureExporter = new(_appEnvironment);
-            _previewTexture = textureExporter.ExportTextureWithPathIdAsTexture2D(assetsInst, texInfos[0]);
+            _previewTexture = _textureExporter.ExportTextureWithPathIdAsTexture2D(assetsInst, texInfos[0]);
 
             // // Testing
             // byte[] imageData = File.ReadAllBytes(Path.Combine(
@@ -99,8 +100,28 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             _texturesPanel = new()
             {
                 ELT = var => ELT(var),
+                GetTexture2DButtonDatas = () => _texture2DButtonDatas
             };
             _texturesPanel.Initialize(new(10, 20, 250, 790));
+            _texture2DButtonDatas = new();
+
+            // ! Make an example
+            BundleReader bundleReader = new(_appEnvironment.AssetsManager, _appEnvironment.Dispatcher);
+            string bundlePath = PathUtils.ToLongPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Otherworld Legends\\Otherworld Legends_Data\\StreamingAssets\\aa\\StandaloneWindows64\\unitspritesgroup_assets_assets\\sprites\\herounit\\hero_quanhuying\\unit_hero_quanhuying.psd_97f99a64c4a18168a8314aebe66b4d28.bundle");
+            (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = bundleReader.ReadBundle(bundlePath);
+            _texture2DButtonDatas = ImageReader.ReadTexture2DButtonDatas(assetsInst,
+                                                                        _appEnvironment.AssetsManager,
+                                                                        _textureExporter);
+            _texture2DButtonDatas = _texture2DButtonDatas.OrderBy(o =>
+            {
+                var match = Regex.Match(o.label, @"\d+$");
+                if (match.Success && int.TryParse(match.Value, out int num))
+                    return num;
+                else
+                    return int.MaxValue; // no number → push to end
+            })
+            .ThenBy(o => o.label) // optional: sort alphabetically among "no-number" names
+            .ToList();
         }
 
         public static void Open(string projectPath)

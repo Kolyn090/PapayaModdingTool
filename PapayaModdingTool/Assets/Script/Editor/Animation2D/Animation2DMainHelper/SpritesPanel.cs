@@ -9,6 +9,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 {
     public class SpritesPanel
     {
+        private const int BUTTONS_PER_ROW = 4;
+
         public Func<string, string> ELT;
         public Func<List<SpriteButtonData>> GetSpriteButtonDatas;
         public Func<ISpriteButtonDataListener> GetListener;
@@ -36,16 +38,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
-            int buttonsPerRow = 4; // how many per row
             int index = 0;
-
             if (GetSpriteButtonDatas() != null)
             {
                 while (index < GetSpriteButtonDatas().Count)
                 {
                     EditorGUILayout.BeginHorizontal();
 
-                    for (int col = 0; col < buttonsPerRow && index < GetSpriteButtonDatas().Count; col++, index++)
+                    for (int col = 0; col < BUTTONS_PER_ROW && index < GetSpriteButtonDatas().Count; col++, index++)
                     {
                         DrawImageButton(GetSpriteButtonDatas()[index]);
                     }
