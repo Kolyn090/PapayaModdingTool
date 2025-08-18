@@ -68,7 +68,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
             if (GUILayout.Button(data.texture, GUILayout.Width(64), GUILayout.Height(64)))
             {
-                Debug.Log("Clicked: " + data.label);
                 if (GetListener != null)
                 {
                     GetListener()?.Update(data);

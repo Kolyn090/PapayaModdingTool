@@ -19,7 +19,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
     public class Animation2DMainWindow : MainWindow
     {
         private Texture2D _previewTexture;
-        private List<SpriteButtonData> _spriteButtonDatas;
         private List<Texture2DButtonData> _texture2DButtonDatas;
         private readonly TextureExporter _textureExporter = new(_appEnvironment);
 
@@ -61,29 +60,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             _spritesPanel = new()
             {
                 ELT = var => ELT(var),
-                GetSpriteButtonDatas = () => _spriteButtonDatas,
-                GetListener = () => _spriteEditPanel
+                GetListener = () => _spriteEditPanel,
+                GetAssetsManager = () => _appEnvironment.AssetsManager,
+                GetTextureEncoderDecoder = () => _appEnvironment.Wrapper.TextureEncoderDecoder
             };
             _spritesPanel.Initialize(new(270, 20, 530, 520));
-            _spriteButtonDatas = new();
-
-            // ! Make an example
-            BundleReader bundleReader = new(_appEnvironment.AssetsManager, _appEnvironment.Dispatcher);
-            string bundlePath = PathUtils.ToLongPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Otherworld Legends\\Otherworld Legends_Data\\StreamingAssets\\aa\\StandaloneWindows64\\unitspritesgroup_assets_assets\\sprites\\herounit\\hero_quanhuying\\unit_hero_quanhuying.psd_97f99a64c4a18168a8314aebe66b4d28.bundle");
-            (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = bundleReader.ReadBundle(bundlePath);
-            _spriteButtonDatas = ImageReader.ReadSpriteButtonDatas(assetsInst,
-                                                                    _appEnvironment.AssetsManager,
-                                                                    _appEnvironment.Wrapper.TextureEncoderDecoder);
-            _spriteButtonDatas = _spriteButtonDatas.OrderBy(o =>
-            {
-                var match = Regex.Match(o.label, @"\d+$");
-                if (match.Success && int.TryParse(match.Value, out int num))
-                    return num;
-                else
-                    return int.MaxValue; // no number → push to end
-            })
-            .ThenBy(o => o.label) // optional: sort alphabetically among "no-number" names
-            .ToList();
         }
 
         private void InitSpriteEditPanel()
@@ -100,7 +81,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             _texturesPanel = new()
             {
                 ELT = var => ELT(var),
-                GetTexture2DButtonDatas = () => _texture2DButtonDatas
+                GetTexture2DButtonDatas = () => _texture2DButtonDatas,
+                GetListener = () => _spritesPanel
             };
             _texturesPanel.Initialize(new(10, 20, 250, 790));
             _texture2DButtonDatas = new();

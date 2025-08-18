@@ -1,20 +1,27 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.EventListener;
+using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
+using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
 using UnityEditor;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 {
-    public class SpritesPanel
+    public class SpritesPanel : ITexture2DButtonDataListener
     {
         private const int BUTTONS_PER_ROW = 4;
 
         public Func<string, string> ELT;
-        public Func<List<SpriteButtonData>> GetSpriteButtonDatas;
+        public Func<AssetsManager> GetAssetsManager;
+        public Func<TextureEncoderDecoder> GetTextureEncoderDecoder;
         public Func<ISpriteButtonDataListener> GetListener;
 
+        private List<SpriteButtonData> _datas;
         private Rect _bound;
         private bool _hasInit;
         private Vector2 _scrollPos;
@@ -39,15 +46,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
             int index = 0;
-            if (GetSpriteButtonDatas() != null)
+            if (_datas != null)
             {
-                while (index < GetSpriteButtonDatas().Count)
+                while (index < _datas.Count)
                 {
                     EditorGUILayout.BeginHorizontal();
 
-                    for (int col = 0; col < BUTTONS_PER_ROW && index < GetSpriteButtonDatas().Count; col++, index++)
+                    for (int col = 0; col < BUTTONS_PER_ROW && index < _datas.Count; col++, index++)
                     {
-                        DrawImageButton(GetSpriteButtonDatas()[index]);
+                        DrawImageButton(_datas[index]);
                     }
 
                     EditorGUILayout.EndHorizontal();
@@ -87,6 +94,23 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
         private string TruncateToEnd(string s, int len=20)
         {
             return s.Length > len ? $"...{s[^len..]}" : s;
+        }
+
+        public void Update(Texture2DButtonData data)
+        {
+            _datas = ImageReader.ReadSpriteButtonDatas(data.assetsInst,
+                                                        GetAssetsManager(),
+                                                        GetTextureEncoderDecoder());
+            _datas = _datas.OrderBy(o =>
+            {
+                var match = Regex.Match(o.label, @"\d+$");
+                if (match.Success && int.TryParse(match.Value, out int num))
+                    return num;
+                else
+                    return int.MaxValue; // no number → push to end
+            })
+            .ThenBy(o => o.label) // optional: sort alphabetically among "no-number" names
+            .ToList();
         }
     }
 }
