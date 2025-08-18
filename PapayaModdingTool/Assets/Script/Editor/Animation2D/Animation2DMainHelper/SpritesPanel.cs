@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.EventListener;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,6 +11,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
     {
         public Func<string, string> ELT;
         public Func<List<SpriteButtonData>> GetSpriteButtonDatas;
+        public Func<ISpriteButtonDataListener> GetListener;
+
         private Rect _bound;
         private bool _hasInit;
         private Vector2 _scrollPos;
@@ -29,31 +32,29 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             EditorGUI.DrawRect(_bound, new Color(0.2f, 0.2f, 0.2f));
 
             GUILayout.BeginArea(_bound);
+            EditorGUILayout.LabelField("Scrollable Button Grid", EditorStyles.boldLabel);
+
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
+
+            int buttonsPerRow = 4; // how many per row
+            int index = 0;
+
+            if (GetSpriteButtonDatas() != null)
             {
-                EditorGUILayout.LabelField("Scrollable Button Grid", EditorStyles.boldLabel);
-
-                _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
-
-                int buttonsPerRow = 4; // how many per row
-                int index = 0;
-
-                if (GetSpriteButtonDatas() != null)
+                while (index < GetSpriteButtonDatas().Count)
                 {
-                    while (index < GetSpriteButtonDatas().Count)
+                    EditorGUILayout.BeginHorizontal();
+
+                    for (int col = 0; col < buttonsPerRow && index < GetSpriteButtonDatas().Count; col++, index++)
                     {
-                        EditorGUILayout.BeginHorizontal();
-
-                        for (int col = 0; col < buttonsPerRow && index < GetSpriteButtonDatas().Count; col++, index++)
-                        {
-                            DrawImageButton(GetSpriteButtonDatas()[index]);
-                        }
-
-                        EditorGUILayout.EndHorizontal();
+                        DrawImageButton(GetSpriteButtonDatas()[index]);
                     }
-                }
 
-                EditorGUILayout.EndScrollView();
+                    EditorGUILayout.EndHorizontal();
+                }
             }
+
+            EditorGUILayout.EndScrollView();
             GUILayout.EndArea();
         }
 
@@ -68,6 +69,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             if (GUILayout.Button(data.sprite, GUILayout.Width(64), GUILayout.Height(64)))
             {
                 Debug.Log("Clicked: " + data.label);
+                if (GetListener != null)
+                {
+                    GetListener()?.Update(data);
+                }
             }
 
             GUILayout.FlexibleSpace();

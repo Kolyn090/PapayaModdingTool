@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelper;
 using PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
@@ -17,8 +18,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
     {
         private Texture2D _previewTexture;
         private List<SpriteButtonData> _spriteButtonDatas;
+
         private PreviewTexturePanel _previewPanel;
         private SpritesPanel _spritesPanel;
+        private SpriteEditPanel _spriteEditPanel;
 
         private void InitPreviewPanel()
         {
@@ -46,9 +49,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             _spritesPanel = new()
             {
                 ELT = var => ELT(var),
-                GetSpriteButtonDatas = () => _spriteButtonDatas
+                GetSpriteButtonDatas = () => _spriteButtonDatas,
+                GetListener = () => _spriteEditPanel
             };
-            _spritesPanel.Initialize(new(270, 90, 530, 600));
+            _spritesPanel.Initialize(new(270, 20, 530, 520));
             _spriteButtonDatas = new();
 
             // ! Make an example
@@ -70,6 +74,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             .ToList();
         }
 
+        private void InitSpriteEditPanel()
+        {
+            _spriteEditPanel = new()
+            {
+                ELT = var => ELT(var),
+            };
+            _spriteEditPanel.Initialize(new(270, 540, 530, 270));
+        }
+
         public static void Open(string projectPath)
         {
             var window = GetWindow<Animation2DMainWindow>(Path.GetFileName(projectPath));
@@ -88,9 +101,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             {
                 InitSpritesPanel();
             }
+            if (_spriteEditPanel == null)
+            {
+                InitSpriteEditPanel();
+            }
 
             _previewPanel?.CreatePanel();
             _spritesPanel?.CreatePanel();
+            _spriteEditPanel?.CreatePanel();
         }
     }
 }
