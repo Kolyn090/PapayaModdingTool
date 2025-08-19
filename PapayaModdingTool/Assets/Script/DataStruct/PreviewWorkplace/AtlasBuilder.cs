@@ -5,20 +5,20 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace
 {
     public class AtlasBuilder
     {
-        public static Texture2D CombineInRow(List<Texture2D> textures, int gap = 4)
+        public static Texture2D CombineInRow(List<Texture2dWithCustomSize> textures, int gap = 4)
         {
             if (textures == null || textures.Count == 0)
                 return null;
 
-            // Find total width and max height
+            // Find total width and max height (using custom sizes as box)
             int totalWidth = gap; // start gap
             int maxHeight = 0;
 
-            foreach (Texture2D tex in textures)
+            foreach (var t in textures)
             {
-                totalWidth += tex.width + gap; // add tex + gap
-                if (tex.height > maxHeight)
-                    maxHeight = tex.height;
+                totalWidth += t.width + gap;
+                if (t.height > maxHeight)
+                    maxHeight = t.height;
             }
 
             // Create final texture
@@ -30,16 +30,39 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace
                 clear[i] = new Color32(0, 0, 0, 0);
             result.SetPixels32(clear);
 
-            // Blit each texture
+            // Blit each texture inside its custom box (crop if bigger, center if smaller)
             int cursorX = gap;
-            foreach (Texture2D tex in textures)
+            foreach (var t in textures)
             {
-                Color32[] pixels = tex.GetPixels32();
+                Texture2D tex = t.texture2D;
 
-                // paste at bottom aligned (y = 0)
-                result.SetPixels32(cursorX, 0, tex.width, tex.height, pixels);
+                int boxW = t.width;
+                int boxH = t.height;
 
-                cursorX += tex.width + gap; // advance with gap
+                int startX = cursorX;
+                int startY = (maxHeight - boxH) / 2; // center vertically in final canvas
+
+                // Center inside the box
+                int pasteX = startX + (boxW - tex.width) / 2;
+                int pasteY = startY + (boxH - tex.height) / 2;
+
+                // Clamp/crop if texture is larger than its box
+                int copyW = Mathf.Min(tex.width, boxW);
+                int copyH = Mathf.Min(tex.height, boxH);
+
+                // Source start inside texture
+                int srcX = tex.width > boxW ? (tex.width - boxW) / 2 : 0;
+                int srcY = tex.height > boxH ? (tex.height - boxH) / 2 : 0;
+
+                Color[] pixelsFloat = tex.GetPixels(srcX, srcY, copyW, copyH);
+                Color32[] pixels = new Color32[pixelsFloat.Length];
+                for (int i = 0; i < pixelsFloat.Length; i++)
+                    pixels[i] = pixelsFloat[i];
+                result.SetPixels32(pasteX + Mathf.Max(0, - (boxW - tex.width) / 2),
+                                    pasteY + Mathf.Max(0, - (boxH - tex.height) / 2),
+                                    copyW, copyH, pixels);
+
+                cursorX += boxW + gap;
             }
 
             result.Apply(false);

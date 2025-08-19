@@ -25,7 +25,12 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace
             foreach (int level in groups.Keys)
             {
                 List<SpriteButtonData> group = groups[level];
-                List<Texture2D> sprites = group.Select(x => x.sprite).ToList();
+                List<Texture2dWithCustomSize> sprites = group.Select(x => new Texture2dWithCustomSize()
+                {
+                    texture2D = x.sprite,
+                    width = x.width,
+                    height = x.height
+                }).ToList();
                 Texture2D rowTexture = AtlasBuilder.CombineInRow(sprites, gap);
                 rows.Add(rowTexture);
             }
