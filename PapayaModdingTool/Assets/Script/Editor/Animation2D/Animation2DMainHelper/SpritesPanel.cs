@@ -87,6 +87,22 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 
             // Center the text horizontally
             GUILayout.Label(TruncateToEnd(data.label, 15), EditorStyles.centeredGreyMiniLabel, GUILayout.ExpandWidth(true));
+            string coord;
+            if (data.level < 0 || data.order < 0)
+                coord = "<null>";
+            else
+                coord = $"({data.level}, {data.order})";
+
+            GUIStyle redLabel = new(GUI.skin.label)
+            {
+                fontSize = EditorStyles.centeredGreyMiniLabel.fontSize,
+                alignment = TextAnchor.MiddleCenter
+            };
+            redLabel.normal.textColor = Color.red;
+
+            GUILayout.Label(coord,
+                            coord == "<null>" ? redLabel : EditorStyles.centeredGreyMiniLabel,
+                            GUILayout.ExpandWidth(true));
 
             GUILayout.EndVertical();
         }
