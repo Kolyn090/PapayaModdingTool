@@ -1,34 +1,190 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using UnityEditor;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 {
+    public class PreviewWorkPlace
+    {
+        public static Texture2D CreatePreview(List<SpriteButtonData> workplace, int gap=1)
+        {
+            if (!IsWorkplaceValid(workplace))
+            {
+                Debug.LogWarning("Your workplace has conflict in level / order, please check!");
+                Debug.LogWarning("No two sprites can have the same level and order.");
+                Debug.LogWarning("Level and order must both be assigned (cannot be negative).");
+                return null;
+            }
+
+            Texture2D result = new(gap, gap);
+
+            // Sort the work place by level.
+            // Within each level, sort by order.
+            workplace = workplace.OrderBy(o => o.level).ThenBy(o => o.order).ToList();
+
+            // Start = top-left
+            // End = bottom-right
+            Dictionary<int, (int, int)> levelStartTracker = new();
+            Dictionary<int, (int, int)> levelEndTracker = new();
+            List<int> orderedLevel = new(); // tracks order as added
+
+            (int, int) lastEndPoint = (0, 0);
+            foreach (SpriteButtonData sprite in workplace)
+            {
+                int currLevel = sprite.level;
+                if (orderedLevel.Contains(currLevel))
+                {
+                    Debug.Log($"Level {currLevel} exists");
+                    // Get the place point for sprite
+                    int placeY = levelStartTracker[currLevel].Item2 - gap;
+                    int placeX = levelEndTracker[currLevel].Item1 + gap;
+
+                    result = BlitBelow(result, sprite.sprite, placeX, placeY, Mathf.Abs(-placeY - result.height));
+                    Debug.Log($"Placed {sprite.label} at ({placeX}, {placeY})");
+
+                    // Update end
+                    (int endX, int endY) = levelEndTracker[currLevel];
+                    int startY = levelStartTracker[currLevel].Item2;
+                    levelEndTracker[currLevel] = (placeX + sprite.width, endY < startY + sprite.height ? -endY : startY - sprite.height);
+                    lastEndPoint = levelEndTracker[currLevel];
+                    Debug.Log($"Update end {currLevel} at ({lastEndPoint.Item1}, {lastEndPoint.Item2})");
+                }
+                else
+                {
+                    Debug.Log($"Level {currLevel} doesn't exist");
+                    // Create a new level
+                    levelStartTracker[currLevel] = (gap, lastEndPoint.Item2);
+                    orderedLevel.Add(currLevel);
+
+                    int placeY = levelStartTracker[currLevel].Item2 - gap;
+                    int placeX = gap;
+
+                    result = BlitBelow(result, sprite.sprite, placeX, placeY, Mathf.Abs(-placeY - result.height));
+                    Debug.Log($"Placed {sprite.label} at ({placeX}, {placeY})");
+
+                    // Update end
+                    if (levelEndTracker.ContainsKey(currLevel))
+                    {
+                        (int endX, int endY) = levelEndTracker[currLevel];
+                        int startY = levelStartTracker[currLevel].Item2;
+                        levelEndTracker[currLevel] = (placeX + sprite.width, endY < startY + sprite.height ? -endY : startY - sprite.height);
+                        lastEndPoint = levelEndTracker[currLevel];
+                        Debug.Log($"Update end {currLevel} at ({lastEndPoint.Item1}, {lastEndPoint.Item2})");
+                    }
+                    else
+                    {
+                        int startY = levelStartTracker[currLevel].Item2;
+                        levelEndTracker[currLevel] = (placeX + sprite.width, startY - sprite.height);
+                        lastEndPoint = levelEndTracker[currLevel];
+                        Debug.Log($"Update end {currLevel} at ({lastEndPoint.Item1}, {lastEndPoint.Item2})");
+                    }
+                }
+            }
+
+            result.filterMode = FilterMode.Point;
+            return result;
+        }
+
+        public static Texture2D Blit(Texture2D addTo, Texture2D sprite, int x, int y)
+        {
+            int newWidth  = Mathf.Max(addTo.width,  Mathf.Abs(x) + sprite.width);
+            int newHeight = Mathf.Max(addTo.height, Mathf.Abs(y) + sprite.height);
+
+            // Create new texture (always RGBA32 for safety)
+            Texture2D result = new(newWidth, newHeight, TextureFormat.RGBA32, false);
+
+            // Fill with transparent pixels
+            Color32[] clear = new Color32[newWidth * newHeight];
+            for (int i = 0; i < clear.Length; i++) clear[i] = new Color32(0, 0, 0, 0);
+            result.SetPixels32(clear);
+
+            // Copy AddTo
+            Color32[] addToPixels = addTo.GetPixels32();
+            result.SetPixels32(0, 0, addTo.width, addTo.height, addToPixels);
+
+            // Copy sprite at (x, y)
+            Color32[] spritePixels = sprite.GetPixels32();
+            result.SetPixels32(x, y, sprite.width, sprite.height, spritePixels);
+
+            result.Apply(false);
+            return result;
+        }
+
+        public static Texture2D BlitBelow(Texture2D addTo, Texture2D sprite, int x, int y, int offsetY=0)
+        {
+            // If y is negative, shift everything up so y >= 0
+            if (y < 0)
+            {
+                // offsetY = -y;   // how much we need to shift
+                y = 0;
+            }
+
+            int newWidth  = Mathf.Max(addTo.width,  x + sprite.width);
+            int newHeight = Mathf.Max(addTo.height + offsetY, y + sprite.height);
+
+            Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
+
+            // Fill with transparent
+            Color32[] clear = new Color32[newWidth * newHeight];
+            for (int i = 0; i < clear.Length; i++) clear[i] = new Color32(0, 0, 0, 0);
+            result.SetPixels32(clear);
+
+            // Copy addTo shifted up if needed
+            Color32[] addToPixels = addTo.GetPixels32();
+            result.SetPixels32(0, offsetY, addTo.width, addTo.height, addToPixels);
+
+            // Copy sprite at (x, y)
+            Color32[] spritePixels = sprite.GetPixels32();
+            result.SetPixels32(x, y, sprite.width, sprite.height, spritePixels);
+
+            result.Apply(false);
+            return result;
+        }
+
+        // In a texture, cannot have two sprites with the same
+        // level & order
+        public static bool IsWorkplaceValid(List<SpriteButtonData> workplace)
+        {
+            HashSet<(int, int)> seen = new();
+            foreach (SpriteButtonData spriteButtonData in workplace)
+            {
+                // Debug.Log(spriteButtonData.level);
+                // Debug.Log(spriteButtonData.order);
+                if (spriteButtonData.level < 0 || spriteButtonData.order < 0)
+                    return false;
+                (int, int) key = (spriteButtonData.level, spriteButtonData.order);
+                if (!seen.Add(key))
+                    return false;
+            }
+            return true;
+        }
+    }
+
     public class PreviewTexturePanel
     {
         private const float ZOOM_MIN = 1f;
         private const float ZOOM_MAX = 4f;
 
         public Func<string, string> ELT;
-        public Func<Texture2D> GetTexture;
 
-        private Rect _guiRect; // 10% preview rect
-        private Rect _imageRect; // 90% preview rect
+        private Rect _guiRect; 
+        private Rect _imageRect;
 
         private bool _hasInit;
 
+        private Texture2D _workplaceTexture;
         private Texture2D _renderTexture;
         private Texture2D _checkerBoardTexture;
         private Vector2 _panOffset = Vector2.zero;
         private float _zoom = 1f;
+        private List<SpriteButtonData> _workplace;
+        private bool _needUpdateWorkplaceTexture = false;
 
         public void Initialize(Rect bound)
         {
-            if (GetTexture == null)
-            {
-                Debug.LogError("You need to assign GetTexture first!");
-                return;
-            }
             float totalHeight = bound.height;
             float guiHeight = totalHeight * 0.1f;
             float imageHeight = totalHeight - guiHeight;
@@ -53,17 +209,29 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             _hasInit = true;
         }
 
+        public void UpdateWorkplace(List<SpriteButtonData> workplace)
+        {
+            _workplace = workplace;
+            _needUpdateWorkplaceTexture = true;
+        }
+
         public void CreatePanel()
         {
             if (!_hasInit)
                 return;
 
+            if (_needUpdateWorkplaceTexture && _workplace != null)
+            {
+                _workplaceTexture = PreviewWorkPlace.CreatePreview(_workplace);
+                _needUpdateWorkplaceTexture = false;
+            }
+
             GUI.BeginGroup(_guiRect);
             GUILayout.BeginHorizontal();
 
             // Set buttons to a fixed width
-            EditorGUI.BeginDisabledGroup(GetTexture() == null);
-            float buttonWidth = _guiRect.width * 0.5f - 10f; 
+            EditorGUI.BeginDisabledGroup(_workplaceTexture == null);
+            float buttonWidth = _guiRect.width * 0.5f - 10f;
             if (GUILayout.Button(ELT("zoom_in"), GUILayout.Width(buttonWidth)))
             {
                 ZoomAtCenter(1.2f, _imageRect);
@@ -76,8 +244,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             GUILayout.EndHorizontal();
 
             // Compute pan bounds based on zoomed image size
-            float panWidth = Mathf.Max((GetTexture() != null ? GetTexture().width : 0f) * _zoom - _imageRect.width, 0f) / 2f;
-            float panHeight = Mathf.Max((GetTexture() != null ? GetTexture().height : 0f) * _zoom - _imageRect.height, 0f) / 2f;
+            float panWidth = Mathf.Max((_workplaceTexture != null ? _workplaceTexture.width : 0f) * _zoom - _imageRect.width, 0f) / 2f;
+            float panHeight = Mathf.Max((_workplaceTexture != null ? _workplaceTexture.height : 0f) * _zoom - _imageRect.height, 0f) / 2f;
             float sliderWidth = _guiRect.width - 20f;
             _panOffset.x = EditorGUILayout.Slider(ELT("pan_x"), _panOffset.x, -panWidth, panWidth, GUILayout.Width(sliderWidth));
             _panOffset.y = EditorGUILayout.Slider(ELT("pan_y"), _panOffset.y, -panHeight, panHeight, GUILayout.Width(sliderWidth));
@@ -94,7 +262,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
                 _checkerBoardTexture,
                 new Rect(0, 0, _imageRect.width / 16f, _imageRect.height / 16f)
             );
-            if (GetTexture() != null)
+            if (_workplaceTexture != null)
             {
                 UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
                 GUI.DrawTexture(new Rect(0, 0, _imageRect.width, _imageRect.height), _renderTexture, ScaleMode.StretchToFill, true);
@@ -114,8 +282,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 
             // Compute half sizes
             Vector2 halfPreview = new Vector2(previewRect.width, previewRect.height) * 0.5f;
-            Vector2 halfImageOld = 0.5f * oldZoom * new Vector2(GetTexture().width, GetTexture().height);
-            Vector2 halfImageNew = _zoom * 0.5f * new Vector2(GetTexture().width, GetTexture().height);
+            Vector2 halfImageOld = 0.5f * oldZoom * new Vector2(_workplaceTexture.width, _workplaceTexture.height);
+            Vector2 halfImageNew = _zoom * 0.5f * new Vector2(_workplaceTexture.width, _workplaceTexture.height);
 
             // Compute old min/max pan
             float oldPanMinX = halfPreview.x - halfImageOld.x;
@@ -151,14 +319,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
                 };
             }
 
-            Color[] srcPixels = GetTexture().GetPixels();
+            Color[] srcPixels = _workplaceTexture.GetPixels();
             Color32[] dstPixels = new Color32[previewWidth * previewHeight];
 
             float invZoom = 1f / _zoom;
             float halfPreviewW = previewWidth * 0.5f;
             float halfPreviewH = previewHeight * 0.5f;
-            float halfSrcW = GetTexture().width * 0.5f;
-            float halfSrcH = GetTexture().height * 0.5f;
+            float halfSrcW = _workplaceTexture.width * 0.5f;
+            float halfSrcH = _workplaceTexture.height * 0.5f;
 
             for (int y = 0; y < previewHeight; y++)
             {
@@ -173,8 +341,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
                     int srcXInt = Mathf.FloorToInt(srcXf);
 
                     Color col = Color.clear;
-                    if (srcXInt >= 0 && srcXInt < GetTexture().width && srcYInt >= 0 && srcYInt < GetTexture().height)
-                        col = srcPixels[srcYInt * GetTexture().width + srcXInt];
+                    if (srcXInt >= 0 && srcXInt < _workplaceTexture.width && srcYInt >= 0 && srcYInt < _workplaceTexture.height)
+                        col = srcPixels[srcYInt * _workplaceTexture.width + srcXInt];
 
                     dstPixels[dstRow + x] = col;
                 }

@@ -20,6 +20,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
     {
         private Texture2D _previewTexture;
         private List<Texture2DButtonData> _texture2DButtonDatas;
+        private List<SpriteButtonData> _workplace;
         private readonly TextureExporter _textureExporter = new(_appEnvironment);
 
         private PreviewTexturePanel _previewPanel;
@@ -29,30 +30,31 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
 
         private void InitPreviewPanel()
         {
-            // ! Make an example
-            BundleReader bundleReader = new(_appEnvironment.AssetsManager, _appEnvironment.Dispatcher);
-            string bundlePath = PathUtils.ToLongPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Otherworld Legends\\Otherworld Legends_Data\\StreamingAssets\\aa\\StandaloneWindows64\\unitspritesgroup_assets_assets\\sprites\\herounit\\hero_quanhuying\\unit_hero_quanhuying.psd_97f99a64c4a18168a8314aebe66b4d28.bundle");
-            (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = bundleReader.ReadBundle(bundlePath);
-            List<AssetFileInfo> texInfos = assetsInst.file.GetAssetsOfType(AssetClassID.Texture2D);
-            _previewTexture = _textureExporter.ExportTextureWithPathIdAsTexture2D(assetsInst, texInfos[0]);
+            // // ! Make an example
+            // BundleReader bundleReader = new(_appEnvironment.AssetsManager, _appEnvironment.Dispatcher);
+            // string bundlePath = PathUtils.ToLongPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Otherworld Legends\\Otherworld Legends_Data\\StreamingAssets\\aa\\StandaloneWindows64\\unitspritesgroup_assets_assets\\sprites\\herounit\\hero_quanhuying\\unit_hero_quanhuying.psd_97f99a64c4a18168a8314aebe66b4d28.bundle");
+            // (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = bundleReader.ReadBundle(bundlePath);
+            // List<AssetFileInfo> texInfos = assetsInst.file.GetAssetsOfType(AssetClassID.Texture2D);
+            // _previewTexture = _textureExporter.ExportTextureWithPathIdAsTexture2D(assetsInst, texInfos[0]);
 
-            // // Testing
-            // byte[] imageData = File.ReadAllBytes(Path.Combine(
-            // string.Format(PredefinedPaths.PapayaTextureProjectPath, "Quan_D-2.11.0.6"),
-            // "unit_hero_quanhuying_psd_97f99a64c4a18168a8314aebe66b4d28_bundle",
-            // "unit_hero_quanhuying_-992531485953202068.png"));
-            // _previewTexture = new Texture2D(2, 2);
-            // _previewTexture.LoadImage(imageData);
-            // _previewTexture.Apply();
-            _previewTexture.filterMode = FilterMode.Point;
+            // // // Testing
+            // // byte[] imageData = File.ReadAllBytes(Path.Combine(
+            // // string.Format(PredefinedPaths.PapayaTextureProjectPath, "Quan_D-2.11.0.6"),
+            // // "unit_hero_quanhuying_psd_97f99a64c4a18168a8314aebe66b4d28_bundle",
+            // // "unit_hero_quanhuying_-992531485953202068.png"));
+            // // _previewTexture = new Texture2D(2, 2);
+            // // _previewTexture.LoadImage(imageData);
+            // // _previewTexture.Apply();
+            // _previewTexture.filterMode = FilterMode.Point;
 
             _previewPanel = new()
             {
-                GetTexture = () => _previewTexture,
-                ELT = var => ELT(var)
+                ELT = var => ELT(var),
             };
             _previewPanel.Initialize(new(800, 10, 350, 800));
             _previewPanel.SetPanOffset(new(0, _previewTexture != null ? -_previewTexture.height / 2f : 0f));
+
+            _workplace = new();
         }
 
         private void InitSpritesPanel()
@@ -72,9 +74,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             _spriteEditPanel = new()
             {
                 ELT = var => ELT(var),
+                GetDatas = () => _workplace,
+                SetDatas = var =>
+                {
+                    _workplace = var;
+                    _previewPanel.UpdateWorkplace(var);
+                }
             };
-            _spriteEditPanel.Initialize(new(270, 550, 530, 260));
-        }
+                _spriteEditPanel.Initialize(new(270, 550, 530, 260));
+            }
 
         private void InitTexturesPanel()
         {

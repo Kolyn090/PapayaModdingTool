@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.EventListener;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,24 +11,27 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 {
     public class SpriteEditPanel : ISpriteButtonDataListener
     {
+        private const float Field_Width = 140f; // width of the input box
+        private const float Label_Width = 60f;  // width of the label
+        private const float Spacing = 5f;      // space between label and field
+
         public Func<string, string> ELT;
+        public Func<List<SpriteButtonData>> GetDatas; // Workplace
+        public Action<List<SpriteButtonData>> SetDatas; // Workplace
 
         private Texture2D _sprite;
         private int _level;
         private int _order;
         private string _animation;
         private string _name;
-        private float _width;
-        private float _height;
-        List<string> options = new() { "Option A", "Option B", "Option C" };
+        private int _width;
+        private int _height;
+        private SpriteButtonData _curr;
+        private List<string> _options = new() { "Option A", "Option B", "Option C" };
         int selectedIndex = 0; // currently selected index
         private bool _hasInit;
 
         private Rect _bound;
-
-        float fieldWidth = 140f; // width of the input box
-        float labelWidth = 60f;  // width of the label
-        float spacing = 5f;      // space between label and field
         
         public void Initialize(Rect bound)
         {
@@ -61,7 +66,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     // DrawField("Animation", ref _animation);
 
                     // Draw the popup
-                    DrawDropdownList("Animation", ref selectedIndex, options);
+                    DrawDropdownList("Animation", ref selectedIndex, _options);
 
                     // Optional: access the selected string
                     // string selectedValue = options[selectedIndex];
@@ -96,9 +101,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     {
                         GUILayout.Space(20); // left margin
 
-                        if (GUILayout.Button("Add To Preview", GUILayout.Width(100)))
+                        if (GUILayout.Button("Update Workplace", GUILayout.Width(100)))
                         {
-                            
+                            UpdateWorkplace();
                         }
 
                         GUILayout.Space(20); // right margin
@@ -113,12 +118,59 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             GUILayout.EndArea();
         }
 
+        private void UpdateWorkplace()
+        {
+            if (GetDatas == null || SetDatas == null)
+            {
+                Debug.LogError("Did you forgot to assign Workplace Datas?");
+                return;
+            }
+
+            if (_sprite == null)
+            {
+                Debug.LogWarning("No sprite selected. Abort.");
+                return;
+            }
+
+            if (GetDatas() == null)
+            {
+                SetDatas(new() { _curr });
+            }
+            else
+            {
+                if (GetDatas().Contains(_curr))
+                {
+                    _curr.level = _level;
+                    _curr.order = _order;
+                    _curr.animation = _animation;
+                    _curr.label = _name;
+                    _curr.width = _width;
+                    _curr.height = _height;
+                    SetDatas(GetDatas());
+                }
+                else
+                {
+                    _curr.level = _level;
+                    _curr.order = _order;
+                    _curr.animation = _animation;
+                    _curr.label = _name;
+                    _curr.width = _width;
+                    _curr.height = _height;
+                    List<SpriteButtonData> copy = new(GetDatas())
+                    {
+                        _curr
+                    };
+                    SetDatas(copy);
+                }
+            }
+        }
+
         private void DrawField<T>(string label, ref T value)
         {
             Rect rect = EditorGUILayout.GetControlRect();
-            Rect labelRect = new(rect.x, rect.y, labelWidth, rect.height);
-            Rect fieldRect = new(rect.x + labelWidth + spacing, rect.y, fieldWidth, rect.height);
-            
+            Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
+            Rect fieldRect = new(rect.x + Label_Width + Spacing, rect.y, Field_Width, rect.height);
+
             EditorGUI.LabelField(labelRect, label);
 
             if (typeof(T) == typeof(int))
@@ -132,8 +184,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         private void DrawDropdownList(string label, ref int value, List<string> options, string nullLabel = "<None>")
         {
             Rect rect = EditorGUILayout.GetControlRect();
-            Rect labelRect = new(rect.x, rect.y, labelWidth, rect.height);
-            Rect fieldRect = new(rect.x + labelWidth + spacing, rect.y, fieldWidth, rect.height);
+            Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
+            Rect fieldRect = new(rect.x + Label_Width + Spacing, rect.y, Field_Width, rect.height);
 
             EditorGUI.LabelField(labelRect, label);
 
@@ -231,7 +283,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
         public void Update(SpriteButtonData data)
         {
-            int animIndex = options.IndexOf(data.animation);
+            int animIndex = _options.IndexOf(data.animation);
             if (animIndex >= 0)
                 selectedIndex = animIndex + 1;
 
@@ -242,6 +294,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             _name = data.label;
             _width = data.width;
             _height = data.height;
+            _curr = data;
         }
     }
 }

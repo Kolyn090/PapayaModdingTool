@@ -6,8 +6,8 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.TextureData
     {
         public Texture2D sprite;
         public string label;
-        public float width;
-        public float height;
+        public int width;
+        public int height;
         public Vector2 pivot = Vector2.zero;
         public int level = -1;
         public int order = -1;

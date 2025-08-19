@@ -90,8 +90,8 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
             {
                 sprite = tex,
                 label = spriteBase["m_Name"].AsString,
-                width = spriteBase["m_Rect"]["width"].AsFloat,
-                height = spriteBase["m_Rect"]["height"].AsFloat,
+                width = spriteBase["m_Rect"]["width"].AsInt,
+                height = spriteBase["m_Rect"]["height"].AsInt,
                 pivot = new(spriteBase["m_Pivot"]["x"].AsFloat, spriteBase["m_Pivot"]["y"].AsFloat)
             };
         }
