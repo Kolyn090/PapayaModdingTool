@@ -66,19 +66,36 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button(data.texture, GUILayout.Width(64), GUILayout.Height(64)))
+            if (data.IsStyle1)
             {
-                if (GetListener != null)
+                if (GUILayout.Button(data.texture, GUILayout.Width(64), GUILayout.Height(64)))
                 {
-                    GetListener()?.Update(data);
+                    if (GetListener != null)
+                    {
+                        GetListener()?.Update(data);
+                    }
                 }
+            }
+            else if (data.IsStyle2)
+            {
+                if (GUILayout.Button(EditorGUIUtility.IconContent("Folder Icon").image as Texture2D, GUILayout.Width(64), GUILayout.Height(64)))
+                {
+                    if (GetListener != null)
+                    {
+                        GetListener()?.Update(data);
+                    }
+                }
+            }
+            else
+            {
+                // Invalid button. Don't do anything
             }
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
             // Center the text horizontally
-            GUILayout.Label(TruncateToEnd(data.label, 35), EditorStyles.centeredGreyMiniLabel, GUILayout.ExpandWidth(true));
+                GUILayout.Label(TruncateToEnd(data.label, 35), EditorStyles.centeredGreyMiniLabel, GUILayout.ExpandWidth(true));
 
             GUILayout.EndVertical();
         }

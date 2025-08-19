@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.EventListener;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -222,11 +220,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
             if (_sprite != null)
             {
-                GUIStyle centeredStyle = new GUIStyle(GUI.skin.label)
+                GUIStyle centeredStyle = new(GUI.skin.label)
                 {
                     alignment = TextAnchor.MiddleCenter
                 };
-                GUILayout.Label(DoubleSize(_sprite), centeredStyle, GUILayout.ExpandHeight(true));
+                    GUILayout.Label(
+                        DoubleSize(_sprite),
+                        centeredStyle,
+                        GUILayout.Width(128),
+                        GUILayout.Height(128)
+                    );
             }
             else
             {

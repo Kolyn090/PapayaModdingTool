@@ -42,6 +42,99 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
 
         // !!! TEXTURE END
 
+        public static List<SpriteButtonData> ReadSpriteButtonDatas(string importedTexturesPath)
+        {
+            List<SpriteButtonData> result = new();
+            if (!Directory.Exists(importedTexturesPath))
+            {
+                Debug.LogWarning($"Directory not found: {importedTexturesPath}");
+                return result;
+            }
+
+            // Get all files with image extensions
+            string[] files = Directory.GetFiles(importedTexturesPath, "*.*", SearchOption.TopDirectoryOnly);
+            foreach (string file in files)
+            {
+                string ext = Path.GetExtension(file).ToLowerInvariant();
+                if (ext != ".png" && ext != ".jpg" && ext != ".jpeg")
+                    continue;
+
+                byte[] fileData = File.ReadAllBytes(file);
+                Texture2D tex = new(2, 2, TextureFormat.RGBA32, false);
+                if (!tex.LoadImage(fileData))
+                {
+                    Debug.LogWarning($"Failed to load image: {file}");
+                    continue;
+                }
+                tex = TrimTexture(tex);
+                result.Add(new()
+                {
+                    sprite = tex,
+                    width = tex.width,
+                    height = tex.height,
+                    label = Path.GetFileNameWithoutExtension(file)
+                });
+            }
+
+            return result;
+        }
+
+        public static Texture2D TrimTexture(Texture2D source)
+        {
+            if (source == null) return null;
+
+            int width = source.width;
+            int height = source.height;
+            Color32[] pixels = source.GetPixels32();
+
+            int minX = width, maxX = 0;
+            int minY = height, maxY = 0;
+            bool foundPixel = false;
+
+            // Scan all pixels
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    Color32 c = pixels[y * width + x];
+
+                    // Consider non-transparent pixels as "content"
+                    if (c.a > 0)  
+                    {
+                        foundPixel = true;
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                    }
+                }
+            }
+
+            if (!foundPixel) // texture is fully transparent
+                return new Texture2D(1, 1);
+
+            int trimmedWidth = maxX - minX + 1;
+            int trimmedHeight = maxY - minY + 1;
+
+            // Get pixels in the bounding box
+            Color32[] newPixels = new Color32[trimmedWidth * trimmedHeight];
+            for (int y = 0; y < trimmedHeight; y++)
+            {
+                for (int x = 0; x < trimmedWidth; x++)
+                {
+                    newPixels[y * trimmedWidth + x] = pixels[(minY + y) * width + (minX + x)];
+                }
+            }
+
+            // Create new trimmed texture
+            Texture2D trimmed = new Texture2D(trimmedWidth, trimmedHeight, TextureFormat.RGBA32, false);
+            trimmed.SetPixels32(newPixels);
+            trimmed.Apply();
+
+            return trimmed;
+        }
+
+
         // ? Assume no atlas for now
         public static List<SpriteButtonData> ReadSpriteButtonDatas(AssetsFileInstance assetsInst,
                                                 AssetsManager assetsManager,
