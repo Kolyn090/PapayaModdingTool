@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.Editor.Universal.GraphicUI;
 using PapayaModdingTool.Assets.Script.EventListener;
 using UnityEditor;
 using UnityEngine;
@@ -28,6 +29,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         private string _name;
         private int _width;
         private int _height;
+        private float _pivotX;
+        private float _pivotY;
         private SpriteButtonData _curr;
         private readonly List<string> _animations = new();
         private int _selectedIndex = 0; // currently selected index
@@ -65,6 +68,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     DrawField(ELT("sprite_edit_order"), ref _order, var => { if (_curr != null) _curr.order = var; });
                     DrawField(ELT("sprite_edit_width"), ref _width, var => {  if (_curr != null) _curr.width = var; });
                     DrawField(ELT("sprite_edit_height"), ref _height, var => { if (_curr != null) _curr.height = var; });
+                    DrawField(ELT("pivot_x"), ref _pivotX, var => { if (_curr != null) _curr.pivot = new(_pivotX, _curr.pivot.y); });
+                    DrawField(ELT("pivot_y"), ref _pivotY, var => { if (_curr != null) _curr.pivot = new(_curr.pivot.x, _pivotY); });
                     DrawField(ELT("create_new_animation"), ref _newAnimation);
                     DrawField(ELT("delete_animation"), ref _deleteAnimation);
                     DrawDropdownList(ELT("sprite_edit_animation"),
@@ -105,6 +110,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     GUILayout.Label("");
                     GUILayout.Label("");
                     GUILayout.Label("");
+                    GUILayout.Label("");
+                    GUILayout.Label("");
 
                     GUILayout.BeginHorizontal();
                     {
@@ -139,7 +146,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     }
                     GUILayout.EndHorizontal();
 
-                    GUILayout.Label("");
                     GUILayout.Label("");
 
                     GUILayout.BeginHorizontal();
@@ -278,7 +284,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             }
             else if (typeof(T) == typeof(float) && (float)(object)value < 0f)
             {
-                GUI.contentColor = Color.red;
+                GUI.contentColor = originalColor;
                 value = (T)(object)EditorGUI.FloatField(fieldRect, (float)(object)value);
             }
             else if (typeof(T) == typeof(string))
@@ -358,12 +364,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                 {
                     alignment = TextAnchor.MiddleCenter
                 };
-                    GUILayout.Label(
-                        DoubleSize(_sprite),
-                        centeredStyle,
-                        GUILayout.Width(128),
-                        GUILayout.Height(128)
-                    );
+                GUILayout.Label(
+                    DoubleSize(_sprite),
+                    centeredStyle,
+                    GUILayout.Width(128),
+                    GUILayout.Height(128)
+                );
+
+                Rect spriteRect = GUILayoutUtility.GetLastRect();
+                PivotPoint.MakePivot(_pivotX, _pivotY, spriteRect);
             }
             else
             {
@@ -391,9 +400,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             int width = source.width * factor;
             int height = source.height * factor;
 
-            Texture2D result = new(width, height, source.format, false);
-
-            result.filterMode = FilterMode.Point; // ensure point sampling
+            Texture2D result = new(width, height, source.format, false)
+            {
+                filterMode = FilterMode.Point // ensure point sampling
+            };
             source.filterMode = FilterMode.Point;
 
             for (int y = 0; y < height; y++)
@@ -483,6 +493,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             _name = data.label;
             _width = data.width;
             _height = data.height;
+            _pivotX = data.pivot.x;
+            _pivotY = data.pivot.y;
             _curr = data;
         }
     }

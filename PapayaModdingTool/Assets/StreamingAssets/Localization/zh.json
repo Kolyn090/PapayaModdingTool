@@ -65,6 +65,8 @@
         "create_new_animation": "创建新动画",
         "delete_animation": "删除动画",
         "sprite_edit_create": "创建",
-        "sprite_edit_delete": "删除"
+        "sprite_edit_delete": "删除",
+        "pivot_x": "锚点 X",
+        "pivot_y": "锚点 Y"
     }
 }

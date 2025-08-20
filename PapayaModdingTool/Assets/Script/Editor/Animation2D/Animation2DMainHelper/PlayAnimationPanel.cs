@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
+using PapayaModdingTool.Assets.Script.Editor.Universal.GraphicUI;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,9 +12,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
     {
         private const int Target_Size = 256;
 
-        private List<Texture2D> _frames = new();
+        private List<SpriteButtonData> _frames = new();
         private int _currentFrame = 0;
-        private float _fps = 6f;
+        private float _fps = 9f;
         private bool _isPlaying = false;
         private double _lastFrameTime;
 
@@ -22,7 +22,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         {
             var window = CreateInstance<PlayAnimationPanel>(); // create new instance
             window.titleContent = new GUIContent($"{ELT("play_animation")}: {Guid.NewGuid()}");
-            window._frames = animationData.Select(x => x.sprite).ToList();
+            window._frames = animationData;
             window.Show();
         }
 
@@ -82,7 +82,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             // Draw current frame
             if (_frames.Count > 0 && _frames[_currentFrame] != null)
             {
-                Texture2D tex = _frames[_currentFrame];
+                Texture2D tex = _frames[_currentFrame].sprite;
                 tex.filterMode = FilterMode.Point;
 
                 Rect rect = GUILayoutUtility.GetRect(Target_Size, Target_Size, GUILayout.ExpandWidth(false));
@@ -95,6 +95,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                 rect.height -= padding * 2;
 
                 GUI.DrawTexture(rect, tex, ScaleMode.ScaleToFit, true);
+
+                PivotPoint.MakePivot(_frames[_currentFrame].pivot, rect);
             }
             else
             {

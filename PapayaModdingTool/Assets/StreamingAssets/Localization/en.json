@@ -65,6 +65,8 @@
         "create_new_animation": "Create New Animation",
         "delete_animation": "Delete Animation",
         "sprite_edit_create": "Create",
-        "sprite_edit_delete": "Delete"
+        "sprite_edit_delete": "Delete",
+        "pivot_x": "Pivot X",
+        "pivot_y": "Pivot Y"
     }
 }
