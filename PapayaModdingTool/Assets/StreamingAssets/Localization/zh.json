@@ -53,6 +53,14 @@
         "update_workplace": "更新工作区",
         "workplace": "工作区",
         "found_textures": "找到的材质",
-        "found_sprites": "找到的图像"
+        "found_sprites": "找到的图像",
+        "flip_x": "水平翻转",
+        "flip_y": "垂直翻转",
+        "sprite_edit_name": "名称",
+        "sprite_edit_level": "层级",
+        "sprite_edit_order": "顺序",
+        "sprite_edit_width": "宽度",
+        "sprite_edit_height": "高度",
+        "sprite_edit_animation": "动画"
     }
 }

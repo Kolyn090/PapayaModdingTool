@@ -53,6 +53,14 @@
         "update_workplace": "Update Workplace",
         "workplace": "Workplace",
         "found_textures": "Found Textures",
-        "found_sprites": "Found Sprites"
+        "found_sprites": "Found Sprites",
+        "flip_x": "Flip X",
+        "flip_y": "Flip Y",
+        "sprite_edit_name": "Name",
+        "sprite_edit_level": "Level",
+        "sprite_edit_order": "Order",
+        "sprite_edit_width": "Width",
+        "sprite_edit_height": "Height",
+        "sprite_edit_animation": "Animation"
     }
 }

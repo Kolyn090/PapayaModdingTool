@@ -56,29 +56,43 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
                 GUILayout.BeginVertical();
                 {
-                    DrawField("Name", ref _name);
-                    DrawField("Level", ref _level);
-                    DrawField("Order", ref _order);
-                    DrawField("Width", ref _width);
-                    DrawField("Height", ref _height);
-                    // DrawField("Animation", ref _animation);
-
-                    // Draw the popup
-                    DrawDropdownList("Animation", ref selectedIndex, _options);
-
-                    // Optional: access the selected string
-                    // string selectedValue = options[selectedIndex];
-                    // EditorGUILayout.LabelField("Selected: " + selectedValue);
+                    DrawField(ELT("sprite_edit_name"), ref _name);
+                    DrawField(ELT("sprite_edit_level"), ref _level);
+                    DrawField(ELT("sprite_edit_order"), ref _order);
+                    DrawField(ELT("sprite_edit_width"), ref _width);
+                    DrawField(ELT("sprite_edit_height"), ref _height);
+                    DrawDropdownList(ELT("sprite_edit_animation"), ref selectedIndex, _options);
                 }
                 GUILayout.EndVertical();
 
                 GUILayout.BeginVertical();
                 {
-                    GUILayout.Label("");
-                    GUILayout.Label("");
-                    GUILayout.Label("");
-                    GUILayout.Label("");
-                    GUILayout.Label("");
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Space(20); // left margin
+
+                        if (GUILayout.Button(ELT("flip_x"), GUILayout.Width(100)))
+                        {
+                            FlipX();
+                        }
+
+                        GUILayout.Space(20); // right margin
+                    }
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Space(20); // left margin
+
+                        if (GUILayout.Button(ELT("flip_y"), GUILayout.Width(100)))
+                        {
+                            FlipY();
+                        }
+
+                        GUILayout.Space(20); // right margin
+                    }
+                    GUILayout.EndHorizontal();
+
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Space(20); // left margin
@@ -91,9 +105,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                         GUILayout.Space(20); // right margin
                     }
                     GUILayout.EndHorizontal();
-
-                    GUILayout.Label("");
-                    GUILayout.Label("");
 
                     GUILayout.BeginHorizontal();
                     {
@@ -171,12 +182,35 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
             EditorGUI.LabelField(labelRect, label);
 
-            if (typeof(T) == typeof(int))
+            Color originalColor = GUI.contentColor;
+
+            // Check if value is numeric and less than 0
+            if (typeof(T) == typeof(int) && (int)(object)value < 0)
+            {
+                GUI.contentColor = Color.red;
                 value = (T)(object)EditorGUI.IntField(fieldRect, (int)(object)value);
-            else if (typeof(T) == typeof(float))
+            }
+            else if (typeof(T) == typeof(float) && (float)(object)value < 0f)
+            {
+                GUI.contentColor = Color.red;
                 value = (T)(object)EditorGUI.FloatField(fieldRect, (float)(object)value);
+            }
             else if (typeof(T) == typeof(string))
+            {
+                GUI.contentColor = originalColor; // keep normal color for strings
                 value = (T)(object)EditorGUI.TextField(fieldRect, (string)(object)value);
+            }
+            else
+            {
+                GUI.contentColor = originalColor;
+                if (typeof(T) == typeof(int))
+                    value = (T)(object)EditorGUI.IntField(fieldRect, (int)(object)value);
+                else if (typeof(T) == typeof(float))
+                    value = (T)(object)EditorGUI.FloatField(fieldRect, (float)(object)value);
+            }
+
+            // Reset color after drawing
+            GUI.contentColor = originalColor;
         }
 
         private void DrawDropdownList(string label, ref int value, List<string> options, string nullLabel = "<None>")
@@ -252,7 +286,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             GUILayout.EndVertical();
         }
 
-        public static Texture2D DoubleSize(Texture2D source, int factor=2)
+        private static Texture2D DoubleSize(Texture2D source, int factor=2)
         {
             int width = source.width * factor;
             int height = source.height * factor;
@@ -283,6 +317,56 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             return s.Length > len ? $"...{s[^len..]}" : s;
         }
 
+        private void FlipX()
+        {
+            static Texture2D FlipTextureByX(Texture2D original)
+            {
+                int width = original.width;
+                int height = original.height;
+
+                Texture2D flipped = new Texture2D(width, height, original.format, false);
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        // Mirror vertically: pixel from (x, y) goes to (x, height - 1 - y)
+                        flipped.SetPixel(x, height - 1 - y, original.GetPixel(x, y));
+                    }
+                }
+
+                flipped.Apply();
+                return flipped;
+            }
+
+            _curr.sprite = FlipTextureByX(_curr.sprite);
+            _sprite = FlipTextureByX(_sprite);
+        }
+
+        private void FlipY()
+        {
+            static Texture2D FlipTextureByY(Texture2D original)
+            {
+                int width = original.width;
+                int height = original.height;
+
+                Texture2D flipped = new Texture2D(width, height, original.format, false);
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        // Mirror horizontally: pixel from (x, y) goes to (width - 1 - x, y)
+                        flipped.SetPixel(width - 1 - x, y, original.GetPixel(x, y));
+                    }
+                }
+
+                flipped.Apply();
+                return flipped;
+            }
+            _curr.sprite = FlipTextureByY(_curr.sprite);
+            _sprite = FlipTextureByY(_sprite);
+        }
 
         public void Update(SpriteButtonData data)
         {
