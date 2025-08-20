@@ -83,7 +83,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     {
                         GUILayout.Space(20); // left margin
 
-                        if (GUILayout.Button("Play Animation", GUILayout.Width(100)))
+                        if (GUILayout.Button(ELT("play_animation"), GUILayout.Width(100), GUILayout.Height(40)))
                         {
 
                         }
@@ -99,7 +99,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     {
                         GUILayout.Space(20); // left margin
 
-                        if (GUILayout.Button("Update Workplace", GUILayout.Width(100)))
+                        if (GUILayout.Button(ELT("update_workplace"), GUILayout.Width(100), GUILayout.Height(40)))
                         {
                             UpdateWorkplace();
                         }

@@ -41,7 +41,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             EditorGUI.DrawRect(_bound, new Color(0.2f, 0.2f, 0.2f));
 
             GUILayout.BeginArea(_bound);
-            EditorGUILayout.LabelField("Found Sprites", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(ELT("found_sprites"), EditorStyles.boldLabel);
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 

@@ -34,7 +34,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             EditorGUI.DrawRect(_bound, new Color(0.2f, 0.2f, 0.2f));
 
             GUILayout.BeginArea(_bound);
-            EditorGUILayout.LabelField("Found Textures", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(ELT("found_textures"), EditorStyles.boldLabel);
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 

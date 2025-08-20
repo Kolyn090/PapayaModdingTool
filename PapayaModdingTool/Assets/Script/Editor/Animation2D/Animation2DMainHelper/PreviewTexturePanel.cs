@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using UnityEditor;
@@ -31,7 +30,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
         public void Initialize(Rect bound)
         {
             float totalHeight = bound.height;
-            float guiHeight = totalHeight * 0.1f;
+            float guiHeight = totalHeight * 0.13f;
             float imageHeight = totalHeight - guiHeight;
             _guiRect = new Rect(bound.x, bound.y, bound.width, guiHeight);
             _imageRect = new Rect(bound.x, bound.y + guiHeight, bound.width, imageHeight);
@@ -72,6 +71,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             }
 
             GUI.BeginGroup(_guiRect);
+            EditorGUILayout.LabelField(ELT("workplace"), EditorStyles.boldLabel);
             GUILayout.BeginHorizontal();
 
             // Set buttons to a fixed width

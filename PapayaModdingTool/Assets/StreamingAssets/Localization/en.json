@@ -3,7 +3,7 @@
     "translations": {
         "dev_only": "Warning: This interface is for the tool developer only! For your safety, please close this window.",
         "01_tool": "01 Texture Modding",
-        "02_tool": "02 2D Animation",
+        "02_tool": "02 Atlas Maker",
         "found_projects": "Found Projects",
         "open_project": "Open",
         "create_new_project": "Create New",
@@ -48,6 +48,11 @@
         "zoom_out": "Zoom Out",
         "pan_x": "Pan X",
         "pan_y": "Pan Y",
-        "preview": "Preview"
+        "preview": "Preview",
+        "play_animation": "Play Animation",
+        "update_workplace": "Update Workplace",
+        "workplace": "Workplace",
+        "found_textures": "Found Textures",
+        "found_sprites": "Found Sprites"
     }
 }

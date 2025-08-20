@@ -3,7 +3,7 @@
     "translations": {
         "dev_only": "警告：该界面是为工具开发者设计的！为了你的安全请关闭该窗口。",
         "01_tool": "01 材质编辑",
-        "02_tool": "02 2D动画",
+        "02_tool": "02 材质制作",
         "found_projects": "找到的项目",
         "open_project": "打开",
         "create_new_project": "创建",
@@ -48,6 +48,11 @@
         "zoom_out": "缩小",
         "pan_x": "平移 X",
         "pan_y": "平移 Y",
-        "preview": "预览"
+        "preview": "预览",
+        "play_animation": "演示动画",
+        "update_workplace": "更新工作区",
+        "workplace": "工作区",
+        "found_textures": "找到的材质",
+        "found_sprites": "找到的图像"
     }
 }
