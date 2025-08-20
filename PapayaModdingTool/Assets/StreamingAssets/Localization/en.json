@@ -61,6 +61,10 @@
         "sprite_edit_order": "Order",
         "sprite_edit_width": "Width",
         "sprite_edit_height": "Height",
-        "sprite_edit_animation": "Animation"
+        "sprite_edit_animation": "Animation",
+        "create_new_animation": "Create New Animation",
+        "delete_animation": "Delete Animation",
+        "sprite_edit_create": "Create",
+        "sprite_edit_delete": "Delete"
     }
 }

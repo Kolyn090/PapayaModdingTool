@@ -21,12 +21,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         private int _level;
         private int _order;
         private string _animation;
+        private string _newAnimation;
+        private string _deleteAnimation;
         private string _name;
         private int _width;
         private int _height;
         private SpriteButtonData _curr;
-        private List<string> _options = new() { "Option A", "Option B", "Option C" };
-        int selectedIndex = 0; // currently selected index
+        private List<string> _animations = new();
+        private int _selectedIndex = 0; // currently selected index
         private bool _hasInit;
 
         private Rect _bound;
@@ -56,12 +58,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
                 GUILayout.BeginVertical();
                 {
-                    DrawField(ELT("sprite_edit_name"), ref _name);
-                    DrawField(ELT("sprite_edit_level"), ref _level);
-                    DrawField(ELT("sprite_edit_order"), ref _order);
-                    DrawField(ELT("sprite_edit_width"), ref _width);
-                    DrawField(ELT("sprite_edit_height"), ref _height);
-                    DrawDropdownList(ELT("sprite_edit_animation"), ref selectedIndex, _options);
+                    DrawField(ELT("sprite_edit_name"), ref _name, var => { if (_curr != null) _curr.label = var; });
+                    DrawField(ELT("sprite_edit_level"), ref _level, var => {  if (_curr != null) _curr.level = var; });
+                    DrawField(ELT("sprite_edit_order"), ref _order, var => { if (_curr != null) _curr.order = var; });
+                    DrawField(ELT("sprite_edit_width"), ref _width, var => {  if (_curr != null) _curr.width = var; });
+                    DrawField(ELT("sprite_edit_height"), ref _height, var => { if (_curr != null) _curr.height = var; });
+                    DrawField(ELT("create_new_animation"), ref _newAnimation);
+                    DrawField(ELT("delete_animation"), ref _deleteAnimation);
+                    DrawDropdownList(ELT("sprite_edit_animation"),
+                                        ref _selectedIndex,
+                                        _animations,
+                                        var => { _animation = var; if (_curr != null) _curr.animation = var; });
                 }
                 GUILayout.EndVertical();
 
@@ -93,15 +100,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     }
                     GUILayout.EndHorizontal();
 
+                    GUILayout.Label("");
+                    GUILayout.Label("");
+                    GUILayout.Label("");
+
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Space(20); // left margin
-
-                        if (GUILayout.Button(ELT("play_animation"), GUILayout.Width(100), GUILayout.Height(40)))
+                        if (GUILayout.Button(ELT("sprite_edit_create"), GUILayout.Width(100)))
                         {
-
+                            AddAnimation();
                         }
-
                         GUILayout.Space(20); // right margin
                     }
                     GUILayout.EndHorizontal();
@@ -109,12 +118,35 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Space(20); // left margin
+                        if (GUILayout.Button(ELT("sprite_edit_delete"), GUILayout.Width(100)))
+                        {
+                            DeleteAnimation();
+                        }
+                        GUILayout.Space(20); // right margin
+                    }
+                    GUILayout.EndHorizontal();
 
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Space(20); // left margin
+                        if (GUILayout.Button(ELT("play_animation"), GUILayout.Width(100)))
+                        {
+
+                        }
+                        GUILayout.Space(20); // right margin
+                    }
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.Label("");
+                    GUILayout.Label("");
+
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Space(20); // left margin
                         if (GUILayout.Button(ELT("update_workplace"), GUILayout.Width(100), GUILayout.Height(40)))
                         {
                             UpdateWorkplace();
                         }
-
                         GUILayout.Space(20); // right margin
                     }
                     GUILayout.EndHorizontal();
@@ -125,6 +157,44 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             EditorGUI.EndDisabledGroup();
 
             GUILayout.EndArea();
+        }
+
+        private void AddAnimation()
+        {
+            if (string.IsNullOrWhiteSpace(_newAnimation))
+            {
+                Debug.LogWarning("Warning: New animation is empty. Abort creation.");
+            }
+            else
+            {
+                if (!_animations.Contains(_newAnimation))
+                {
+                    _animations.Add(_newAnimation);
+                    _newAnimation = "";
+                    Debug.Log($"Created new animation: {_newAnimation}");
+                }
+            }
+        }
+
+        private void DeleteAnimation()
+        {
+            if (string.IsNullOrWhiteSpace(_deleteAnimation))
+            {
+                Debug.LogWarning("Warning: Animation to delete is empty. Abort deletion.");
+            }
+            else
+            {
+                if (!_animations.Contains(_deleteAnimation))
+                {
+                    Debug.LogWarning($"Doesn't contain animation: {_deleteAnimation}. Abort deletion.");
+                }
+                else
+                {
+                    _animations.Remove(_deleteAnimation);
+                    _deleteAnimation = "";
+                    Debug.Log($"Deleted animation: {_deleteAnimation}.");
+                }
+            }
         }
 
         private void UpdateWorkplace()
@@ -174,7 +244,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             }
         }
 
-        private void DrawField<T>(string label, ref T value)
+        private void DrawField<T>(string label,
+                                    ref T value,
+                                    Action<T> callBack = null)
         {
             Rect rect = EditorGUILayout.GetControlRect();
             Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
@@ -209,11 +281,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     value = (T)(object)EditorGUI.FloatField(fieldRect, (float)(object)value);
             }
 
+            callBack?.Invoke(value);
+
             // Reset color after drawing
             GUI.contentColor = originalColor;
         }
 
-        private void DrawDropdownList(string label, ref int value, List<string> options, string nullLabel = "<None>")
+        private void DrawDropdownList(string label,
+                                        ref int value,
+                                        List<string> options,
+                                        Action<string> callBack,
+                                        string nullLabel = "<None>")
         {
             Rect rect = EditorGUILayout.GetControlRect();
             Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
@@ -236,8 +314,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             // value == 0 means null / none selected
 
             // Invoke callback if selection changed
-            if (value != previousValue )
+            if (value != previousValue)
             {
+                if (value > 0)
+                {
+                    callBack.Invoke(options[value - 1]);
+                }
+                else
+                {
+                    callBack.Invoke(options[0]);
+                }
                 Debug.Log(value > 0 ? $"Changed to {options[value-1]}" : "Changed to None");
             }
         }
@@ -370,9 +456,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
         public void Update(SpriteButtonData data)
         {
-            int animIndex = _options.IndexOf(data.animation);
+            int animIndex = _animations.IndexOf(data.animation);
             if (animIndex >= 0)
-                selectedIndex = animIndex + 1;
+                _selectedIndex = animIndex + 1;
+            else
+                _selectedIndex = 0;
 
             _sprite = data.sprite;
             _level = data.level;

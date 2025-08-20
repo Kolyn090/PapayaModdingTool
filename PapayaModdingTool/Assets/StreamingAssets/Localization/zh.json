@@ -61,6 +61,10 @@
         "sprite_edit_order": "顺序",
         "sprite_edit_width": "宽度",
         "sprite_edit_height": "高度",
-        "sprite_edit_animation": "动画"
+        "sprite_edit_animation": "动画",
+        "create_new_animation": "创建新动画",
+        "delete_animation": "删除动画",
+        "sprite_edit_create": "创建",
+        "sprite_edit_delete": "删除"
     }
 }
