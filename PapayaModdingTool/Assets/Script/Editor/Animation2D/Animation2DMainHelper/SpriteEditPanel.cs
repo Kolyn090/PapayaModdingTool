@@ -4,6 +4,7 @@ using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Universal.GraphicUI;
 using PapayaModdingTool.Assets.Script.EventListener;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
@@ -360,18 +361,28 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
             if (_sprite != null)
             {
-                GUIStyle centeredStyle = new(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter
-                };
-                GUILayout.Label(
-                    DoubleSize(_sprite),
-                    centeredStyle,
-                    GUILayout.Width(128),
-                    GUILayout.Height(128)
+                // Define container (box) rect
+                Rect containerRect = GUILayoutUtility.GetRect(128, 128, GUILayout.ExpandWidth(false));
+
+                // Draw the container background
+                // EditorGUI.DrawRect(containerRect, new Color(0.1f, 0.1f, 0.1f, 1f));
+
+                Texture2D doubled = DoubleSize(_sprite);
+
+                // Compute rect for your sprite inside the container, centered
+                Rect spriteRect = new(
+                    containerRect.x + containerRect.width / 2 -  doubled.width / 2,  // center X
+                    containerRect.y + containerRect.height / 2 - doubled.height / 2, // center Y
+                    doubled.width,  // width
+                    doubled.height  // height
                 );
 
-                Rect spriteRect = GUILayoutUtility.GetLastRect();
+                // Draw sprite background
+                // EditorGUI.DrawRect(spriteRect, new Color(1f, 0.2f, 0.2f, 1f));
+
+                GUI.DrawTexture(spriteRect, doubled, ScaleMode.ScaleToFit, true);
+
+                // Draw pivot on top
                 PivotPoint.MakePivot(_pivotX, _pivotY, spriteRect);
             }
             else
@@ -414,6 +425,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     int srcX = x / factor;
                     int srcY = y / factor;
                     Color col = source.GetPixel(srcX, srcY);
+
+                    // // !!! Debug
+                    // // Replace fully transparent pixels with green
+                    // if (col.a == 0f)
+                    // {
+                    //     col = Color.green;
+                    // }
+
                     result.SetPixel(x, y, col);
                 }
             }
