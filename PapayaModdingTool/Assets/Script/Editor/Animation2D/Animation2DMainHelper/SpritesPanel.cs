@@ -20,8 +20,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
         public Func<AssetsManager> GetAssetsManager;
         public Func<TextureEncoderDecoder> GetTextureEncoderDecoder;
         public Func<ISpriteButtonDataListener> GetListener;
+        public Func<List<SpriteButtonData>> GetDatas;
+        public Action<List<SpriteButtonData>> SetDatas;
 
-        private List<SpriteButtonData> _datas;
         private Rect _bound;
         private bool _hasInit;
         private Vector2 _scrollPos;
@@ -46,15 +47,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
             int index = 0;
-            if (_datas != null)
+            if (GetDatas() != null)
             {
-                while (index < _datas.Count)
+                while (index < GetDatas().Count)
                 {
                     EditorGUILayout.BeginHorizontal();
 
-                    for (int col = 0; col < BUTTONS_PER_ROW && index < _datas.Count; col++, index++)
+                    for (int col = 0; col < BUTTONS_PER_ROW && index < GetDatas().Count; col++, index++)
                     {
-                        DrawImageButton(_datas[index]);
+                        DrawImageButton(GetDatas()[index]);
                     }
 
                     EditorGUILayout.EndHorizontal();
@@ -116,10 +117,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
         {
             if (data.IsStyle1)
             {
-                _datas = ImageReader.ReadSpriteButtonDatas(data.assetsInst,
+                SetDatas(ImageReader.ReadSpriteButtonDatas(data.assetsInst,
                                                             GetAssetsManager(),
-                                                            GetTextureEncoderDecoder());
-                _datas = _datas.OrderBy(o =>
+                                                            GetTextureEncoderDecoder()));
+                SetDatas(GetDatas().OrderBy(o =>
                 {
                     var match = Regex.Match(o.label, @"\d+$");
                     if (match.Success && int.TryParse(match.Value, out int num))
@@ -128,12 +129,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
                         return int.MaxValue; // no number → push to end
                 })
                 .ThenBy(o => o.label) // optional: sort alphabetically among "no-number" names
-                .ToList();
+                .ToList());
             }
             else if (data.IsStyle2)
             {
-                _datas = ImageReader.ReadSpriteButtonDatas(data.importedTexturesPath);
-                _datas = _datas.OrderBy(o => o.label).ToList();
+                SetDatas(ImageReader.ReadSpriteButtonDatas(data.importedTexturesPath));
+                SetDatas(GetDatas().OrderBy(o => o.label).ToList());
             }
             else
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.EventListener;
 using UnityEditor;
@@ -14,6 +15,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         private const float Spacing = 5f;      // space between label and field
 
         public Func<string, string> ELT;
+        public Func<List<SpriteButtonData>> GetAllDatasInTexture;
         public Func<List<SpriteButtonData>> GetDatas; // Workplace
         public Action<List<SpriteButtonData>> SetDatas; // Workplace
 
@@ -27,7 +29,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         private int _width;
         private int _height;
         private SpriteButtonData _curr;
-        private List<string> _animations = new();
+        private readonly List<string> _animations = new();
         private int _selectedIndex = 0; // currently selected index
         private bool _hasInit;
 
@@ -131,7 +133,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                         GUILayout.Space(20); // left margin
                         if (GUILayout.Button(ELT("play_animation"), GUILayout.Width(100)))
                         {
-
+                            PlayAnimation();
                         }
                         GUILayout.Space(20); // right margin
                     }
@@ -194,6 +196,18 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                     _deleteAnimation = "";
                     Debug.Log($"Deleted animation: {_deleteAnimation}.");
                 }
+            }
+        }
+
+        private void PlayAnimation()
+        {
+            if (_selectedIndex != 0)
+            {
+                PlayAnimationPanel.Open(GetAllDatasInTexture().Where(x => x.animation == _animation).ToList());
+            }
+            else
+            {
+                Debug.LogWarning("No animation selected, cannot play animation. Abort.");
             }
         }
 

@@ -18,8 +18,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
 {
     public class Animation2DMainWindow : MainWindow
     {
-        private Texture2D _previewTexture;
+        // private readonly Texture2D _previewTexture;
         private List<Texture2DButtonData> _texture2DButtonDatas;
+        private List<SpriteButtonData> _allDatasInTexture;
         private List<SpriteButtonData> _workplace;
         private readonly TextureExporter _textureExporter = new(_appEnvironment);
 
@@ -35,7 +36,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                 ELT = var => ELT(var),
             };
             _previewPanel.Initialize(new(800, 10, 350, 800));
-            _previewPanel.SetPanOffset(new(0, _previewTexture != null ? -_previewTexture.height / 2f : 0f));
+            // _previewPanel.SetPanOffset(new(0, _previewTexture != null ? -_previewTexture.height / 2f : 0f));
 
             _workplace = new();
         }
@@ -47,7 +48,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                 ELT = var => ELT(var),
                 GetListener = () => _spriteEditPanel,
                 GetAssetsManager = () => _appEnvironment.AssetsManager,
-                GetTextureEncoderDecoder = () => _appEnvironment.Wrapper.TextureEncoderDecoder
+                GetTextureEncoderDecoder = () => _appEnvironment.Wrapper.TextureEncoderDecoder,
+                GetDatas = () => _allDatasInTexture,
+                SetDatas = var => _allDatasInTexture = var
             };
             _spritesPanel.Initialize(new(270, 20, 530, 520));
         }
@@ -62,7 +65,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                 {
                     _workplace = var;
                     _previewPanel.UpdateWorkplace(var);
-                }
+                },
+                GetAllDatasInTexture = () => _allDatasInTexture
             };
             _spriteEditPanel.Initialize(new(270, 550, 530, 260));
         }
