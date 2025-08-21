@@ -67,6 +67,7 @@
         "sprite_edit_create": "Create",
         "sprite_edit_delete": "Delete",
         "pivot_x": "Pivot X",
-        "pivot_y": "Pivot Y"
+        "pivot_y": "Pivot Y",
+        "pivot": "Pivot"
     }
 }

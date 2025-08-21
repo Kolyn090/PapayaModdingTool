@@ -67,6 +67,7 @@
         "sprite_edit_create": "创建",
         "sprite_edit_delete": "删除",
         "pivot_x": "锚点 X",
-        "pivot_y": "锚点 Y"
+        "pivot_y": "锚点 Y",
+        "pivot": "锚点"
     }
 }

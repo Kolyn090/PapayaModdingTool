@@ -343,9 +343,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                 }
                 else
                 {
-                    callBack.Invoke(options[0]);
+                    callBack.Invoke("");
                 }
-                Debug.Log(value > 0 ? $"Changed to {options[value-1]}" : "Changed to None");
+                // Debug.Log(value > 0 ? $"Changed to {options[value-1]}" : $"Changed to None");
             }
         }
 

@@ -90,9 +90,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             GUILayout.Label(TruncateToEnd(data.label, 15), EditorStyles.centeredGreyMiniLabel, GUILayout.ExpandWidth(true));
             string coord;
             if (data.level < 0 || data.order < 0)
-                coord = "<null>";
+                coord = "(null)";
             else
                 coord = $"({data.level}, {data.order})";
+
+            string pivot = $"{ELT("pivot")}: <{(float) Math.Round(data.pivot.x, 2)}, {(float) Math.Round(data.pivot.y, 2)}>";
 
             GUIStyle redLabel = new(GUI.skin.label)
             {
@@ -101,8 +103,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             };
             redLabel.normal.textColor = Color.red;
 
-            GUILayout.Label(coord,
-                            coord == "<null>" ? redLabel : EditorStyles.centeredGreyMiniLabel,
+            GUILayout.Label($"{ELT("workplace")}: {coord}",
+                            coord == "(null)" ? redLabel : EditorStyles.centeredGreyMiniLabel,
+                            GUILayout.ExpandWidth(true));
+            GUILayout.Label(pivot,
+                            EditorStyles.centeredGreyMiniLabel,
                             GUILayout.ExpandWidth(true));
 
             GUILayout.EndVertical();

@@ -110,22 +110,5 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                 EditorGUILayout.LabelField("No frames loaded.");
             }
         }
-
-        private static void DrawDot(Vector2 pos, Color color, float size = 4f)
-        {
-            // Center the dot around the position
-            Rect dotRect = new Rect(pos.x - size / 2, pos.y - size / 2, size, size);
-            EditorGUI.DrawRect(dotRect, color);
-        }
-
-        private static void DrawDotInRect(Rect rect, Vector2 relativePivot, Color color, float size = 4f)
-        {
-            // relativePivot is normalized (0–1) where (0,0)=bottom-left, (1,1)=top-right
-            float x = rect.x + relativePivot.x * rect.width;
-            float y = rect.y + (1f - relativePivot.y) * rect.height; // flip Y so (0,0) = bottom
-            Rect dotRect = new Rect(x - size / 2, y - size / 2, size, size);
-
-            EditorGUI.DrawRect(dotRect, color);
-        }
     }
 }
