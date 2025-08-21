@@ -10,9 +10,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 {
     public class PlayAnimationPanel : BaseEditorWindow
     {
-        private const int Target_Size = 256;
-
         private List<SpriteButtonData> _frames = new();
+        private int _targetSize = 256;
         private int _currentFrame = 0;
         private float _fps = 9f;
         private bool _isPlaying = false;
@@ -76,6 +75,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
             // FPS slider
             _fps = EditorGUILayout.Slider("Speed (FPS)", _fps, 1f, 60f);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Target Size:", GUILayout.Width(80));
+            _targetSize = EditorGUILayout.IntField(_targetSize, GUILayout.Width(60));
+            GUILayout.EndHorizontal();
 
             GUILayout.Space(10);
 
@@ -85,23 +88,44 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                 Texture2D tex = _frames[_currentFrame].sprite;
                 tex.filterMode = FilterMode.Point;
 
-                Rect rect = GUILayoutUtility.GetRect(Target_Size, Target_Size, GUILayout.ExpandWidth(false));
+                Rect rect = GUILayoutUtility.GetRect(_targetSize, _targetSize, GUILayout.ExpandWidth(false));
 
-                // Add padding
-                float padding = 10f;
-                rect.x += padding;
-                rect.y += padding;
-                rect.width -= padding * 2;
-                rect.height -= padding * 2;
+                EditorGUI.DrawRect(rect, new Color(0.2f, 0.2f, 0.2f, 1f));
 
-                GUI.DrawTexture(rect, tex, ScaleMode.ScaleToFit, true);
+                Vector2 fixedPivotPos = new(0.5f, 0f);
+                PivotPoint.MakePivot(fixedPivotPos, rect);
 
-                PivotPoint.MakePivot(_frames[_currentFrame].pivot, rect);
+                SpriteButtonData sprite = _frames[_currentFrame];
+                float scale = 4f;
+
+                Vector2 drawSize = new(sprite.width * scale, sprite.height * scale);
+
+                Vector2 drawPos = new(_targetSize/2 + rect.x - scale * sprite.pivot.x * sprite.width,
+                                        rect.y + _targetSize - scale * ((1 - sprite.pivot.y) * sprite.height));
+                Rect drawRect = new(drawPos.x, drawPos.y, drawSize.x, drawSize.y);
+                GUI.DrawTexture(drawRect, sprite.sprite, ScaleMode.StretchToFill, true);
             }
             else
             {
                 EditorGUILayout.LabelField("No frames loaded.");
             }
+        }
+
+        private static void DrawDot(Vector2 pos, Color color, float size = 4f)
+        {
+            // Center the dot around the position
+            Rect dotRect = new Rect(pos.x - size / 2, pos.y - size / 2, size, size);
+            EditorGUI.DrawRect(dotRect, color);
+        }
+
+        private static void DrawDotInRect(Rect rect, Vector2 relativePivot, Color color, float size = 4f)
+        {
+            // relativePivot is normalized (0–1) where (0,0)=bottom-left, (1,1)=top-right
+            float x = rect.x + relativePivot.x * rect.width;
+            float y = rect.y + (1f - relativePivot.y) * rect.height; // flip Y so (0,0) = bottom
+            Rect dotRect = new Rect(x - size / 2, y - size / 2, size, size);
+
+            EditorGUI.DrawRect(dotRect, color);
         }
     }
 }
