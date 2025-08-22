@@ -273,9 +273,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             }
         }
 
-        private void DrawField<T>(string label,
-                                    ref T value,
-                                    Action<T> callBack = null)
+        private void DrawField<T>(string label, ref T value, Action<T> callBack = null)
         {
             Rect rect = EditorGUILayout.GetControlRect();
             Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
@@ -284,36 +282,38 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             EditorGUI.LabelField(labelRect, label);
 
             Color originalColor = GUI.contentColor;
+            T newValue = value;
 
-            // Check if value is numeric and less than 0
-            if (typeof(T) == typeof(int) && (int)(object)value < 0)
+            EditorGUI.BeginChangeCheck(); // Start tracking changes
+
+            if (typeof(T) == typeof(int))
             {
-                GUI.contentColor = Color.red;
-                value = (T)(object)EditorGUI.IntField(fieldRect, (int)(object)value);
+                int intValue = (int)(object)value;
+                if (intValue < 0) GUI.contentColor = Color.red;
+                intValue = EditorGUI.IntField(fieldRect, intValue);
+                newValue = (T)(object)intValue;
             }
-            else if (typeof(T) == typeof(float) && (float)(object)value < 0f)
+            else if (typeof(T) == typeof(float))
             {
-                GUI.contentColor = originalColor;
-                value = (T)(object)EditorGUI.FloatField(fieldRect, (float)(object)value);
+                float floatValue = (float)(object)value;
+                if (floatValue < 0f) GUI.contentColor = Color.red;
+                floatValue = EditorGUI.FloatField(fieldRect, floatValue);
+                newValue = (T)(object)floatValue;
             }
             else if (typeof(T) == typeof(string))
             {
-                GUI.contentColor = originalColor; // keep normal color for strings
-                value = (T)(object)EditorGUI.TextField(fieldRect, (string)(object)value);
-            }
-            else
-            {
-                GUI.contentColor = originalColor;
-                if (typeof(T) == typeof(int))
-                    value = (T)(object)EditorGUI.IntField(fieldRect, (int)(object)value);
-                else if (typeof(T) == typeof(float))
-                    value = (T)(object)EditorGUI.FloatField(fieldRect, (float)(object)value);
+                string strValue = (string)(object)value;
+                strValue = EditorGUI.TextField(fieldRect, strValue);
+                newValue = (T)(object)strValue;
             }
 
-            callBack?.Invoke(value);
-
-            // Reset color after drawing
             GUI.contentColor = originalColor;
+
+            if (EditorGUI.EndChangeCheck()) // Only true if user actually changed the value
+            {
+                value = newValue;
+                callBack?.Invoke(newValue);
+            }
         }
 
         private void DrawDropdownList(string label,
@@ -322,6 +322,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                                         Action<string> callBack,
                                         string nullLabel = "<None>")
         {
+            string controlName = $"Dropdown_{label}";
+            GUI.SetNextControlName(controlName);
+
             Rect rect = EditorGUILayout.GetControlRect();
             Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
             Rect fieldRect = new(rect.x + Label_Width + Spacing, rect.y, Field_Width, rect.height);
@@ -343,7 +346,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             // value == 0 means null / none selected
 
             // Invoke callback if selection changed
-            if (value != previousValue)
+            if (value != previousValue && EditorGUI.EndChangeCheck()) // check if really from user
             {
                 if (value > 0)
                 {

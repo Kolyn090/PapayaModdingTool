@@ -103,7 +103,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                 Vector2 drawPos = new(_targetSize/2 + rect.x - scale * sprite.pivot.x * sprite.width,
                                         rect.y + _targetSize - scale * ((1 - sprite.pivot.y) * sprite.height));
                 Rect drawRect = new(drawPos.x, drawPos.y, drawSize.x, drawSize.y);
-                GUI.DrawTexture(drawRect, sprite.sprite, ScaleMode.StretchToFill, true);
+
+                GUI.DrawTexture(drawRect, sprite.sprite, ScaleMode.ScaleToFit, true);
             }
             else
             {
