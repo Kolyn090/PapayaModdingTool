@@ -22,22 +22,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
         public Func<TextureEncoderDecoder> GetTextureEncoderDecoder;
         public Func<ISpriteButtonDataListener> GetListener;
         public Func<List<SpriteButtonData>> GetDatas;
+        public Func<SpritesBatchSelector> GetBatchSelector;
         public Action<List<SpriteButtonData>> SetDatas;
 
         private Rect _bound;
         private bool _hasInit;
         private Vector2 _scrollPos;
-        private SpritesBatchSelector _batchSelector;
 
         public void Initialize(Rect bound)
         {
             _bound = bound;
             _hasInit = true;
-
-            _batchSelector = new()
-            {
-                GetDatas = GetDatas
-            };
         }
 
         public void CreatePanel()
@@ -87,7 +82,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
             if (GUILayout.Button(data.sprite, GUILayout.Width(64), GUILayout.Height(64)))
             {
                 // Debug.Log("Clicked: " + data.label);
-                _batchSelector.ClickSpriteButton(data, SpritesBatchSelector.IsShiftHeld(), SpritesBatchSelector.IsCtrlHeld());
+                GetBatchSelector().ClickSpriteButton(data, SpritesBatchSelector.IsShiftHeld(), SpritesBatchSelector.IsCtrlHeld());
                 if (GetListener != null)
                 {
                     GetListener()?.Update(data);

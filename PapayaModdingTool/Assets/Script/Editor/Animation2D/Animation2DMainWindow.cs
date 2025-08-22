@@ -12,7 +12,6 @@ using PapayaModdingTool.Assets.Script.Reader;
 using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureUtil;
 using UnityEditor;
-using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
 {
@@ -28,6 +27,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
         private SpritesPanel _spritesPanel;
         private SpriteEditPanel _spriteEditPanel;
         private TexturesPanel _texturesPanel;
+        private SpritesBatchSelector _batchSelector;
 
         private void InitPreviewPanel()
         {
@@ -50,9 +50,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                 GetAssetsManager = () => _appEnvironment.AssetsManager,
                 GetTextureEncoderDecoder = () => _appEnvironment.Wrapper.TextureEncoderDecoder,
                 GetDatas = () => _allDatasInTexture,
-                SetDatas = var => _allDatasInTexture = var
+                SetDatas = var => _allDatasInTexture = var,
+                GetBatchSelector = () => _batchSelector
             };
             _spritesPanel.Initialize(new(270, 20, 530, 520));
+
+            _batchSelector ??= new()
+            {
+                GetDatas = () => _allDatasInTexture
+            };
         }
 
         private void InitSpriteEditPanel()
@@ -66,9 +72,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                     _workplace = var;
                     _previewPanel.UpdateWorkplace(var);
                 },
-                GetAllDatasInTexture = () => _allDatasInTexture
+                GetAllDatasInTexture = () => _allDatasInTexture,
+                GetBatchSelector = () => _batchSelector
             };
             _spriteEditPanel.Initialize(new(270, 550, 530, 260));
+
+            _batchSelector ??= new()
+            {
+                GetDatas = () => _allDatasInTexture
+            };
         }
 
         private void InitTexturesPanel()

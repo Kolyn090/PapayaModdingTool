@@ -4,7 +4,6 @@ using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Universal.GraphicUI;
 using PapayaModdingTool.Assets.Script.EventListener;
-using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,6 +18,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         public Func<string, string> ELT;
         public Func<List<SpriteButtonData>> GetAllDatasInTexture;
         public Func<List<SpriteButtonData>> GetDatas; // Workplace
+        public Func<SpritesBatchSelector> GetBatchSelector;
         public Action<List<SpriteButtonData>> SetDatas; // Workplace
 
         private Texture2D _sprite;
@@ -396,7 +396,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             GUILayout.FlexibleSpace(); // right flexible space
             GUILayout.EndHorizontal();
 
-            string label = !string.IsNullOrWhiteSpace(_name) ? _name : "<null>";
+            int selected = GetBatchSelector().GetNumOfSelected();
+            string label;
+            if (selected <= 1)
+                label = !string.IsNullOrWhiteSpace(_name) ? _name : "<null>";
+            else
+                label = string.Format(ELT("num_selected"), selected);
             GUILayout.Label(
                 TruncateToEnd(label, 25),
                 EditorStyles.centeredGreyMiniLabel,

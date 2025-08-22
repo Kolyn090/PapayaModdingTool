@@ -68,6 +68,7 @@
         "sprite_edit_delete": "Delete",
         "pivot_x": "Pivot X",
         "pivot_y": "Pivot Y",
-        "pivot": "Pivot"
+        "pivot": "Pivot",
+        "num_selected": "{0} sprites selected"
     }
 }

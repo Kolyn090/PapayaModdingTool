@@ -49,6 +49,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
         private void ShiftOperation(SpriteButtonData data)
         {
+            if (GetDatas() == null || GetDatas().Count == 0)
+                return;
+
             int currIndex = GetDatas().IndexOf(data);
             List<bool> highlights = GetDatas().Select(x => x.isSelected).ToList();
             int closestTrueOffset = FindClosestTrueOffset(highlights, currIndex);
@@ -56,6 +59,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             if (closestTrueOffset == int.MaxValue)
             {
                 GetDatas()[currIndex].isSelected = !GetDatas()[currIndex].isSelected;
+                return;
             }
 
             int start = Mathf.Min(currIndex, currIndex + closestTrueOffset);
@@ -63,6 +67,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
             for (int i = start; i <= end; i++)
             {
+                if (i < 0 || i >= GetDatas().Count)
+                    return;
                 GetDatas()[i].isSelected = true;
             }
         }
@@ -103,6 +109,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         {
             UEvent e = UEvent.current;
             return e != null && (e.control || e.command); // "command" = Ctrl on Windows, Cmd on Mac
+        }
+
+        public int GetNumOfSelected()
+        {
+            if (GetDatas == null || GetDatas() == null)
+                return 0;
+            return GetDatas().Count(x => x.isSelected);
         }
     }
 }
