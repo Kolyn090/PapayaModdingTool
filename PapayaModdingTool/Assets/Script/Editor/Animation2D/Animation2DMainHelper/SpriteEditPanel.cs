@@ -296,7 +296,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             else if (typeof(T) == typeof(float))
             {
                 float floatValue = (float)(object)value;
-                if (floatValue < 0f) GUI.contentColor = Color.red;
+                // if (floatValue < 0f) GUI.contentColor = Color.red;
                 floatValue = EditorGUI.FloatField(fieldRect, floatValue);
                 newValue = (T)(object)floatValue;
             }

@@ -118,6 +118,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             foreach (SpriteButtonData sprite in sprites)
             {
                 sprite.sprite = FlipTextureByX(sprite.sprite);
+                sprite.hasFlipX = !sprite.hasFlipX;
             }
             SetDisplaySprite(FlipTextureByX(GetDisplaySprite()));
         }
@@ -129,7 +130,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
                 int width = original.width;
                 int height = original.height;
 
-                Texture2D flipped = new Texture2D(width, height, original.format, false);
+                Texture2D flipped = new(width, height, original.format, false);
 
                 for (int y = 0; y < height; y++)
                 {
@@ -147,6 +148,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
             foreach (SpriteButtonData sprite in sprites)
             {
                 sprite.sprite = FlipTextureByY(sprite.sprite);
+                sprite.hasFlipY = !sprite.hasFlipY;
             }
             SetDisplaySprite(FlipTextureByY(GetDisplaySprite()));
         }
