@@ -69,6 +69,7 @@
         "pivot_x": "锚点 X",
         "pivot_y": "锚点 Y",
         "pivot": "锚点",
-        "num_selected": "选择了{0}个图像"
+        "num_selected": "选择了{0}个图像",
+        "save_all_sprites": "保存所有图像"
     }
 }

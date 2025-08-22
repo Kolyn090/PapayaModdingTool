@@ -4,18 +4,19 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
-using PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelper;
-using PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper;
+using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper;
+using PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader;
 using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureUtil;
+using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
 
-namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
+namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
 {
-    public class Animation2DMainWindow : MainWindow
+    public class Atlas2DMainWindow : MainWindow
     {
         // private readonly Texture2D _previewTexture;
         private List<Texture2DButtonData> _texture2DButtonDatas;
@@ -28,6 +29,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
         private SpriteEditPanel _spriteEditPanel;
         private TexturesPanel _texturesPanel;
         private SpritesBatchSelector _batchSelector;
+        private SpritesPanelSaver _spritesPanelSaver;
 
         private void InitPreviewPanel()
         {
@@ -51,7 +53,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
                 GetTextureEncoderDecoder = () => _appEnvironment.Wrapper.TextureEncoderDecoder,
                 GetDatas = () => _allDatasInTexture,
                 SetDatas = var => _allDatasInTexture = var,
-                GetBatchSelector = () => _batchSelector
+                GetBatchSelector = () => _batchSelector,
+                GetSaver = () => _spritesPanelSaver
             };
             _spritesPanel.Initialize(new(270, 20, 530, 520));
 
@@ -59,6 +62,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
             {
                 GetDatas = () => _allDatasInTexture
             };
+            _spritesPanelSaver = new(_appEnvironment.Wrapper.JsonSerializer);
         }
 
         private void InitSpriteEditPanel()
@@ -124,7 +128,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
 
         public static void Open(string projectPath)
         {
-            var window = GetWindow<Animation2DMainWindow>(Path.GetFileName(projectPath));
+            var window = GetWindow<Atlas2DMainWindow>(Path.GetFileName(projectPath));
             window.Initialize(projectPath);
             window.Show();
         }

@@ -6,7 +6,7 @@ using UnityEngine;
 
 using UEvent = UnityEngine.Event;
 
-namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelper
+namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 {
     public class SpritesBatchSelector
     {

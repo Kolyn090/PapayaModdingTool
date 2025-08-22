@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.EditorWindow;
-using PapayaModdingTool.Assets.Script.Editor.Animation2D;
+using PapayaModdingTool.Assets.Script.Editor.Atlas2D;
 using PapayaModdingTool.Assets.Script.Editor.TextureModding;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
@@ -90,8 +90,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
                 case EditorWindowType.TextureModding:
                     TextureModdingMainWindow.Open(projectName);
                     break;
-                case EditorWindowType.Animation2D:
-                    Animation2DMainWindow.Open(projectName);
+                case EditorWindowType.Atlas2D:
+                    Atlas2DMainWindow.Open(projectName);
                     break;
                 default:
                     throw new NotImplementedException($"{_editorWindowType}'s main window has not been implemented yet.");

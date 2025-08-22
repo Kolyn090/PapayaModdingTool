@@ -2,14 +2,14 @@ using PapayaModdingTool.Assets.Script.DataStruct.EditorWindow;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using UnityEditor;
 
-namespace PapayaModdingTool.Assets.Script.Editor.Animation2D
+namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
 {
-    public class Animation2DStartWindow : BaseEditorWindow
+    public class Atlas2DStartWindow : BaseEditorWindow
     {
         [MenuItem("Tools/02 Atlas Maker")]
         public static void ShowWindow()
         {
-            RecentProjectsWindow.ShowWindow(ELT("02_tool"), EditorWindowType.Animation2D);
+            RecentProjectsWindow.ShowWindow(ELT("02_tool"), EditorWindowType.Atlas2D);
             Initialize();
         }
     }

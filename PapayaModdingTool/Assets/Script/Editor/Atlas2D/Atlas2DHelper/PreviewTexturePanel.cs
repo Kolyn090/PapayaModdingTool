@@ -5,7 +5,7 @@ using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
+namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
     public class PreviewTexturePanel
     {

@@ -5,7 +5,7 @@ using PapayaModdingTool.Assets.Script.EventListener;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelper
+namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 {
     public class TexturesPanel
     {

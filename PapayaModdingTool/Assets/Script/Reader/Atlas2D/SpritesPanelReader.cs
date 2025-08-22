@@ -1,5 +1,5 @@
 
-namespace PapayaModdingTool.Assets.Script.Reader.Animation2D
+namespace PapayaModdingTool.Assets.Script.Reader.Atlas2D
 {
     public class SpritesPanelReader
     {

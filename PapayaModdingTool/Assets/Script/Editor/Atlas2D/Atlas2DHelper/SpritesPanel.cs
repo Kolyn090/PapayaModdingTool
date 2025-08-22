@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
-using PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelper;
+using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper;
 using PapayaModdingTool.Assets.Script.EventListener;
 using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
+using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
 using UnityEngine;
 
-namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
+namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
     public class SpritesPanel : ITexture2DButtonDataListener
     {
@@ -23,6 +24,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
         public Func<ISpriteButtonDataListener> GetListener;
         public Func<List<SpriteButtonData>> GetDatas;
         public Func<SpritesBatchSelector> GetBatchSelector;
+        public Func<SpritesPanelSaver> GetSaver;
         public Action<List<SpriteButtonData>> SetDatas;
 
         private Rect _bound;
@@ -45,6 +47,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 
             GUILayout.BeginArea(_bound);
             EditorGUILayout.LabelField(ELT("found_sprites"), EditorStyles.boldLabel);
+
+            if (GUILayout.Button(ELT("save_all_sprites")))
+            {
+                // GetSaver().Save()
+            }
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
