@@ -1,0 +1,154 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using UnityEngine;
+
+namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelper
+{
+    public class SpritesBatchOperator
+    {
+        public Func<List<SpriteButtonData>> GetData;
+        public Func<Texture2D> GetDisplaySprite;
+        public Action<Texture2D> SetDisplaySprite;
+
+        public void RenameSpriteLabel(string newLabel, SpriteButtonData curr)
+        {
+            // Just change the last selected one
+            curr.label = newLabel;
+        }
+
+        public void ChangeLevelOfSelected(int newLevel)
+        {
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            foreach (SpriteButtonData sprite in selected)
+            {
+                sprite.level = newLevel;
+            }
+        }
+
+        public void ChangeWidthOfSelected(int newWidth)
+        {
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            foreach (SpriteButtonData sprite in selected)
+            {
+                sprite.width = newWidth;
+            }
+        }
+
+        public void ChangeHeightOfSelected(int newHeight)
+        {
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            foreach (SpriteButtonData sprite in selected)
+            {
+                sprite.height = newHeight;
+            }
+        }
+
+        public void ChangePivotXOfSelected(float newPivotX)
+        {
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            foreach (SpriteButtonData sprite in selected)
+            {
+                sprite.pivot = new(newPivotX, sprite.pivot.y);
+            }
+        }
+
+        public void ChangePivotYOfSelected(float newPivotY)
+        {
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            foreach (SpriteButtonData sprite in selected)
+            {
+                sprite.pivot = new(sprite.pivot.x, newPivotY);
+            }
+        }
+
+        public void ChangeAnimationOfSelected(string newAnimation)
+        {
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            foreach (SpriteButtonData sprite in selected)
+            {
+                sprite.animation = newAnimation;
+            }
+        }
+
+        public void ChangeOrderOfSelected(int newOrder)
+        {
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            foreach (SpriteButtonData sprite in selected)
+            {
+                sprite.order = newOrder;
+            }
+        }
+
+        public void FlipXAllSelected()
+        {
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            FlipX(selected);
+        }
+
+        public void FlipYAllSelected()
+        {
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            FlipY(selected);
+        }
+
+        private void FlipX(List<SpriteButtonData> sprites)
+        {
+            static Texture2D FlipTextureByX(Texture2D original)
+            {
+                int width = original.width;
+                int height = original.height;
+
+                Texture2D flipped = new(width, height, original.format, false);
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        // Mirror vertically: pixel from (x, y) goes to (x, height - 1 - y)
+                        flipped.SetPixel(x, height - 1 - y, original.GetPixel(x, y));
+                    }
+                }
+
+                flipped.Apply();
+                return flipped;
+            }
+
+            foreach (SpriteButtonData sprite in sprites)
+            {
+                sprite.sprite = FlipTextureByX(sprite.sprite);
+            }
+            SetDisplaySprite(FlipTextureByX(GetDisplaySprite()));
+        }
+
+        private void FlipY(List<SpriteButtonData> sprites)
+        {
+            static Texture2D FlipTextureByY(Texture2D original)
+            {
+                int width = original.width;
+                int height = original.height;
+
+                Texture2D flipped = new Texture2D(width, height, original.format, false);
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        // Mirror horizontally: pixel from (x, y) goes to (width - 1 - x, y)
+                        flipped.SetPixel(width - 1 - x, y, original.GetPixel(x, y));
+                    }
+                }
+
+                flipped.Apply();
+                return flipped;
+            }
+
+            foreach (SpriteButtonData sprite in sprites)
+            {
+                sprite.sprite = FlipTextureByY(sprite.sprite);
+            }
+            SetDisplaySprite(FlipTextureByY(GetDisplaySprite()));
+        }
+    }
+}

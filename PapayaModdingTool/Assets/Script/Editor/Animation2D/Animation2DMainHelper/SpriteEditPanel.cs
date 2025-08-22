@@ -36,13 +36,21 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         private readonly List<string> _animations = new();
         private int _selectedIndex = 0; // currently selected index
         private bool _hasInit;
+        private SpritesBatchOperator _batchOperator;
 
         private Rect _bound;
-        
+
         public void Initialize(Rect bound)
         {
             _bound = bound;
             _hasInit = true;
+
+            _batchOperator = new()
+            {
+                GetData = GetAllDatasInTexture,
+                GetDisplaySprite = () => _sprite,
+                SetDisplaySprite = var => _sprite = var
+            };
         }
 
         public void CreatePanel()
@@ -64,19 +72,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
                 GUILayout.BeginVertical();
                 {
-                    DrawField(ELT("sprite_edit_name"), ref _name, var => { if (_curr != null) _curr.label = var; });
-                    DrawField(ELT("sprite_edit_level"), ref _level, var => {  if (_curr != null) _curr.level = var; });
-                    DrawField(ELT("sprite_edit_order"), ref _order, var => { if (_curr != null) _curr.order = var; });
-                    DrawField(ELT("sprite_edit_width"), ref _width, var => {  if (_curr != null) _curr.width = var; });
-                    DrawField(ELT("sprite_edit_height"), ref _height, var => { if (_curr != null) _curr.height = var; });
-                    DrawField(ELT("pivot_x"), ref _pivotX, var => { if (_curr != null) _curr.pivot = new(_pivotX, _curr.pivot.y); });
-                    DrawField(ELT("pivot_y"), ref _pivotY, var => { if (_curr != null) _curr.pivot = new(_curr.pivot.x, _pivotY); });
+                    DrawField(ELT("sprite_edit_name"), ref _name, var => { if (_curr != null) _batchOperator.RenameSpriteLabel(var, _curr); });
+                    DrawField(ELT("sprite_edit_level"), ref _level, var => { if (_curr != null) _batchOperator.ChangeLevelOfSelected(var); });
+                    DrawField(ELT("sprite_edit_order"), ref _order, var => { if (_curr != null) _batchOperator.ChangeOrderOfSelected(var); });
+                    DrawField(ELT("sprite_edit_width"), ref _width, var => { if (_curr != null) _batchOperator.ChangeWidthOfSelected(var); });
+                    DrawField(ELT("sprite_edit_height"), ref _height, var => { if (_curr != null) _batchOperator.ChangeHeightOfSelected(var); });
+                    DrawField(ELT("pivot_x"), ref _pivotX, var => { if (_curr != null) _batchOperator.ChangePivotXOfSelected(var); });
+                    DrawField(ELT("pivot_y"), ref _pivotY, var => { if (_curr != null) _batchOperator.ChangePivotYOfSelected(var); });
                     DrawField(ELT("create_new_animation"), ref _newAnimation);
                     DrawField(ELT("delete_animation"), ref _deleteAnimation);
                     DrawDropdownList(ELT("sprite_edit_animation"),
                                         ref _selectedIndex,
                                         _animations,
-                                        var => { _animation = var; if (_curr != null) _curr.animation = var; });
+                                        var => { _animation = var; if (_curr != null) _batchOperator.ChangeAnimationOfSelected(var); });
                 }
                 GUILayout.EndVertical();
 
@@ -88,7 +96,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
                         if (GUILayout.Button(ELT("flip_x"), GUILayout.Width(100)))
                         {
-                            FlipX();
+                            _batchOperator.FlipXAllSelected();
                         }
 
                         GUILayout.Space(20); // right margin
@@ -101,7 +109,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
 
                         if (GUILayout.Button(ELT("flip_y"), GUILayout.Width(100)))
                         {
-                            FlipY();
+                            _batchOperator.FlipYAllSelected();
                         }
 
                         GUILayout.Space(20); // right margin
@@ -449,57 +457,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelp
         private string TruncateToEnd(string s, int len = 20)
         {
             return s.Length > len ? $"...{s[^len..]}" : s;
-        }
-
-        private void FlipX()
-        {
-            static Texture2D FlipTextureByX(Texture2D original)
-            {
-                int width = original.width;
-                int height = original.height;
-
-                Texture2D flipped = new Texture2D(width, height, original.format, false);
-
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        // Mirror vertically: pixel from (x, y) goes to (x, height - 1 - y)
-                        flipped.SetPixel(x, height - 1 - y, original.GetPixel(x, y));
-                    }
-                }
-
-                flipped.Apply();
-                return flipped;
-            }
-
-            _curr.sprite = FlipTextureByX(_curr.sprite);
-            _sprite = FlipTextureByX(_sprite);
-        }
-
-        private void FlipY()
-        {
-            static Texture2D FlipTextureByY(Texture2D original)
-            {
-                int width = original.width;
-                int height = original.height;
-
-                Texture2D flipped = new Texture2D(width, height, original.format, false);
-
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        // Mirror horizontally: pixel from (x, y) goes to (width - 1 - x, y)
-                        flipped.SetPixel(width - 1 - x, y, original.GetPixel(x, y));
-                    }
-                }
-
-                flipped.Apply();
-                return flipped;
-            }
-            _curr.sprite = FlipTextureByY(_curr.sprite);
-            _sprite = FlipTextureByY(_sprite);
         }
 
         public void Update(SpriteButtonData data)
