@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.Editor.Animation2D.Animation2DMainHelper;
 using PapayaModdingTool.Assets.Script.EventListener;
 using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
@@ -26,11 +27,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
         private Rect _bound;
         private bool _hasInit;
         private Vector2 _scrollPos;
+        private SpritesBatchSelector _batchSelector;
 
         public void Initialize(Rect bound)
         {
             _bound = bound;
             _hasInit = true;
+
+            _batchSelector = new()
+            {
+                GetDatas = GetDatas
+            };
         }
 
         public void CreatePanel()
@@ -68,15 +75,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
 
         private void DrawImageButton(SpriteButtonData data, params GUILayoutOption[] options)
         {
-            GUILayout.BeginVertical("box", options);
+            Rect areaRect = EditorGUILayout.BeginVertical("box");
+
+            if (data.isSelected)
+                EditorGUI.DrawRect(areaRect, new Color(0.6f, 0.8f, 1f, 1f));
 
             // Center the button horizontally
-            GUILayout.BeginHorizontal();
+                GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
             if (GUILayout.Button(data.sprite, GUILayout.Width(64), GUILayout.Height(64)))
             {
                 // Debug.Log("Clicked: " + data.label);
+                _batchSelector.ClickSpriteButton(data, SpritesBatchSelector.IsShiftHeld(), SpritesBatchSelector.IsCtrlHeld());
                 if (GetListener != null)
                 {
                     GetListener()?.Update(data);
@@ -110,7 +121,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Animation2DMainHelper
                             EditorStyles.centeredGreyMiniLabel,
                             GUILayout.ExpandWidth(true));
 
-            GUILayout.EndVertical();
+            EditorGUILayout.EndVertical();
         }
 
         private string TruncateToEnd(string s, int len=20)
