@@ -12,5 +12,8 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.TextureData
         public int level = -1;
         public int order = -1;
         public string animation = "";
+
+
+        public bool isSelected = false;
     }
 }
