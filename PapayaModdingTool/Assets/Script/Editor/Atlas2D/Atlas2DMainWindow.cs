@@ -26,6 +26,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
         private List<SpriteButtonData> _workplace;
         private readonly TextureExporter _textureExporter = new(_appEnvironment);
         private readonly ProjectLoader _projectLoader = new();
+        private WorkplaceExportor _workplaceExportor;
 
         private PreviewTexturePanel _previewPanel;
         private SpritesPanel _spritesPanel;
@@ -40,11 +41,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
             _previewPanel = new()
             {
                 ELT = var => ELT(var),
+                GetWorkplaceExportor = () => _workplaceExportor,
+                GetDatas = () => _workplace
             };
             _previewPanel.Initialize(new(800, 10, 350, 800));
             // _previewPanel.SetPanOffset(new(0, _previewTexture != null ? -_previewTexture.height / 2f : 0f));
 
             _workplace = new();
+            _workplaceExportor = new(_appEnvironment.Wrapper.JsonSerializer,
+                                    _appEnvironment.Wrapper.FileBrowser,
+                                    var => ELT(var));
         }
 
         private void InitSpritesPanel()

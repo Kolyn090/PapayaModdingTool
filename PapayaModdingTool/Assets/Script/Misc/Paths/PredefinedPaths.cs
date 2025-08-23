@@ -39,5 +39,7 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
 
         public const string PapayaUnityTestDir = "Assets/Papaya_Test";
         public static readonly string PapayaTestTextureDir = Path.Combine(PapayaUnityTestDir, "Texture");
+
+        public const string ExportFolderName = "Papaya_Exported";
     }
 }

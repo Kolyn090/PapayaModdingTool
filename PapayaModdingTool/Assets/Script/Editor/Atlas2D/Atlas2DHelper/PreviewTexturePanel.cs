@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +14,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private const float ZOOM_MAX = 4f;
 
         public Func<string, string> ELT;
+        public Func<WorkplaceExportor> GetWorkplaceExportor;
+        public Func<List<SpriteButtonData>> GetDatas;
 
         private Rect _guiRect; 
         private Rect _imageRect;
@@ -30,7 +33,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         public void Initialize(Rect bound)
         {
             float totalHeight = bound.height;
-            float guiHeight = totalHeight * 0.13f;
+            float guiHeight = totalHeight * 0.155f;
             float imageHeight = totalHeight - guiHeight;
             _guiRect = new Rect(bound.x, bound.y, bound.width, guiHeight);
             _imageRect = new Rect(bound.x, bound.y + guiHeight, bound.width, imageHeight);
@@ -50,6 +53,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             _checkerBoardTexture.Apply();
 
             // _panOffset = new(0, -GetTexture().height / 2f);
+
             _hasInit = true;
         }
 
@@ -72,10 +76,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
             GUI.BeginGroup(_guiRect);
             EditorGUILayout.LabelField(ELT("workplace"), EditorStyles.boldLabel);
+
+            EditorGUI.BeginDisabledGroup(_workplaceTexture == null);
+            if (GUILayout.Button(ELT("export_workplace"), GUILayout.Width(_guiRect.width - 15f)))
+            {
+                GetWorkplaceExportor().Export(_workplaceTexture, GetDatas());
+            }
+
             GUILayout.BeginHorizontal();
 
             // Set buttons to a fixed width
-            EditorGUI.BeginDisabledGroup(_workplaceTexture == null);
             float buttonWidth = _guiRect.width * 0.5f - 10f;
             if (GUILayout.Button(ELT("zoom_in"), GUILayout.Width(buttonWidth)))
             {
