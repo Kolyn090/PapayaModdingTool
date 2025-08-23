@@ -93,28 +93,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             FlipY(selected);
         }
 
-        private void FlipX(List<SpriteButtonData> sprites)
+        public void FlipX(List<SpriteButtonData> sprites)
         {
-            static Texture2D FlipTextureByX(Texture2D original)
-            {
-                int width = original.width;
-                int height = original.height;
-
-                Texture2D flipped = new(width, height, original.format, false);
-
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        // Mirror vertically: pixel from (x, y) goes to (x, height - 1 - y)
-                        flipped.SetPixel(x, height - 1 - y, original.GetPixel(x, y));
-                    }
-                }
-
-                flipped.Apply();
-                return flipped;
-            }
-
             foreach (SpriteButtonData sprite in sprites)
             {
                 sprite.sprite = FlipTextureByX(sprite.sprite);
@@ -123,34 +103,54 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             SetDisplaySprite(FlipTextureByX(GetDisplaySprite()));
         }
 
-        private void FlipY(List<SpriteButtonData> sprites)
+        public static Texture2D FlipTextureByX(Texture2D original)
         {
-            static Texture2D FlipTextureByY(Texture2D original)
+            int width = original.width;
+            int height = original.height;
+
+            Texture2D flipped = new(width, height, original.format, false);
+
+            for (int y = 0; y < height; y++)
             {
-                int width = original.width;
-                int height = original.height;
-
-                Texture2D flipped = new(width, height, original.format, false);
-
-                for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
                 {
-                    for (int x = 0; x < width; x++)
-                    {
-                        // Mirror horizontally: pixel from (x, y) goes to (width - 1 - x, y)
-                        flipped.SetPixel(width - 1 - x, y, original.GetPixel(x, y));
-                    }
+                    // Mirror vertically: pixel from (x, y) goes to (x, height - 1 - y)
+                    flipped.SetPixel(x, height - 1 - y, original.GetPixel(x, y));
                 }
-
-                flipped.Apply();
-                return flipped;
             }
 
+            flipped.Apply();
+            return flipped;
+        }
+
+        public void FlipY(List<SpriteButtonData> sprites)
+        {
             foreach (SpriteButtonData sprite in sprites)
             {
                 sprite.sprite = FlipTextureByY(sprite.sprite);
                 sprite.hasFlipY = !sprite.hasFlipY;
             }
             SetDisplaySprite(FlipTextureByY(GetDisplaySprite()));
+        }
+
+        public static Texture2D FlipTextureByY(Texture2D original)
+        {
+            int width = original.width;
+            int height = original.height;
+
+            Texture2D flipped = new(width, height, original.format, false);
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Mirror horizontally: pixel from (x, y) goes to (width - 1 - x, y)
+                    flipped.SetPixel(width - 1 - x, y, original.GetPixel(x, y));
+                }
+            }
+
+            flipped.Apply();
+            return flipped;
         }
     }
 }

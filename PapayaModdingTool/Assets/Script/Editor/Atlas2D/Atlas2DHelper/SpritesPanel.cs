@@ -150,6 +150,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                                                             GetAssetsManager(),
                                                             GetTextureEncoderDecoder());
                 LoadFromSave(data.sourcePath, datas);
+                FlipTexture(datas);
                 SetDatas(datas);
                 SetDatas(GetDatas().OrderBy(o =>
                 {
@@ -166,6 +167,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             {
                 List<SpriteButtonData> datas = ImageReader.ReadSpriteButtonDatas(data.importedTexturesPath);
                 LoadFromSave(data.sourcePath, datas);
+                FlipTexture(datas);
                 SetDatas(datas);
                 SetDatas(GetDatas().OrderBy(o => o.label).ToList());
             }
@@ -178,6 +180,21 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private void LoadFromSave(string sourcePath, List<SpriteButtonData> datas)
         {
             GetReader().LoadDatas(datas, GetJsonSavePath, sourcePath);
+        }
+
+        private void FlipTexture(List<SpriteButtonData> datas)
+        {
+            foreach (SpriteButtonData data in datas)
+            {
+                if (data.hasFlipX)
+                {
+                    data.sprite = SpritesBatchOperator.FlipTextureByX(data.sprite);
+                }
+                if (data.hasFlipY)
+                {
+                    data.sprite = SpritesBatchOperator.FlipTextureByY(data.sprite);
+                }
+            }
         }
     }
 }

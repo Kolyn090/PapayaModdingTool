@@ -4,7 +4,6 @@ using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Universal.GraphicUI;
 using PapayaModdingTool.Assets.Script.EventListener;
-using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
 using UnityEngine;
 
@@ -475,6 +474,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             _level = data.level;
             _order = data.order;
             _animation = data.animation;
+            if (!string.IsNullOrWhiteSpace(data.animation) && !_animations.Contains(data.animation))
+            {
+                _animations.Add(data.animation);
+            }
             _name = data.label;
             _width = data.width;
             _height = data.height;
