@@ -48,6 +48,7 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace
         public static Dictionary<int, List<SpriteButtonData>> GroupByLevel(List<SpriteButtonData> items)
         {
             return items
+                .OrderBy(x => x.level)
                 .GroupBy(x => x.level)
                 .ToDictionary(g => g.Key, g => g.OrderBy(o => o.order).ToList());
         }
