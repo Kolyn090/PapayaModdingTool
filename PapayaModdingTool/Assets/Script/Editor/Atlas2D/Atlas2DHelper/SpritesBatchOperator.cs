@@ -8,7 +8,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 {
     public class SpritesBatchOperator
     {
-        public Func<List<SpriteButtonData>> GetData;
+        public Func<List<SpriteButtonData>> GetDatas;
         public Func<Texture2D> GetDisplaySprite;
         public Action<Texture2D> SetDisplaySprite;
 
@@ -17,7 +17,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             // // Just change the last selected one
             // curr.label = newLabel;
 
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             foreach (SpriteButtonData sprite in selected)
             {
                 sprite.label = newLabel;
@@ -26,7 +26,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void ChangeLevelOfSelected(int newLevel)
         {
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             foreach (SpriteButtonData sprite in selected)
             {
                 sprite.level = newLevel;
@@ -35,7 +35,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void ChangeWidthOfSelected(int newWidth)
         {
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             foreach (SpriteButtonData sprite in selected)
             {
                 sprite.width = newWidth;
@@ -44,7 +44,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void ChangeHeightOfSelected(int newHeight)
         {
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             foreach (SpriteButtonData sprite in selected)
             {
                 sprite.height = newHeight;
@@ -53,7 +53,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void ChangePivotXOfSelected(float newPivotX)
         {
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             foreach (SpriteButtonData sprite in selected)
             {
                 sprite.pivot = new(newPivotX, sprite.pivot.y);
@@ -62,16 +62,25 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void ChangePivotYOfSelected(float newPivotY)
         {
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             foreach (SpriteButtonData sprite in selected)
             {
                 sprite.pivot = new(sprite.pivot.x, newPivotY);
             }
         }
 
+        public void AddPivotOfSelected(float addX = 0f, float addY = 0f)
+        {
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
+            foreach (SpriteButtonData sprite in selected)
+            {
+                sprite.pivot = new(sprite.pivot.x + addX, sprite.pivot.y + addY);
+            }
+        }
+
         public void ChangeAnimationOfSelected(string newAnimation)
         {
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             foreach (SpriteButtonData sprite in selected)
             {
                 sprite.animation = newAnimation;
@@ -80,7 +89,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void ChangeOrderOfSelected(int newOrder)
         {
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             foreach (SpriteButtonData sprite in selected)
             {
                 sprite.order = newOrder;
@@ -89,13 +98,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void FlipXAllSelected()
         {
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             FlipX(selected);
         }
 
         public void FlipYAllSelected()
         {
-            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            List<SpriteButtonData> selected = GetDatas().Where(x => x.isSelected).ToList();
             FlipY(selected);
         }
 
@@ -157,6 +166,47 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
             flipped.Apply();
             return flipped;
+        }
+
+        public void AutoFillWorkplace()
+        {
+            // Add all valid pairs
+            HashSet<(int, int)> pairs = new();
+            foreach (SpriteButtonData data in GetDatas())
+            {
+                if (data.level >= 0 && data.order >= 0)
+                    pairs.Add((data.level, data.order));
+            }
+
+            // For all selected sprites, auto generate level & order for them
+            // If the sprite is already valid, skip
+
+            int currLevel = 0;
+            foreach (SpriteButtonData data in GetDatas())
+            {
+                if (data.isSelected && (data.level < 0 || data.order < 0))
+                {
+                    (int level, int order) = FindSmallestMissingPair(pairs, currLevel);
+                    data.level = level;
+                    data.order = order;
+                    pairs.Add((level, order));
+                }
+                currLevel = data.level;
+            }
+        }
+
+        private static (int, int) FindSmallestMissingPair(HashSet<(int, int)> pairs, int x)
+        {
+            if (x < 0)
+            {
+                x = 0;
+            }
+
+            for (int y = 0; ; y++)  // loop forever over y
+            {
+                if (!pairs.Contains((x, y)))
+                    return (x, y);
+            }
         }
     }
 }

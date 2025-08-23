@@ -47,7 +47,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
             _batchOperator = new()
             {
-                GetData = GetAllDatasInTexture,
+                GetDatas = GetAllDatasInTexture,
                 GetDisplaySprite = () => _sprite,
                 SetDisplaySprite = var => _sprite = var
             };
@@ -122,7 +122,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                         if (GUILayout.Button(ELT("auto_fill_workplace"), GUILayout.Width(100)))
                         {
-                            
+                            _batchOperator.AutoFillWorkplace();
                         }
 
                         GUILayout.Space(20); // right margin
@@ -131,8 +131,50 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                     GUILayout.Label("");
                     GUILayout.Label("");
-                    GUILayout.Label("");
-                    GUILayout.Label("");
+
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Space(20); // left margin
+
+                        if (GUILayout.Button("-0.1", GUILayout.Width(40)))
+                        {
+                            _pivotX -= 0.1f;
+                            _batchOperator.AddPivotOfSelected(addX: -0.1f);
+                        }
+
+                        GUILayout.Space(5);
+
+                        if (GUILayout.Button("+0.1", GUILayout.Width(40)))
+                        {
+                            _pivotX += 0.1f;
+                            _batchOperator.AddPivotOfSelected(addX: 0.1f);
+                        }
+
+                        GUILayout.Space(20); // right margin
+                    }
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Space(20); // left margin
+
+                        if (GUILayout.Button("-0.1", GUILayout.Width(40)))
+                        {
+                            _pivotY -= 0.1f;
+                            _batchOperator.AddPivotOfSelected(addY: -0.1f);
+                        }
+
+                        GUILayout.Space(5);
+
+                        if (GUILayout.Button("+0.1", GUILayout.Width(40)))
+                        {
+                            _pivotY += 0.1f;
+                            _batchOperator.AddPivotOfSelected(addY: 0.1f);
+                        }
+
+                        GUILayout.Space(20); // right margin
+                    }
+                    GUILayout.EndHorizontal();
 
                     GUILayout.BeginHorizontal();
                     {
