@@ -154,13 +154,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 SetDatas(datas);
                 SetDatas(GetDatas().OrderBy(o =>
                 {
-                    var match = Regex.Match(o.label, @"\d+$");
+                    var match = Regex.Match(o.originalLabel, @"\d+$");
                     if (match.Success && int.TryParse(match.Value, out int num))
                         return num;
                     else
                         return int.MaxValue; // no number → push to end
                 })
-                .ThenBy(o => o.label) // optional: sort alphabetically among "no-number" names
+                .ThenBy(o => o.originalLabel) // optional: sort alphabetically among "no-number" names
                 .ToList());
             }
             else if (data.IsStyle2)
@@ -169,7 +169,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 LoadFromSave(data.sourcePath, datas);
                 FlipTexture(datas);
                 SetDatas(datas);
-                SetDatas(GetDatas().OrderBy(o => o.label).ToList());
+                SetDatas(GetDatas().OrderBy(o => o.originalLabel).ToList());
             }
             else
             {

@@ -116,7 +116,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                     }
                     GUILayout.EndHorizontal();
 
-                    GUILayout.Label("");
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Space(20); // left margin
+
+                        if (GUILayout.Button(ELT("auto_fill_workplace"), GUILayout.Width(100)))
+                        {
+                            
+                        }
+
+                        GUILayout.Space(20); // right margin
+                    }
+                    GUILayout.EndHorizontal();
+
                     GUILayout.Label("");
                     GUILayout.Label("");
                     GUILayout.Label("");
@@ -181,6 +193,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             if (string.IsNullOrWhiteSpace(_newAnimation))
             {
                 Debug.LogWarning("Warning: New animation is empty. Abort creation.");
+            }
+            else if (_newAnimation == "<None>")
+            {
+                Debug.LogWarning("Warning: Bad name <None>. Abort.");
             }
             else
             {
@@ -467,20 +483,21 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void Update(SpriteButtonData data)
         {
+            _sprite = data.sprite;
+            _level = data.level;
+            _order = data.order;
+
+            if (!string.IsNullOrWhiteSpace(data.animation) && !_animations.Contains(data.animation))
+            {
+                _animations.Add(data.animation);
+            }
+            _animation = data.animation;
             int animIndex = _animations.IndexOf(data.animation);
             if (animIndex >= 0)
                 _selectedIndex = animIndex + 1;
             else
                 _selectedIndex = 0;
 
-            _sprite = data.sprite;
-            _level = data.level;
-            _order = data.order;
-            _animation = data.animation;
-            if (!string.IsNullOrWhiteSpace(data.animation) && !_animations.Contains(data.animation))
-            {
-                _animations.Add(data.animation);
-            }
             _name = data.label;
             _width = data.width;
             _height = data.height;

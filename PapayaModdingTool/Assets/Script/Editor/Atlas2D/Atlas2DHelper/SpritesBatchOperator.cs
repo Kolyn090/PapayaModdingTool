@@ -14,8 +14,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void RenameSpriteLabel(string newLabel, SpriteButtonData curr)
         {
-            // Just change the last selected one
-            curr.label = newLabel;
+            // // Just change the last selected one
+            // curr.label = newLabel;
+
+            List<SpriteButtonData> selected = GetData().Where(x => x.isSelected).ToList();
+            foreach (SpriteButtonData sprite in selected)
+            {
+                sprite.label = newLabel;
+            }
         }
 
         public void ChangeLevelOfSelected(int newLevel)

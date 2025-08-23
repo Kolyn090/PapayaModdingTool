@@ -72,6 +72,7 @@
         "num_selected": "选择了{0}个图像",
         "save_all_sprites": "保存所有图像",
         "export_workplace": "提取工作区",
-        "save_files_to": "将文件保存到..."
+        "save_files_to": "将文件保存到...",
+        "auto_fill_workplace": "自动填充工作区"
     }
 }
