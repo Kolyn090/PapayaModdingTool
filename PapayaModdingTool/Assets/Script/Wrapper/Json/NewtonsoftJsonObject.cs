@@ -35,6 +35,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.Json
         public uint GetUInt(string key) => _jObject[key]?.ToObject<uint>() ?? 0;
         public long GetLong(string key) => _jObject[key]?.ToObject<long>() ?? 0;
         public float GetFloat(string key) => _jObject[key]?.ToObject<float>() ?? 0;
+        public bool GetBool(string key) => _jObject[key]?.ToObject<bool>() ?? false;
         public bool ContainsKey(string key) => _jObject.ContainsKey(key);
 
         public bool SetString(string key, string val)

@@ -7,6 +7,8 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.TextureData
     public class Texture2DButtonData
     {
         public string label;
+        public string sourcePath;
+        public string fileFolderName;
 
         // Style 1: Read from bundle
         public Texture2D texture;

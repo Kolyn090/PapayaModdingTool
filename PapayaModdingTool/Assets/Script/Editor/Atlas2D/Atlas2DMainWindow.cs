@@ -9,7 +9,9 @@ using PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader;
+using PapayaModdingTool.Assets.Script.Reader.Atlas2D;
 using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
+using PapayaModdingTool.Assets.Script.Reader.ProjectUtil;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureUtil;
 using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
@@ -23,6 +25,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
         private List<SpriteButtonData> _allDatasInTexture;
         private List<SpriteButtonData> _workplace;
         private readonly TextureExporter _textureExporter = new(_appEnvironment);
+        private readonly ProjectLoader _projectLoader = new();
 
         private PreviewTexturePanel _previewPanel;
         private SpritesPanel _spritesPanel;
@@ -30,6 +33,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
         private TexturesPanel _texturesPanel;
         private SpritesBatchSelector _batchSelector;
         private SpritesPanelSaver _spritesPanelSaver;
+        private SpritesPanelReader _spritesPanelReader;
 
         private void InitPreviewPanel()
         {
@@ -54,7 +58,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                 GetDatas = () => _allDatasInTexture,
                 SetDatas = var => _allDatasInTexture = var,
                 GetBatchSelector = () => _batchSelector,
-                GetSaver = () => _spritesPanelSaver
+                GetSaver = () => _spritesPanelSaver,
+                GetReader = () => _spritesPanelReader,
+                GetProjectName = () => ProjectName
             };
             _spritesPanel.Initialize(new(270, 20, 530, 520));
 
@@ -63,6 +69,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                 GetDatas = () => _allDatasInTexture
             };
             _spritesPanelSaver = new(_appEnvironment.Wrapper.JsonSerializer);
+            _spritesPanelReader = new(_appEnvironment.Wrapper.JsonSerializer);
         }
 
         private void InitSpriteEditPanel()
@@ -93,20 +100,47 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
             {
                 ELT = var => ELT(var),
                 GetTexture2DButtonDatas = () => _texture2DButtonDatas,
-                GetListener = () => _spritesPanel
+                GetListener = () => _spritesPanel,
             };
             _texturesPanel.Initialize(new(10, 20, 250, 790));
             _texture2DButtonDatas = new();
 
-            // ! Make an example
-            BundleReader bundleReader = new(_appEnvironment.AssetsManager, _appEnvironment.Dispatcher);
-            string bundlePath = PathUtils.ToLongPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Otherworld Legends\\Otherworld Legends_Data\\StreamingAssets\\aa\\StandaloneWindows64\\unitspritesgroup_assets_assets\\sprites\\herounit\\hero_quanhuying\\unit_hero_quanhuying.psd_97f99a64c4a18168a8314aebe66b4d28.bundle");
-            (BundleFileInstance bunInst, AssetsFileInstance assetsInst) = bundleReader.ReadBundle(bundlePath);
-            _texture2DButtonDatas = ImageReader.ReadTexture2DButtonDatas(assetsInst,
-                                                                        _appEnvironment.AssetsManager,
-                                                                        _textureExporter);
+            LoadTextureButtonDatas();
+        }
 
-            _texture2DButtonDatas = _texture2DButtonDatas.OrderBy(o =>
+        private void LoadTextureButtonDatas()
+        {
+            List<(string, string)> loaded = _projectLoader.FindLoadedPathAndFileFolderNameTextureOnly(ProjectName, _appEnvironment.Wrapper.JsonSerializer);
+            List<string> fileFolderNames = _projectLoader.FindLoadedFileFolderNamesTextureOnly(ProjectName, _appEnvironment.Wrapper.JsonSerializer);
+            BundleReader bundleReader = new(_appEnvironment.AssetsManager, _appEnvironment.Dispatcher);
+
+            _texture2DButtonDatas = new();
+            foreach ((string bundlePath, string fileFolderName) in loaded)
+            {
+                (BundleFileInstance _, AssetsFileInstance assetsInst) = bundleReader.ReadBundle(bundlePath);
+                _texture2DButtonDatas.AddRange(ImageReader.ReadTexture2DButtonDatas(bundlePath,
+                                                                            fileFolderName,
+                                                                            assetsInst,
+                                                                            _appEnvironment.AssetsManager,
+                                                                            _textureExporter));
+            }
+
+            foreach (string fileFolderName in fileFolderNames)
+            {
+                string importedTexturesPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder,
+                                                        ProjectName,
+                                                        fileFolderName);
+                _texture2DButtonDatas.Add(new()
+                {
+                    sourcePath = importedTexturesPath,
+                    fileFolderName = fileFolderName,
+                    label = "Imported",
+                    importedTexturesPath = importedTexturesPath
+                });
+            }
+
+            // Sort
+                _texture2DButtonDatas = _texture2DButtonDatas.OrderBy(o =>
             {
                 var match = Regex.Match(o.label, @"\d+$");
                 if (match.Success && int.TryParse(match.Value, out int num))
@@ -116,14 +150,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
             })
             .ThenBy(o => o.label) // optional: sort alphabetically among "no-number" names
             .ToList();
-
-            _texture2DButtonDatas.Add(new()
-            {
-                label = "Imported",
-                importedTexturesPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder,
-                                                    "Quan_D-2.11.0.6",
-                                                    "unit_hero_quanhuying_psd_97f99a64c4a18168a8314aebe66b4d28_bundle")
-            });
         }
 
         public static void Open(string projectPath)

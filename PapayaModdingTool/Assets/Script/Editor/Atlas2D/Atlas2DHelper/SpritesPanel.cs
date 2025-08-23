@@ -6,6 +6,8 @@ using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper;
 using PapayaModdingTool.Assets.Script.EventListener;
+using PapayaModdingTool.Assets.Script.Misc.Paths;
+using PapayaModdingTool.Assets.Script.Reader.Atlas2D;
 using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
 using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
 using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
@@ -25,11 +27,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         public Func<List<SpriteButtonData>> GetDatas;
         public Func<SpritesBatchSelector> GetBatchSelector;
         public Func<SpritesPanelSaver> GetSaver;
+        public Func<SpritesPanelReader> GetReader;
+        public Func<string> GetProjectName;
         public Action<List<SpriteButtonData>> SetDatas;
 
         private Rect _bound;
         private bool _hasInit;
         private Vector2 _scrollPos;
+        private Texture2DButtonData _curr;
+        private string GetJsonSavePath => string.Format(PredefinedPaths.Atlas2DSpritesPanelSaveJson,
+                                                        GetProjectName(),
+                                                        _curr.fileFolderName);
 
         public void Initialize(Rect bound)
         {
@@ -48,10 +56,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             GUILayout.BeginArea(_bound);
             EditorGUILayout.LabelField(ELT("found_sprites"), EditorStyles.boldLabel);
 
+            EditorGUI.BeginDisabledGroup(_curr == null || string.IsNullOrWhiteSpace(_curr.sourcePath));
             if (GUILayout.Button(ELT("save_all_sprites")))
             {
-                // GetSaver().Save()
+                GetSaver().Save(GetJsonSavePath, _curr.sourcePath, GetDatas());
             }
+            EditorGUI.EndDisabledGroup();
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
@@ -83,7 +93,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 EditorGUI.DrawRect(areaRect, new Color(0.6f, 0.8f, 1f, 1f));
 
             // Center the button horizontally
-                GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
             if (GUILayout.Button(data.sprite, GUILayout.Width(64), GUILayout.Height(64)))
@@ -107,7 +117,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             else
                 coord = $"({data.level}, {data.order})";
 
-            string pivot = $"{ELT("pivot")}: <{(float) Math.Round(data.pivot.x, 2)}, {(float) Math.Round(data.pivot.y, 2)}>";
+            string pivot = $"{ELT("pivot")}: <{(float)Math.Round(data.pivot.x, 2)}, {(float)Math.Round(data.pivot.y, 2)}>";
 
             GUIStyle redLabel = new(GUI.skin.label)
             {
@@ -126,18 +136,21 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             EditorGUILayout.EndVertical();
         }
 
-        private string TruncateToEnd(string s, int len=20)
+        private string TruncateToEnd(string s, int len = 20)
         {
             return s.Length > len ? $"...{s[^len..]}" : s;
         }
 
         public void Update(Texture2DButtonData data)
         {
+            _curr = data;
             if (data.IsStyle1)
             {
-                SetDatas(ImageReader.ReadSpriteButtonDatas(data.assetsInst,
+                List<SpriteButtonData> datas = ImageReader.ReadSpriteButtonDatas(data.assetsInst,
                                                             GetAssetsManager(),
-                                                            GetTextureEncoderDecoder()));
+                                                            GetTextureEncoderDecoder());
+                LoadFromSave(data.sourcePath, datas);
+                SetDatas(datas);
                 SetDatas(GetDatas().OrderBy(o =>
                 {
                     var match = Regex.Match(o.label, @"\d+$");
@@ -151,13 +164,20 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             }
             else if (data.IsStyle2)
             {
-                SetDatas(ImageReader.ReadSpriteButtonDatas(data.importedTexturesPath));
+                List<SpriteButtonData> datas = ImageReader.ReadSpriteButtonDatas(data.importedTexturesPath);
+                LoadFromSave(data.sourcePath, datas);
+                SetDatas(datas);
                 SetDatas(GetDatas().OrderBy(o => o.label).ToList());
             }
             else
             {
                 Debug.LogError("Invalid Texture2DButtonData. Abort.");
             }
+        }
+
+        private void LoadFromSave(string sourcePath, List<SpriteButtonData> datas)
+        {
+            GetReader().LoadDatas(datas, GetJsonSavePath, sourcePath);
         }
     }
 }

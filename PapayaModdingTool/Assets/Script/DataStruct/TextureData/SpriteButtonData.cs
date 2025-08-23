@@ -16,5 +16,6 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.TextureData
         public bool hasFlipY = false;
 
         public bool isSelected = false;
+        public string originalLabel; // For load identification
     }
 }

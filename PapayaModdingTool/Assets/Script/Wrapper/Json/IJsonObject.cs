@@ -10,6 +10,7 @@ namespace PapayaModdingTool.Assets.Script.Wrapper.Json
         public uint GetUInt(string key);
         public long GetLong(string key);
         public float GetFloat(string key);
+        public bool GetBool(string key);
         public bool ContainsKey(string key);
         public IJsonObject GetObject(string key);
         public List<IJsonObject> GetArray(string key);

@@ -18,7 +18,9 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
     {
         // !!! TEXTURE START
 
-        public static List<Texture2DButtonData> ReadTexture2DButtonDatas(AssetsFileInstance assetsInst,
+        public static List<Texture2DButtonData> ReadTexture2DButtonDatas(string sourcePath,
+                                                                        string fileFolderName,
+                                                                        AssetsFileInstance assetsInst,
                                                                         AssetsManager assetsManager,
                                                                         TextureExporter textureExporter)
         {
@@ -31,6 +33,8 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
                 AssetsToolsTexture.TextureFile texFile = AssetsToolsTexture.TextureFile.ReadTextureFile(texBase);
                 result.Add(new()
                 {
+                    sourcePath = sourcePath,
+                    fileFolderName = fileFolderName,
                     texture = texture,
                     label = texFile.m_Name,
                     assetsInst = assetsInst,
@@ -72,7 +76,8 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
                     sprite = tex,
                     width = tex.width,
                     height = tex.height,
-                    label = Path.GetFileNameWithoutExtension(file)
+                    label = Path.GetFileNameWithoutExtension(file),
+                    originalLabel = Path.GetFileNameWithoutExtension(file),
                 });
             }
 
@@ -183,6 +188,7 @@ namespace PapayaModdingTool.Assets.Script.Reader.ImageDecoder
             {
                 sprite = tex,
                 label = spriteBase["m_Name"].AsString,
+                originalLabel = spriteBase["m_Name"].AsString,
                 width = spriteBase["m_Rect"]["width"].AsInt,
                 height = spriteBase["m_Rect"]["height"].AsInt,
                 pivot = new(spriteBase["m_Pivot"]["x"].AsFloat, spriteBase["m_Pivot"]["y"].AsFloat)
