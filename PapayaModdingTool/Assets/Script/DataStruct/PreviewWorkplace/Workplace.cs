@@ -38,6 +38,9 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace
             rows.Reverse();
             result = AtlasBuilder.CombineInColumn(rows, gap);
 
+            if (result == null)
+                return null;
+
             result.filterMode = FilterMode.Point;
             return result;
         }

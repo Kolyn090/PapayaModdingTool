@@ -254,7 +254,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                     _curr.label = _name;
                     _curr.width = _width;
                     _curr.height = _height;
-                    SetDatas(GetDatas());
+                    // SetDatas(GetDatas());
                 }
                 else
                 {
@@ -268,8 +268,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                     {
                         _curr
                     };
-                    SetDatas(copy);
+                    // SetDatas(copy);
                 }
+                // Add all valid sprites to workplace
+                List<SpriteButtonData> validSprites = GetAllDatasInTexture().Where(x => x.level >= 0 && x.order >= 0).ToList();
+                SetDatas(validSprites);
             }
         }
 
