@@ -77,6 +77,12 @@
         "apply_datas": "Apply Datas to Texture",
         "run": "Run",
         "replace_texture": "Replace Texture",
-        "texture_to_replace": "Texture to be replaced"
+        "texture_to_replace": "Texture to be replaced",
+        "speed_fps": "Speed (FPS)",
+        "target_size": "Target Size:",
+        "no_frames_loaded": "No frames loaded",
+        "pause": "Pause",
+        "play": "Play",
+        "stop": "Stop"
     }
 }

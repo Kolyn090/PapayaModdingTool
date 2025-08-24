@@ -60,12 +60,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
             // Controls
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(_isPlaying ? "Pause" : "Play", GUILayout.Width(80)))
+            if (GUILayout.Button(_isPlaying ? ELT("pause") : ELT("play"), GUILayout.Width(80)))
             {
                 _isPlaying = !_isPlaying;
                 _lastFrameTime = EditorApplication.timeSinceStartup;
             }
-            if (GUILayout.Button("Stop", GUILayout.Width(80)))
+            if (GUILayout.Button(ELT("stop"), GUILayout.Width(80)))
             {
                 _isPlaying = false;
                 _currentFrame = 0;
@@ -74,9 +74,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             GUILayout.EndHorizontal();
 
             // FPS slider
-            _fps = EditorGUILayout.Slider("Speed (FPS)", _fps, 1f, 60f);
+            _fps = EditorGUILayout.Slider(ELT("speed_fps"), _fps, 1f, 60f);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Target Size:", GUILayout.Width(80));
+            GUILayout.Label(ELT("target_size"), GUILayout.Width(80));
             _targetSize = EditorGUILayout.IntField(_targetSize, GUILayout.Width(60));
             GUILayout.EndHorizontal();
 
@@ -108,7 +108,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             }
             else
             {
-                EditorGUILayout.LabelField("No frames loaded.");
+                EditorGUILayout.LabelField(ELT("no_frames_loaded"));
             }
         }
     }
