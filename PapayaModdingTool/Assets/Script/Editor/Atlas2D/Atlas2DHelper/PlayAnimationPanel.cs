@@ -45,13 +45,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
             double timeNow = EditorApplication.timeSinceStartup;
             double frameDuration = 1.0 / _fps;
+            double elapsed = timeNow - _lastFrameTime;
 
-            if (timeNow - _lastFrameTime >= frameDuration)
+            if (elapsed >= frameDuration)
             {
-                _currentFrame = (_currentFrame + 1) % _frames.Count;
-                _lastFrameTime = timeNow;
-                Repaint();
+                int framesToAdvance = (int)(elapsed / frameDuration);
+                _currentFrame = (_currentFrame + framesToAdvance) % _frames.Count;
+                _lastFrameTime += framesToAdvance * frameDuration;
             }
+
+            // Force the window to repaint every update while playing
+            Repaint();
         }
 
         private void OnGUI()
