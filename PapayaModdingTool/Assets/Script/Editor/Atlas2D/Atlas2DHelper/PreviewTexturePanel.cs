@@ -81,6 +81,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             if (GUILayout.Button(ELT("export_workplace"), GUILayout.Width(_guiRect.width - 15f)))
             {
                 GetWorkplaceExportor().Export(_workplaceTexture, GetDatas());
+                Debug.Log("Export success!");
             }
 
             GUILayout.BeginHorizontal();

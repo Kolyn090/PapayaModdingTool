@@ -60,6 +60,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             if (GUILayout.Button(ELT("save_all_sprites")))
             {
                 GetSaver().Save(GetJsonSavePath, _curr.sourcePath, GetDatas());
+                Debug.Log("Save success!");
             }
             EditorGUI.EndDisabledGroup();
 
