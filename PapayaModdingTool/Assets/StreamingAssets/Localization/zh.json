@@ -75,6 +75,8 @@
         "save_files_to": "将文件保存到...",
         "auto_fill_workplace": "自动填充工作区",
         "apply_datas": "应用Datas到材质",
-        "run": "运行"
+        "run": "运行",
+        "replace_texture": "替换材质",
+        "texture_to_replace": "被替换的材质"
     }
 }

@@ -11,6 +11,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
     public class ApplyDatasWindow : BaseEditorWindow
     {
         private Texture2D _targetTexture;
+        private Texture2D _textureToReplace;
         private string _datasPath;
         private int _ppu = 100;
 
@@ -25,7 +26,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
         {
             _ppu = EditorGUI.IntField(new Rect(10, 10, position.width - 20, EditorGUIUtility.singleLineHeight), ELT("ppu"), _ppu);
 
-            GUILayout.BeginArea(new(10, 20 + EditorGUIUtility.singleLineHeight, position.width - 20, 200));
+            GUILayout.BeginArea(new(10, 20 + EditorGUIUtility.singleLineHeight, position.width - 20, 250));
 
             _targetTexture = (Texture2D)EditorGUILayout.ObjectField("Texture.png", _targetTexture, typeof(Texture2D), false);
 
@@ -56,7 +57,41 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
             }
             EditorGUI.EndDisabledGroup();
 
+            GUILayout.Space(35);
+
+            _textureToReplace = (Texture2D)EditorGUILayout.ObjectField(ELT("texture_to_replace"), _textureToReplace, typeof(Texture2D), false);
+
+            EditorGUI.BeginDisabledGroup(_targetTexture == null || _textureToReplace == null);
+            if (GUILayout.Button(ELT("replace_texture")))
+            {
+                ReplaceTexture();
+            }
+            EditorGUI.EndDisabledGroup();
+
             GUILayout.EndArea();
+        }
+
+        private void ReplaceTexture()
+        {
+            string targetTexturePath = AssetDatabase.GetAssetPath(_targetTexture);
+            string replaceTexturePath = AssetDatabase.GetAssetPath(_textureToReplace);
+
+            // Copy texture file
+            File.Copy(targetTexturePath, replaceTexturePath, true);
+
+            // Copy meta file too
+            string targetMetaPath  = targetTexturePath + ".meta";
+            string replaceMetaPath = replaceTexturePath + ".meta";
+            if (File.Exists(targetMetaPath))
+            {
+                File.Copy(targetMetaPath, replaceMetaPath, true);
+            }
+
+            // Delete original asset (and its meta)
+            AssetDatabase.DeleteAsset(targetTexturePath);
+
+            // Refresh
+            AssetDatabase.Refresh();
         }
 
         private void Import()

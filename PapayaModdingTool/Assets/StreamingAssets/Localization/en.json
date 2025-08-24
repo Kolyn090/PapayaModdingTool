@@ -75,6 +75,8 @@
         "save_files_to": "Save files to...",
         "auto_fill_workplace": "Auto Fill Workplace",
         "apply_datas": "Apply Datas to Texture",
-        "run": "Run"
+        "run": "Run",
+        "replace_texture": "Replace Texture",
+        "texture_to_replace": "Texture to be replaced"
     }
 }
