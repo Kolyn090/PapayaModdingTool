@@ -40,7 +40,8 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace
                 int boxH = t.height;
 
                 int startX = cursorX;
-                int startY = (maxHeight - boxH) / 2; // center vertically in final canvas
+                // int startY = (maxHeight - boxH) / 2; // center vertically in final canvas
+                int startY = maxHeight - boxH;
 
                 // Center inside the box
                 int pasteX = startX + (boxW - tex.width) / 2;
