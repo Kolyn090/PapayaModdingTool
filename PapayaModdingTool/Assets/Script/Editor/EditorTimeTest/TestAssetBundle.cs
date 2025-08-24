@@ -13,8 +13,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.EditorTimeTest
         [MenuItem("Tools/__ TestAssetBundle", false, 99)]
         public static void ShowWindow()
         {
-            GetWindow<TestAssetBundle>("Asset Bundle Tests");
             Initialize();
+            GetWindow<TestAssetBundle>("Asset Bundle Tests");
         }
 
         private void OnGUI()

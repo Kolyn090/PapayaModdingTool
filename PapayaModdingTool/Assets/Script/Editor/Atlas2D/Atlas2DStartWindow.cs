@@ -9,8 +9,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
         [MenuItem("Tools/02 Atlas Maker")]
         public static void ShowWindow()
         {
-            RecentProjectsWindow.ShowWindow(ELT("02_tool"), EditorWindowType.Atlas2D);
             Initialize();
+            RecentProjectsWindow.ShowWindow(ELT("02_tool"), EditorWindowType.Atlas2D);
         }
     }
 }

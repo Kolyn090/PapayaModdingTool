@@ -23,9 +23,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 
         public static void ShowWindow(string title, EditorWindowType editorWindowType)
         {
+            Initialize();
             GetWindow<RecentProjectsWindow>(title);
             _editorWindowType = editorWindowType;
-            Initialize();
         }
 
         private void OnGUI()

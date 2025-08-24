@@ -73,6 +73,8 @@
         "save_all_sprites": "Save All Sprites",
         "export_workplace": "Export Workplace",
         "save_files_to": "Save files to...",
-        "auto_fill_workplace": "Auto Fill Workplace"
+        "auto_fill_workplace": "Auto Fill Workplace",
+        "apply_datas": "Apply Datas to Texture",
+        "run": "Run"
     }
 }

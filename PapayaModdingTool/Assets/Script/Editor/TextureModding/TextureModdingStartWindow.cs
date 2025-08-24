@@ -9,8 +9,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.TextureModding
         [MenuItem("Tools/01 Texture Modding")]
         public static void ShowWindow()
         {
-            RecentProjectsWindow.ShowWindow(ELT("01_tool"), EditorWindowType.TextureModding);
             Initialize();
+            RecentProjectsWindow.ShowWindow(ELT("01_tool"), EditorWindowType.TextureModding);
         }
     }
 }

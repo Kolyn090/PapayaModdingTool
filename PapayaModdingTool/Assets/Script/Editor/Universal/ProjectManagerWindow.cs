@@ -7,7 +7,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
 {
     public class ProjectManagerWindow : BaseEditorWindow
     {
-        private ProjectRemover _projectRemover = new(_appEnvironment.Wrapper.JsonSerializer);
+        private readonly ProjectRemover _projectRemover = new(_appEnvironment.Wrapper.JsonSerializer);
 
         private SwitchLanguageHelper _switchLanguageHelper;
         private DeleteProjectHelper _deleteProjectHelper;
@@ -17,8 +17,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Universal
         [MenuItem("Tools/__ Project Manager", false, 99)]
         public static void ShowWindow()
         {
-            GetWindow<ProjectManagerWindow>(ELT("manage_project"));
             Initialize();
+            GetWindow<ProjectManagerWindow>(ELT("manage_project"));
         }
 
         private void OnEnable()

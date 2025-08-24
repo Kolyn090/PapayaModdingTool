@@ -73,6 +73,8 @@
         "save_all_sprites": "保存所有图像",
         "export_workplace": "提取工作区",
         "save_files_to": "将文件保存到...",
-        "auto_fill_workplace": "自动填充工作区"
+        "auto_fill_workplace": "自动填充工作区",
+        "apply_datas": "应用Datas到材质",
+        "run": "运行"
     }
 }
