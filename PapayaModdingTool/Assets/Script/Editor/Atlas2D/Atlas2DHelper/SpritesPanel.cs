@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper;
+using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Commands.SpriteEditCommand;
 using PapayaModdingTool.Assets.Script.EventListener;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.Atlas2D;
@@ -189,11 +190,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             {
                 if (data.hasFlipX)
                 {
-                    data.sprite = SpritesBatchOperator.FlipTextureByX(data.sprite);
+                    data.sprite = FlipSpriteCommand.FlipTextureByX(data.sprite);
                 }
                 if (data.hasFlipY)
                 {
-                    data.sprite = SpritesBatchOperator.FlipTextureByY(data.sprite);
+                    data.sprite = FlipSpriteCommand.FlipTextureByY(data.sprite);
                 }
             }
         }
