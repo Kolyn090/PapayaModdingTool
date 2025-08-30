@@ -44,7 +44,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Commands.SpriteEditComm
                 foreach (SpriteButtonData data in _selected)
                 {
                     _oldVals[data] = _ReadDataVal(data);
-                    _SetDataVal(data, _GetOptions()[_newSelectedIndex]);
+                    _SetDataVal(data, _GetOptions()[_newSelectedIndex - 1]);
                 }
             }
             else

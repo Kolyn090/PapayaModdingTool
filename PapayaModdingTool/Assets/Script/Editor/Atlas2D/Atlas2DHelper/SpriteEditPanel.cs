@@ -261,21 +261,42 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private void SaveChanged()
         {
             // For optimization purpose, only truly save to data if this button is clicked
+            // Only update if the value has been changed
 
-            _batchOperator.RenameSpriteLabel(_name, () => _curr, newVal => _name = newVal);
-            _batchOperator.ChangeLevelOfSelected(_level, () => _curr, newVal => _level = newVal);
-            _batchOperator.ChangeOrderOfSelected(_order, () => _curr, newVal => _order = newVal);
-            _batchOperator.ChangeWidthOfSelected(_width, () => _curr, newVal => _width = newVal);
-            _batchOperator.ChangeHeightOfSelected(_height, () => _curr, newVal => _height = newVal);
-            _batchOperator.ChangePivotXOfSelected(_pivotX, () => _curr, newVal => _pivotX = newVal);
-            _batchOperator.ChangePivotYOfSelected(_pivotY, () => _curr, newVal => _pivotY = newVal);
-            _batchOperator.ChangeAnimationOfSelected(_selectedIndex, () => _curr,
-                newIndex => _selectedIndex = newIndex,
-                () => _animations,
-                newAnimation => _animation = newAnimation
+            if (_curr.label != _name)
+                _batchOperator.RenameSpriteLabel(_name, () => _curr, newVal => _name = newVal);
+            
+            if (_curr.level != _level)
+                _batchOperator.ChangeLevelOfSelected(_level, () => _curr, newVal => _level = newVal);
+            
+            if (_curr.order != _order)
+                _batchOperator.ChangeOrderOfSelected(_order, () => _curr, newVal => _order = newVal);
+            
+            if (_curr.width != _width)
+                _batchOperator.ChangeWidthOfSelected(_width, () => _curr, newVal => _width = newVal);
+            
+            if (_curr.height != _height)
+                _batchOperator.ChangeHeightOfSelected(_height, () => _curr, newVal => _height = newVal);
+            
+            if (_curr.pivot.x != _pivotX)
+                _batchOperator.ChangePivotXOfSelected(_pivotX, () => _curr, newVal => _pivotX = newVal);
+
+            if (_curr.pivot.y != _pivotY)
+                _batchOperator.ChangePivotYOfSelected(_pivotY, () => _curr, newVal => _pivotY = newVal);
+
+            if (GetSelectIndexOfAnimation(_curr.animation) != _selectedIndex)
+                _batchOperator.ChangeAnimationOfSelected(_selectedIndex, () => _curr,
+                    newIndex => _selectedIndex = newIndex,
+                    () => _animations,
+                    newAnimation => _animation = newAnimation
             );
 
             Debug.Log("Memory change saved, you still need to Save everything to save to database.");
+        }
+
+        private int GetSelectIndexOfAnimation(string animation)
+        {
+            return _animations.IndexOf(animation) + 1;
         }
 
         private void AddAnimation()
