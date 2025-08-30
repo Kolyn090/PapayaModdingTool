@@ -90,165 +90,44 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                 GUILayout.BeginVertical();
                 {
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-
-                        if (GUILayout.Button(ELT("save_changed"), GUILayout.Width(100)))
-                        {
-                            SaveChanged();
-                        }
-
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-
-                        if (GUILayout.Button(ELT("flip_x"), GUILayout.Width(100)))
-                        {
-                            _batchOperator.FlipXAllSelected();
-                        }
-
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-
-                        if (GUILayout.Button(ELT("flip_y"), GUILayout.Width(100)))
-                        {
-                            _batchOperator.FlipYAllSelected();
-                        }
-
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-
-                        if (GUILayout.Button(ELT("auto_fill_workplace"), GUILayout.Width(100)))
-                        {
-                            _batchOperator.AutoFillWorkplace();
-                        }
-
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
-
+                    DrawSideButton(ELT("save_changed"), SaveChanged);
+                    DrawSideButton(ELT("flip_x"), _batchOperator.FlipXAllSelected);
+                    DrawSideButton(ELT("flip_y"), _batchOperator.FlipYAllSelected);
+                    DrawSideButton(ELT("auto_fill_workplace"), _batchOperator.AutoFillWorkplace);
                     GUILayout.Label("");
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-
-                        if (GUILayout.Button("-0.1", GUILayout.Width(40)))
-                        {
-                            _batchOperator.AddPivotOfSelected(
+                    DrawSideButton2("-0.1", "+0.1",
+                        () => _batchOperator.AddPivotOfSelected(
                                 () => _curr,
                                 newPivotX => _pivotX = newPivotX,
                                 newPivotY => _pivotY = newPivotY,
                                 addX: -0.1f
-                            );
-                        }
-
-                        GUILayout.Space(5);
-
-                        if (GUILayout.Button("+0.1", GUILayout.Width(40)))
-                        {
-                            _batchOperator.AddPivotOfSelected(
+                            ),
+                        () => _batchOperator.AddPivotOfSelected(
                                 () => _curr,
                                 newPivotX => _pivotX = newPivotX,
                                 newPivotY => _pivotY = newPivotY,
                                 addX: 0.1f
-                            );
-                        }
-
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-
-                        if (GUILayout.Button("-0.1", GUILayout.Width(40)))
-                        {
-                            _batchOperator.AddPivotOfSelected(
+                            )
+                    );
+                    DrawSideButton2("-0.1", "+0.1",
+                        () => _batchOperator.AddPivotOfSelected(
                                 () => _curr,
                                 newPivotX => _pivotX = newPivotX,
                                 newPivotY => _pivotY = newPivotY,
                                 addY: -0.1f
-                            );
-                        }
-
-                        GUILayout.Space(5);
-
-                        if (GUILayout.Button("+0.1", GUILayout.Width(40)))
-                        {
-                            _batchOperator.AddPivotOfSelected(
+                            ),
+                        () => _batchOperator.AddPivotOfSelected(
                                 () => _curr,
                                 newPivotX => _pivotX = newPivotX,
                                 newPivotY => _pivotY = newPivotY,
                                 addY: 0.1f
-                            );
-                        }
-
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-                        if (GUILayout.Button(ELT("sprite_edit_create"), GUILayout.Width(100)))
-                        {
-                            AddAnimation();
-                        }
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-                        if (GUILayout.Button(ELT("sprite_edit_delete"), GUILayout.Width(100)))
-                        {
-                            DeleteAnimation();
-                        }
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-                        if (GUILayout.Button(ELT("play_animation"), GUILayout.Width(100)))
-                        {
-                            PlayAnimation();
-                        }
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
-
+                            )
+                    );
+                    DrawSideButton(ELT("sprite_edit_create"), AddAnimation);
+                    DrawSideButton(ELT("sprite_edit_delete"), DeleteAnimation);
+                    DrawSideButton(ELT("play_animation"), PlayAnimation);
+                    DrawSideButton(ELT("update_workplace"), UpdateWorkplace, height: 40);
                     GUILayout.Label("");
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.Space(20); // left margin
-                        if (GUILayout.Button(ELT("update_workplace"), GUILayout.Width(100), GUILayout.Height(40)))
-                        {
-                            UpdateWorkplace();
-                        }
-                        GUILayout.Space(20); // right margin
-                    }
-                    GUILayout.EndHorizontal();
                 }
                 GUILayout.EndVertical();
             }
@@ -550,7 +429,48 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             GUILayout.EndVertical();
         }
 
-        private static Texture2D DoubleSize(Texture2D source, int factor=2)
+        private void DrawSideButton(string title, Action onClick, int width=100, int height=20)
+        {
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Space(20); // left margin
+
+                if (GUILayout.Button(title, GUILayout.Width(width), GUILayout.Height(height)))
+                {
+                    onClick.Invoke();
+                }
+
+                GUILayout.Space(20); // right margin
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        private void DrawSideButton2(string title1, string title2,
+                                    Action onClick1, Action onClick2,
+                                    int width=40, int height=20)
+        {
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Space(20); // left margin
+
+                if (GUILayout.Button(title1, GUILayout.Width(width), GUILayout.Height(height)))
+                {
+                    onClick1.Invoke();
+                }
+
+                GUILayout.Space(5);
+
+                if (GUILayout.Button(title2, GUILayout.Width(width), GUILayout.Height(height)))
+                {
+                    onClick2.Invoke();
+                }
+
+                GUILayout.Space(20); // right margin
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        private static Texture2D DoubleSize(Texture2D source, int factor = 2)
         {
             int width = source.width * factor;
             int height = source.height * factor;
