@@ -4,6 +4,7 @@ using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Universal.GraphicUI;
 using PapayaModdingTool.Assets.Script.EventListener;
+using PapayaModdingTool.Assets.Script.Program;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         public Func<List<SpriteButtonData>> GetAllDatasInTexture;
         public Func<List<SpriteButtonData>> GetDatas; // Workplace
         public Func<SpritesBatchSelector> GetBatchSelector;
+        public Func<CommandManager> GetCommandManager;
         public Action<List<SpriteButtonData>> SetDatas; // Workplace
 
         private Texture2D _sprite;
@@ -49,7 +51,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             {
                 GetDatas = GetAllDatasInTexture,
                 GetDisplaySprite = () => _sprite,
-                SetDisplaySprite = var => _sprite = var
+                SetDisplaySprite = var => _sprite = var,
+                GetCommandManager = GetCommandManager
             };
         }
 
@@ -72,24 +75,34 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                 GUILayout.BeginVertical();
                 {
-                    DrawField(ELT("sprite_edit_name"), ref _name, var => { if (_curr != null) _batchOperator.RenameSpriteLabel(var, _curr); });
-                    DrawField(ELT("sprite_edit_level"), ref _level, var => { if (_curr != null) _batchOperator.ChangeLevelOfSelected(var); });
-                    DrawField(ELT("sprite_edit_order"), ref _order, var => { if (_curr != null) _batchOperator.ChangeOrderOfSelected(var); });
-                    DrawField(ELT("sprite_edit_width"), ref _width, var => { if (_curr != null) _batchOperator.ChangeWidthOfSelected(var); });
-                    DrawField(ELT("sprite_edit_height"), ref _height, var => { if (_curr != null) _batchOperator.ChangeHeightOfSelected(var); });
-                    DrawField(ELT("pivot_x"), ref _pivotX, var => { if (_curr != null) _batchOperator.ChangePivotXOfSelected(var); });
-                    DrawField(ELT("pivot_y"), ref _pivotY, var => { if (_curr != null) _batchOperator.ChangePivotYOfSelected(var); });
+                    DrawField(ELT("sprite_edit_name"), ref _name);
+                    DrawField(ELT("sprite_edit_level"), ref _level);
+                    DrawField(ELT("sprite_edit_order"), ref _order);
+                    DrawField(ELT("sprite_edit_width"), ref _width);
+                    DrawField(ELT("sprite_edit_height"), ref _height);
+                    DrawField(ELT("pivot_x"), ref _pivotX);
+                    DrawField(ELT("pivot_y"), ref _pivotY);
                     DrawField(ELT("create_new_animation"), ref _newAnimation);
                     DrawField(ELT("delete_animation"), ref _deleteAnimation);
-                    DrawDropdownList(ELT("sprite_edit_animation"),
-                                        ref _selectedIndex,
-                                        _animations,
-                                        var => { _animation = var; if (_curr != null) _batchOperator.ChangeAnimationOfSelected(var); });
+                    DrawDropdownList(ELT("sprite_edit_animation"), ref _selectedIndex, _animations);
                 }
                 GUILayout.EndVertical();
 
                 GUILayout.BeginVertical();
                 {
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Space(20); // left margin
+
+                        if (GUILayout.Button(ELT("save_changed"), GUILayout.Width(100)))
+                        {
+                            SaveChanged();
+                        }
+
+                        GUILayout.Space(20); // right margin
+                    }
+                    GUILayout.EndHorizontal();
+
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Space(20); // left margin
@@ -130,7 +143,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                     GUILayout.EndHorizontal();
 
                     GUILayout.Label("");
-                    GUILayout.Label("");
 
                     GUILayout.BeginHorizontal();
                     {
@@ -138,16 +150,24 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                         if (GUILayout.Button("-0.1", GUILayout.Width(40)))
                         {
-                            _pivotX -= 0.1f;
-                            _batchOperator.AddPivotOfSelected(addX: -0.1f);
+                            _batchOperator.AddPivotOfSelected(
+                                () => _curr,
+                                newPivotX => _pivotX = newPivotX,
+                                newPivotY => _pivotY = newPivotY,
+                                addX: -0.1f
+                            );
                         }
 
                         GUILayout.Space(5);
 
                         if (GUILayout.Button("+0.1", GUILayout.Width(40)))
                         {
-                            _pivotX += 0.1f;
-                            _batchOperator.AddPivotOfSelected(addX: 0.1f);
+                            _batchOperator.AddPivotOfSelected(
+                                () => _curr,
+                                newPivotX => _pivotX = newPivotX,
+                                newPivotY => _pivotY = newPivotY,
+                                addX: 0.1f
+                            );
                         }
 
                         GUILayout.Space(20); // right margin
@@ -160,16 +180,24 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                         if (GUILayout.Button("-0.1", GUILayout.Width(40)))
                         {
-                            _pivotY -= 0.1f;
-                            _batchOperator.AddPivotOfSelected(addY: -0.1f);
+                            _batchOperator.AddPivotOfSelected(
+                                () => _curr,
+                                newPivotX => _pivotX = newPivotX,
+                                newPivotY => _pivotY = newPivotY,
+                                addY: -0.1f
+                            );
                         }
 
                         GUILayout.Space(5);
 
                         if (GUILayout.Button("+0.1", GUILayout.Width(40)))
                         {
-                            _pivotY += 0.1f;
-                            _batchOperator.AddPivotOfSelected(addY: 0.1f);
+                            _batchOperator.AddPivotOfSelected(
+                                () => _curr,
+                                newPivotX => _pivotX = newPivotX,
+                                newPivotY => _pivotY = newPivotY,
+                                addY: 0.1f
+                            );
                         }
 
                         GUILayout.Space(20); // right margin
@@ -228,6 +256,26 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             EditorGUI.EndDisabledGroup();
 
             GUILayout.EndArea();
+        }
+
+        private void SaveChanged()
+        {
+            // For optimization purpose, only truly save to data if this button is clicked
+
+            _batchOperator.RenameSpriteLabel(_name, () => _curr, newVal => _name = newVal);
+            _batchOperator.ChangeLevelOfSelected(_level, () => _curr, newVal => _level = newVal);
+            _batchOperator.ChangeOrderOfSelected(_order, () => _curr, newVal => _order = newVal);
+            _batchOperator.ChangeWidthOfSelected(_width, () => _curr, newVal => _width = newVal);
+            _batchOperator.ChangeHeightOfSelected(_height, () => _curr, newVal => _height = newVal);
+            _batchOperator.ChangePivotXOfSelected(_pivotX, () => _curr, newVal => _pivotX = newVal);
+            _batchOperator.ChangePivotYOfSelected(_pivotY, () => _curr, newVal => _pivotY = newVal);
+            _batchOperator.ChangeAnimationOfSelected(_selectedIndex, () => _curr,
+                newIndex => _selectedIndex = newIndex,
+                () => _animations,
+                newAnimation => _animation = newAnimation
+            );
+
+            Debug.Log("Memory change saved, you still need to Save everything to save to database.");
         }
 
         private void AddAnimation()
@@ -334,7 +382,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             }
         }
 
-        private void DrawField<T>(string label, ref T value, Action<T> callBack = null)
+        private void DrawField<T>(string label, ref T value)
         {
             Rect rect = EditorGUILayout.GetControlRect();
             Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
@@ -373,14 +421,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             if (EditorGUI.EndChangeCheck()) // Only true if user actually changed the value
             {
                 value = newValue;
-                callBack?.Invoke(newValue);
             }
         }
 
         private void DrawDropdownList(string label,
                                         ref int value,
                                         List<string> options,
-                                        Action<string> callBack,
                                         string nullLabel = "<None>")
         {
             string controlName = $"Dropdown_{label}";
@@ -399,7 +445,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 optionArray[i + 1] = options[i];
 
             // Remember previous value
-            int previousValue = value;
+            // int previousValue = value;
 
             // Draw the popup
             value = EditorGUI.Popup(fieldRect, value, optionArray);
@@ -407,18 +453,18 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             // value == 0 means null / none selected
 
             // Invoke callback if selection changed
-            if (value != previousValue && EditorGUI.EndChangeCheck()) // check if really from user
-            {
-                if (value > 0)
-                {
-                    callBack.Invoke(options[value - 1]);
-                }
-                else
-                {
-                    callBack.Invoke("");
-                }
-                // Debug.Log(value > 0 ? $"Changed to {options[value-1]}" : $"Changed to None");
-            }
+            // if (value != previousValue && EditorGUI.EndChangeCheck()) // check if really from user
+            // {
+            //     if (value > 0)
+            //     {
+            //         callBack.Invoke(options[value - 1]);
+            //     }
+            //     else
+            //     {
+            //         callBack.Invoke("");
+            //     }
+            //     // Debug.Log(value > 0 ? $"Changed to {options[value-1]}" : $"Changed to None");
+            // }
         }
 
         private void DrawImageDisplay(params GUILayoutOption[] options)

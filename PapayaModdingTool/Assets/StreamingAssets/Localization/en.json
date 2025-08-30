@@ -83,6 +83,7 @@
         "no_frames_loaded": "No frames loaded",
         "pause": "Pause",
         "play": "Play",
-        "stop": "Stop"
+        "stop": "Stop",
+        "save_changed": "Save Changed"
     }
 }

@@ -90,7 +90,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                     _previewPanel.UpdateWorkplace(var);
                 },
                 GetAllDatasInTexture = () => _allDatasInTexture,
-                GetBatchSelector = () => _batchSelector
+                GetBatchSelector = () => _batchSelector,
+                GetCommandManager = () => _appEnvironment.CommandManager
             };
             _spriteEditPanel.Initialize(new(270, 550, 530, 260));
 
