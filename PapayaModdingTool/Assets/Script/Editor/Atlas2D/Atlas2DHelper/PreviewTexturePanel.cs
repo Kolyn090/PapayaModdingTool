@@ -26,6 +26,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private List<SpriteButtonData> _workplace;
         private bool _needUpdateWorkplaceTexture = false;
 
+        private PreviewMarkPanel _previewMarkPanel;
         private ZoomPanController _zoomPanController;
 
         public void Initialize(Rect bound)
@@ -51,6 +52,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             _checkerBoardTexture.Apply();
 
             _zoomPanController = new(_imageRect, () => _workplaceTexture);
+            _previewMarkPanel = new(_imageRect, _zoomPanController);
 
             // _panOffset = new(0, -GetTexture().height / 2f);
 
@@ -71,6 +73,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             if (_needUpdateWorkplaceTexture && _workplace != null)
             {
                 _workplaceTexture = Workplace.CreatePreview(_workplace);
+                _previewMarkPanel.MakeWorkplaceTexture(new() { new() }, _workplaceTexture.width, _workplaceTexture.height);
                 _needUpdateWorkplaceTexture = false;
             }
 
@@ -137,12 +140,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 if (NeedsRenderUpdate())
                 {
                     UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
+                    _previewMarkPanel.UpdatePreviewTexture();
                     _zoomPanController.UpdateLast();
                 }
 
                 GUI.DrawTexture(
                     new Rect(0, 0, _imageRect.width, _imageRect.height), // local group coords
                     _renderTexture,
+                    ScaleMode.StretchToFill,
+                    true
+                );
+                GUI.DrawTexture(
+                    new Rect(0, 0, _imageRect.width, _imageRect.height), // local group coords
+                    _previewMarkPanel.RenderTexture,
                     ScaleMode.StretchToFill,
                     true
                 );

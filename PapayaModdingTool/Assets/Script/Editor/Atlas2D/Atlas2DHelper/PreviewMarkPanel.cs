@@ -1,46 +1,94 @@
-using System;
 using System.Collections.Generic;
+using System.IO;
+using PapayaModdingTool.Assets.Script.Misc.Paths;
+using UnityEditor;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
 {
     public class Mark
     {
-        public string text = "Text";
-        public Vector2 position = Vector2.zero;
-        public Color color = Color.black;
-        public int fontSize = 40;
+        public int digitsString = 0;
+        public Vector2 position = new(0, 0);
+        public Color color = new(1f, 1f, 1f, 0.8f);
     }
 
     public class PreviewMarkPanel
     {
         private Texture2D _workplaceTexture;
         private RenderTexture _renderTexture;
+        public RenderTexture RenderTexture => _renderTexture;
 
-        private Vector2 _panOffset = Vector2.zero;
-        private float _zoom = 1f;
         private Rect _imageRect;
+        private readonly ZoomPanController _zoomPanController;
 
-        #region Optimization
-        private Vector2 _lastPanOffset;
-        private float _lastZoom;
-        private Vector2Int _lastRenderSize;
-
-        private bool _isPanning = false;
-        private Vector2 _lastMousePos;
-        #endregion
-
-        public PreviewMarkPanel(Rect imageRect)
+        public PreviewMarkPanel(Rect imageRect, ZoomPanController zoomPanController)
         {
             _imageRect = imageRect;
+            _zoomPanController = zoomPanController;
         }
 
         // Call this when the parent workplace texture is updated
-        public void MakeWorkplaceTexture(List<Mark> marks,
-                                        int workplaceTextureWidth,
-                                        int workplaceTextureHeight)
+        public void MakeWorkplaceTexture(List<Mark> marks, int width, int height)
         {
+            Texture2D tex = new(width, height, TextureFormat.RGBA32, false);
+            Color[] clearPixels = new Color[width * height];
+            for (int i = 0; i < clearPixels.Length; i++) clearPixels[i] = Color.clear;
+            tex.SetPixels(clearPixels);
 
+            // Load digit textures (0.png to 9.png)
+            Texture2D[] digitTextures = new Texture2D[10];
+            for (int i = 0; i <= 9; i++)
+            {
+                string path = Path.Combine(PredefinedPaths.DigitsPath, $"{i}.png");
+                byte[] bytes = File.ReadAllBytes(path);
+                Texture2D digitTex = new(2, 2, TextureFormat.RGBA32, false);
+                digitTex.LoadImage(bytes);
+                digitTextures[i] = digitTex;
+            }
+
+            foreach (var mark in marks)
+            {
+                int startX = Mathf.Clamp((int)mark.position.x, 0, width - 1);
+                int startY = Mathf.Clamp((int)mark.position.y, 0, height - 1);
+
+                int cursorX = startX;
+
+                for (int d = 0; d < mark.digitsString.ToString().Length; d++)
+                {
+                    char c = mark.digitsString.ToString()[d];
+                    if (!char.IsDigit(c)) continue;
+
+                    int digit = c - '0';
+                    Texture2D digitTex = digitTextures[digit];
+
+                    int digitWidth = digitTex.width;
+                    int digitHeight = digitTex.height;
+
+                    for (int y = 0; y < digitHeight; y++)
+                    {
+                        for (int x = 0; x < digitWidth; x++)
+                        {
+                            Color pixel = digitTex.GetPixel(x, y);
+                            if (pixel.a > 0) // Only draw non-transparent pixels
+                            {
+                                int px = cursorX + x;
+                                int py = startY + y;
+                                if (px >= 0 && px < width && py >= 0 && py < height)
+                                    tex.SetPixel(px, py, mark.color);
+                            }
+                        }
+                    }
+
+                    // Move cursor for next digit (+1 pixel gap)
+                    cursorX += digitWidth + 1;
+                }
+            }
+
+            tex.Apply();
+            tex.filterMode = FilterMode.Point;
+            _workplaceTexture = tex;
+            // SaveTextureToAssets(_workplaceTexture, "debug_digits.png");
         }
 
         // Call this when the parent preview texture is updated
@@ -72,8 +120,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
             blitMat.SetTexture("_MainTex", _workplaceTexture);
 
             // Set zoom, pan, scale as before
-            blitMat.SetFloat("_Zoom", _zoom);
-            blitMat.SetVector("_PanOffset", new Vector2(_panOffset.x / _workplaceTexture.width, _panOffset.y / _workplaceTexture.height));
+            blitMat.SetFloat("_Zoom", _zoomPanController.Zoom);
+            blitMat.SetVector("_PanOffset", new Vector2(_zoomPanController.PanOffset.x / _workplaceTexture.width,
+                                                        _zoomPanController.PanOffset.y / _workplaceTexture.height));
 
             float panelAspect = _imageRect.width / _imageRect.height;
             float textureAspect = (float)_workplaceTexture.width / _workplaceTexture.height;
@@ -86,6 +135,37 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
 
             // Restore previous RenderTexture
             RenderTexture.active = prev;
+        }
+
+        // ! Debug
+        private static void SaveTextureToAssets(Texture2D tex, string assetPath)
+        {
+            if (tex == null)
+            {
+                Debug.LogError("SaveTextureToAssets: Texture is null!");
+                return;
+            }
+
+            // Encode to PNG
+            byte[] pngData = tex.EncodeToPNG();
+            if (pngData == null)
+            {
+                Debug.LogError("SaveTextureToAssets: Failed to encode texture!");
+                return;
+            }
+
+            // Ensure path starts with Assets/
+            if (!assetPath.StartsWith("Assets/"))
+                assetPath = "Assets/" + assetPath;
+
+            // Write file
+            File.WriteAllBytes(assetPath, pngData);
+
+            // Refresh so Unity picks it up
+            AssetDatabase.ImportAsset(assetPath);
+            AssetDatabase.Refresh();
+
+            Debug.Log($"Saved texture to {assetPath}");
         }
     }
 }

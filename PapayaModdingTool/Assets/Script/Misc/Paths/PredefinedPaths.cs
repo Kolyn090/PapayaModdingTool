@@ -14,6 +14,7 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
                                                                     "{0}", // project name
                                                                     "info.json");
         public static readonly string LocalizationPath = Path.Combine(Application.streamingAssetsPath, "Localization");
+        public static readonly string DigitsPath = Path.Combine(Application.streamingAssetsPath, "Digits");
 
         public static readonly string FileTextureFolder = Path.Combine(
             ProjectsPath,
