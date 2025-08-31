@@ -69,22 +69,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
-            // if (datas != null && datas.Count > 0)
-            // {
-            //     for (int i = 0; i < datas.Count; i += BUTTONS_PER_ROW)
-            //     {
-            //         EditorGUILayout.BeginHorizontal();
-
-            //         int rowEnd = Mathf.Min(i + BUTTONS_PER_ROW, datas.Count);
-            //         for (int j = i; j < rowEnd; j++)
-            //         {
-            //             DrawImageButton(datas[j]);
-            //         }
-
-            //         EditorGUILayout.EndHorizontal();
-            //     }
-            // }
-
             DrawButtonGrid(datas, BUTTONS_PER_ROW, _bound.width / BUTTONS_PER_ROW - 15, 115, 5);
 
             EditorGUILayout.EndScrollView();
@@ -149,28 +133,28 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             EditorGUI.DrawRect(spriteRect, new Color(0.9f, 0.9f, 0.9f, 0.1f));
 
             float spriteContainerSize = 64;
-Texture2D scaledSprite = GetScaledSprite(data, (int)spriteContainerSize);
+            Texture2D scaledSprite = GetScaledSprite(data, (int)spriteContainerSize);
 
-// Center in container
-Rect centeredRect = new Rect(
-    spriteRect.x + (spriteContainerSize - scaledSprite.width) / 2,
-    spriteRect.y + (spriteContainerSize - scaledSprite.height) / 2,
-    scaledSprite.width,
-    scaledSprite.height
-);
+            // Center in container
+            Rect centeredRect = new Rect(
+                spriteRect.x + (spriteContainerSize - scaledSprite.width) / 2,
+                spriteRect.y + (spriteContainerSize - scaledSprite.height) / 2,
+                scaledSprite.width,
+                scaledSprite.height
+            );
 
-// Draw texture
-GUI.DrawTexture(centeredRect, scaledSprite, ScaleMode.StretchToFill);
+            // Draw texture
+            GUI.DrawTexture(centeredRect, scaledSprite, ScaleMode.StretchToFill);
 
-// Button click area
-if (GUI.Button(spriteRect, GUIContent.none, GUIStyle.none))
-{
-    GetBatchSelector().ClickSpriteButton(data,
-        SpritesBatchSelector.IsShiftHeld(),
-        SpritesBatchSelector.IsCtrlHeld());
+            // Button click area
+            if (GUI.Button(spriteRect, GUIContent.none, GUIStyle.none))
+            {
+                GetBatchSelector().ClickSpriteButton(data,
+                    SpritesBatchSelector.IsShiftHeld(),
+                    SpritesBatchSelector.IsCtrlHeld());
 
-    GetListener()?.Update(data);
-}
+                GetListener()?.Update(data);
+            }
 
             // Draw label below sprite
             float textY = spriteRect.yMax + 2f;

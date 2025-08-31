@@ -10,7 +10,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
     public class PreviewTexturePanel
     {
-        private const float ZOOM_MIN = 1f;
+        private const float ZOOM_MIN = 0.3f;
         private const float ZOOM_MAX = 4f;
 
         public Func<string, string> ELT;
@@ -23,12 +23,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private bool _hasInit;
 
         private Texture2D _workplaceTexture;
-        private Texture2D _renderTexture;
+        private RenderTexture  _renderTexture;
         private Texture2D _checkerBoardTexture;
         private Vector2 _panOffset = Vector2.zero;
         private float _zoom = 1f;
         private List<SpriteButtonData> _workplace;
         private bool _needUpdateWorkplaceTexture = false;
+
+#region Optimization
+        
+#endregion
 
         public void Initialize(Rect bound)
         {
@@ -113,16 +117,27 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
             // Update and draw the preview texture
             GUI.BeginGroup(_imageRect);
+
+            // Checkerboard background
             GUI.DrawTextureWithTexCoords(
                 new Rect(0, 0, _imageRect.width, _imageRect.height),
                 _checkerBoardTexture,
                 new Rect(0, 0, _imageRect.width / 16f, _imageRect.height / 16f)
             );
+
+            // Workplace preview
             if (_workplaceTexture != null)
             {
                 UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
-                GUI.DrawTexture(new Rect(0, 0, _imageRect.width, _imageRect.height), _renderTexture, ScaleMode.StretchToFill, true);
+
+                GUI.DrawTexture(
+                    new Rect(0, 0, _imageRect.width, _imageRect.height), // local group coords
+                    _renderTexture,
+                    ScaleMode.StretchToFill,
+                    true
+                );
             }
+
             GUI.EndGroup();
         }
 
@@ -169,43 +184,67 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         {
             if (_renderTexture == null || _renderTexture.width != previewWidth || _renderTexture.height != previewHeight)
             {
-                _renderTexture = new(previewWidth, previewHeight, TextureFormat.RGBA32, false)
+                if (_renderTexture != null)
+                    _renderTexture.Release();
+
+                _renderTexture = new RenderTexture(previewWidth, previewHeight, 0)
                 {
                     filterMode = FilterMode.Point
                 };
             }
 
-            Color[] srcPixels = _workplaceTexture.GetPixels();
-            Color32[] dstPixels = new Color32[previewWidth * previewHeight];
+            RenderTexture.active = _renderTexture;
+
+            // Clear with transparent or background color
+            GL.Clear(true, true, Color.clear);
+
+            GL.PushMatrix();
+            GL.LoadPixelMatrix(0, _renderTexture.width, _renderTexture.height, 0);
 
             float invZoom = 1f / _zoom;
-            float halfPreviewW = previewWidth * 0.5f;
-            float halfPreviewH = previewHeight * 0.5f;
-            float halfSrcW = _workplaceTexture.width * 0.5f;
-            float halfSrcH = _workplaceTexture.height * 0.5f;
 
-            for (int y = 0; y < previewHeight; y++)
-            {
-                float srcYf = (y - halfPreviewH) * invZoom + halfSrcH - _panOffset.y * invZoom;
-                int srcYInt = Mathf.FloorToInt(srcYf);
+            // float halfPreviewW = _renderTexture.width * 0.5f;
+            // float halfPreviewH = _renderTexture.height * 0.5f;
+            // float halfSrcW = _workplaceTexture.width * 0.5f;
+            // float halfSrcH = _workplaceTexture.height * 0.5f;
 
-                int dstRow = y * previewWidth;
+            // Compute UV in 0–1 coordinates
+            // float uMin = (halfSrcW - halfPreviewW * invZoom + _panOffset.x * invZoom) / _workplaceTexture.width;
+            // float vMin = (halfSrcH - halfPreviewH * invZoom + _panOffset.y * invZoom) / _workplaceTexture.height;
+            // float uMax = (halfSrcW + halfPreviewW * invZoom + _panOffset.x * invZoom) / _workplaceTexture.width;
+            // float vMax = (halfSrcH + halfPreviewH * invZoom + _panOffset.y * invZoom) / _workplaceTexture.height;
 
-                for (int x = 0; x < previewWidth; x++)
-                {
-                    float srcXf = (x - halfPreviewW) * invZoom + halfSrcW - _panOffset.x * invZoom;
-                    int srcXInt = Mathf.FloorToInt(srcXf);
+            _workplaceTexture.wrapMode = TextureWrapMode.Clamp;
 
-                    Color col = Color.clear;
-                    if (srcXInt >= 0 && srcXInt < _workplaceTexture.width && srcYInt >= 0 && srcYInt < _workplaceTexture.height)
-                        col = srcPixels[srcYInt * _workplaceTexture.width + srcXInt];
+            // Do NOT clamp
+            // uMin = Mathf.Clamp01(uMin);
+            // uMax = Mathf.Clamp01(uMax);
+            // vMin = Mathf.Clamp01(vMin);
+            // vMax = Mathf.Clamp01(vMax);
 
-                    dstPixels[dstRow + x] = col;
-                }
-            }
+            float uvWidth = _renderTexture.width * invZoom / _workplaceTexture.width;
+            float uvHeight = _renderTexture.height * invZoom / _workplaceTexture.height;
 
-            _renderTexture.SetPixels32(dstPixels);
-            _renderTexture.Apply();
+            float uCenter = 0.5f + _panOffset.x / _workplaceTexture.width;
+            float vCenter = 0.5f + _panOffset.y / _workplaceTexture.height;
+
+            Rect uvRect = new Rect(
+                uCenter - uvWidth * 0.5f,
+                vCenter - uvHeight * 0.5f,
+                uvWidth,
+                uvHeight
+            );
+
+            // Draw the texture into the RenderTexture
+            Graphics.DrawTexture(
+                new Rect(0, 0, _renderTexture.width, _renderTexture.height),
+                _workplaceTexture,
+                uvRect,
+                0, 0, 0, 0
+            );
+
+            GL.PopMatrix();
+            RenderTexture.active = null;
         }
     }
 }

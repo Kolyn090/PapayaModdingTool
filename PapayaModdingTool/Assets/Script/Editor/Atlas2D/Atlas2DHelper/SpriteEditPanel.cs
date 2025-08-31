@@ -41,13 +41,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private SpritesBatchOperator _batchOperator;
 
         private Rect _bound;
-        
+
+#region Optimization
         // For dropdown list
         private readonly Dictionary<List<string>, string[]> _cachedOptionArrays = new();
-
         // For sprite display
         private Texture2D _cachedDoubledSprite;
         private Texture2D _lastSprite;
+#endregion
 
         public void Initialize(Rect bound)
         {
