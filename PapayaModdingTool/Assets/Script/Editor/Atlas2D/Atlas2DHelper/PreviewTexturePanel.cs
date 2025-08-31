@@ -5,25 +5,26 @@ using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
 using UnityEngine;
+using UEvent = UnityEngine.Event;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
     public class PreviewTexturePanel
     {
-        private const float ZOOM_MIN = 0.3f;
+        private const float ZOOM_MIN = 0.7f;
         private const float ZOOM_MAX = 4f;
 
         public Func<string, string> ELT;
         public Func<WorkplaceExportor> GetWorkplaceExportor;
         public Func<List<SpriteButtonData>> GetDatas;
 
-        private Rect _guiRect; 
+        private Rect _guiRect;
         private Rect _imageRect;
 
         private bool _hasInit;
 
         private Texture2D _workplaceTexture;
-        private RenderTexture  _renderTexture;
+        private RenderTexture _renderTexture;
         private Texture2D _checkerBoardTexture;
         private Vector2 _panOffset = Vector2.zero;
         private float _zoom = 1f;
@@ -31,7 +32,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private bool _needUpdateWorkplaceTexture = false;
 
 #region Optimization
-        
+        private Vector2 _lastPanOffset;
+        private float _lastZoom;
+        private Vector2Int _lastRenderSize;
+
+        private bool _isPanning = false;
+        private Vector2 _lastMousePos;
 #endregion
 
         public void Initialize(Rect bound)
@@ -128,7 +134,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             // Workplace preview
             if (_workplaceTexture != null)
             {
-                UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
+                if (NeedsRenderUpdate())
+                {
+                    UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
+                    _lastRenderSize = new Vector2Int((int)_imageRect.width, (int)_imageRect.height);
+                    _lastZoom = _zoom;
+                    _lastPanOffset = _panOffset;
+                }
 
                 GUI.DrawTexture(
                     new Rect(0, 0, _imageRect.width, _imageRect.height), // local group coords
@@ -139,6 +151,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             }
 
             GUI.EndGroup();
+            HandleMouseInput(_imageRect);
+        }
+
+        private bool NeedsRenderUpdate()
+        {
+            return _renderTexture == null
+                || _lastRenderSize.x != (int)_imageRect.width
+                || _lastRenderSize.y != (int)_imageRect.height
+                || _lastZoom != _zoom
+                || _lastPanOffset != _panOffset;
         }
 
         public void SetPanOffset(Vector2 panOffset)
@@ -182,69 +204,110 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         private void UpdatePreviewTexture(int previewWidth, int previewHeight)
         {
-            if (_renderTexture == null || _renderTexture.width != previewWidth || _renderTexture.height != previewHeight)
+            if (_renderTexture == null ||
+                _renderTexture.width != previewWidth ||
+                _renderTexture.height != previewHeight)
             {
                 if (_renderTexture != null)
                     _renderTexture.Release();
 
                 _renderTexture = new RenderTexture(previewWidth, previewHeight, 0)
                 {
-                    filterMode = FilterMode.Point
+                    filterMode = FilterMode.Point,
+                    wrapMode = TextureWrapMode.Clamp
                 };
             }
 
+            // Make active before clearing/blitting
+            RenderTexture prev = RenderTexture.active;
             RenderTexture.active = _renderTexture;
 
-            // Clear with transparent or background color
+            // Clear it
             GL.Clear(true, true, Color.clear);
 
-            GL.PushMatrix();
-            GL.LoadPixelMatrix(0, _renderTexture.width, _renderTexture.height, 0);
+            // Blit with shader
+            Material blitMat = new Material(Shader.Find("Hidden/BlitZoomPan"));
+            blitMat.SetTexture("_MainTex", _workplaceTexture);
 
-            float invZoom = 1f / _zoom;
+            // Set zoom, pan, scale as before
+            blitMat.SetFloat("_Zoom", _zoom);
+            blitMat.SetVector("_PanOffset", new Vector2(_panOffset.x / _workplaceTexture.width, _panOffset.y / _workplaceTexture.height));
 
-            // float halfPreviewW = _renderTexture.width * 0.5f;
-            // float halfPreviewH = _renderTexture.height * 0.5f;
-            // float halfSrcW = _workplaceTexture.width * 0.5f;
-            // float halfSrcH = _workplaceTexture.height * 0.5f;
+            float panelAspect = (float)previewWidth / previewHeight;
+            float textureAspect = (float)_workplaceTexture.width / _workplaceTexture.height;
+            Vector2 scale = Vector2.one;
+            if (textureAspect > panelAspect) scale.y = panelAspect / textureAspect;
+            else scale.x = textureAspect / panelAspect;
+            blitMat.SetVector("_Scale", scale);
 
-            // Compute UV in 0–1 coordinates
-            // float uMin = (halfSrcW - halfPreviewW * invZoom + _panOffset.x * invZoom) / _workplaceTexture.width;
-            // float vMin = (halfSrcH - halfPreviewH * invZoom + _panOffset.y * invZoom) / _workplaceTexture.height;
-            // float uMax = (halfSrcW + halfPreviewW * invZoom + _panOffset.x * invZoom) / _workplaceTexture.width;
-            // float vMax = (halfSrcH + halfPreviewH * invZoom + _panOffset.y * invZoom) / _workplaceTexture.height;
+            Graphics.Blit(_workplaceTexture, _renderTexture, blitMat);
 
-            _workplaceTexture.wrapMode = TextureWrapMode.Clamp;
+            // Restore previous RenderTexture
+            RenderTexture.active = prev;
+        }
 
-            // Do NOT clamp
-            // uMin = Mathf.Clamp01(uMin);
-            // uMax = Mathf.Clamp01(uMax);
-            // vMin = Mathf.Clamp01(vMin);
-            // vMax = Mathf.Clamp01(vMax);
+        private void HandleMouseInput(Rect previewRect)
+        {
+            UEvent e = UEvent.current;
 
-            float uvWidth = _renderTexture.width * invZoom / _workplaceTexture.width;
-            float uvHeight = _renderTexture.height * invZoom / _workplaceTexture.height;
+            // --- Zoom (scroll wheel) ---
+            if (previewRect.Contains(e.mousePosition) && e.type == EventType.ScrollWheel)
+            {
+                float zoomFactor = (e.delta.y > 0) ? 1f / 1.1f : 1.1f;
+                ZoomAtPosition(zoomFactor, e.mousePosition, previewRect);
+                e.Use();
+            }
 
-            float uCenter = 0.5f + _panOffset.x / _workplaceTexture.width;
-            float vCenter = 0.5f + _panOffset.y / _workplaceTexture.height;
+            // --- Pan with Left Mouse ---
+            if (e.type == EventType.MouseDown && e.button == 0 && previewRect.Contains(e.mousePosition))
+            {
+                _isPanning = true;
+                _lastMousePos = e.mousePosition;
+                e.Use(); // eat event so GUI buttons won’t get clicked
+            }
+            else if (e.type == EventType.MouseDrag && _isPanning && e.button == 0)
+            {
+                Vector2 deltaPanel = e.mousePosition - _lastMousePos;
+                deltaPanel.y = -deltaPanel.y; // flip Y because IMGUI
 
-            Rect uvRect = new Rect(
-                uCenter - uvWidth * 0.5f,
-                vCenter - uvHeight * 0.5f,
-                uvWidth,
-                uvHeight
+                Vector2 panelToSrc = new Vector2(
+                    _workplaceTexture.width  / previewRect.width,
+                    _workplaceTexture.height / previewRect.height
+                );
+
+                _panOffset -= Vector2.Scale(deltaPanel, panelToSrc) / _zoom;
+                _lastMousePos = e.mousePosition;
+
+                e.Use();
+            }
+            else if (e.type == EventType.MouseUp && e.button == 0)
+            {
+                _isPanning = false;
+            }
+        }
+        
+        private void ZoomAtPosition(float zoomFactor, Vector2 mousePos, Rect previewRect)
+        {
+            Vector2 center = previewRect.center;
+
+            // Mouse delta in panel space; flip Y because IMGUI Y+ is down
+            Vector2 deltaPanel = mousePos - center;
+            deltaPanel.y = -deltaPanel.y;
+
+            // Convert panel pixels -> source (texture) pixels
+            Vector2 panelToSrc = new Vector2(
+                _workplaceTexture.width  / previewRect.width,
+                _workplaceTexture.height / previewRect.height
             );
 
-            // Draw the texture into the RenderTexture
-            Graphics.DrawTexture(
-                new Rect(0, 0, _renderTexture.width, _renderTexture.height),
-                _workplaceTexture,
-                uvRect,
-                0, 0, 0, 0
-            );
+            float oldZoom = _zoom;
+            float newZoom = Mathf.Clamp(_zoom * zoomFactor, ZOOM_MIN, ZOOM_MAX);
+            float zoomChange = (newZoom / oldZoom) - 1f;
 
-            GL.PopMatrix();
-            RenderTexture.active = null;
+            _zoom = newZoom;
+
+            // Adjust pan so the point under the cursor stays anchored
+            _panOffset += Vector2.Scale(deltaPanel, panelToSrc) * zoomChange;
         }
     }
 }
