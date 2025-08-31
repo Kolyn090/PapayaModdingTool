@@ -11,6 +11,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
     public class PreviewTexturePanel
     {
+        private const int HORIZONTAL_PADDING = 30;
+
         public Func<string, string> ELT;
         public Func<WorkplaceExportor> GetWorkplaceExportor;
         public Func<List<SpriteButtonData>> GetDatas;
@@ -25,6 +27,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private Texture2D _checkerBoardTexture;
         private List<SpriteButtonData> _workplace;
         private bool _needUpdateWorkplaceTexture = false;
+        private bool _needUpdateRender = false;
 
         private PreviewMarkPanel _previewMarkPanel;
         private ZoomPanController _zoomPanController;
@@ -63,6 +66,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         {
             _workplace = workplace;
             _needUpdateWorkplaceTexture = true;
+            _needUpdateRender = true;
         }
 
         public void CreatePanel()
@@ -72,8 +76,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
             if (_needUpdateWorkplaceTexture && _workplace != null)
             {
-                _workplaceTexture = Workplace.CreatePreview(_workplace);
-                _previewMarkPanel.MakeWorkplaceTexture(new() { new() }, _workplaceTexture.width, _workplaceTexture.height);
+                // ! Add padding for level mark
+                var preview = Workplace.CreatePreview(_workplace, horizontalPadding: HORIZONTAL_PADDING);
+                _workplaceTexture = preview.Item1;
+                List<PreviewMark> marks = preview.Item2;
+                _previewMarkPanel.MakeWorkplaceTexture(marks, _workplaceTexture.width, _workplaceTexture.height);
                 _needUpdateWorkplaceTexture = false;
             }
 
@@ -83,7 +90,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             EditorGUI.BeginDisabledGroup(_workplaceTexture == null);
             if (GUILayout.Button(ELT("export_workplace"), GUILayout.Width(_guiRect.width - 15f)))
             {
-                GetWorkplaceExportor().Export(_workplaceTexture, GetDatas());
+                // ! Remember to remove padding when exporting texture
+                GetWorkplaceExportor().Export(_workplaceTexture, GetDatas(), horizontalPadding: HORIZONTAL_PADDING);
                 Debug.Log("Export success!");
             }
 
@@ -142,6 +150,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                     UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
                     _previewMarkPanel.UpdatePreviewTexture();
                     _zoomPanController.UpdateLast();
+                    _needUpdateRender = false;
                 }
 
                 GUI.DrawTexture(
@@ -164,7 +173,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         private bool NeedsRenderUpdate()
         {
-            return _renderTexture == null || _zoomPanController.HasChanged;
+            return _needUpdateRender || _renderTexture == null || _zoomPanController.HasChanged;
         }
 
         private void UpdatePreviewTexture(int previewWidth, int previewHeight)

@@ -24,8 +24,9 @@ namespace PapayaModdingTool.Assets.Script.Writer.Atlas2D
             _ELT = ELT;
         }
 
-        public void Export(Texture2D workplaceTexture, List<SpriteButtonData> datas)
+        public void Export(Texture2D workplaceTexture, List<SpriteButtonData> datas, int horizontalPadding)
         {
+            workplaceTexture = RemoveHorizontalPadding(workplaceTexture, horizontalPadding);
             string[] folderPaths = _fileBrowser.OpenFolderPanel(_ELT("save_files_to"), "", false);
             if (folderPaths.Length <= 0)
             {
@@ -39,6 +40,29 @@ namespace PapayaModdingTool.Assets.Script.Writer.Atlas2D
                 SaveTextureAsPng(workplaceTexture, Path.Combine(savePath, "Texture.png"));
                 SaveDatasAsJson(datas, Path.Combine(savePath, "Datas.json"));
             }
+        }
+
+        public Texture2D RemoveHorizontalPadding(Texture2D original, int padding = 40)
+        {
+            int newWidth = original.width - padding * 2;
+            int newHeight = original.height;
+
+            if (newWidth <= 0)
+                throw new ArgumentException("Padding too large for texture width.");
+
+            Texture2D croppedTex = new Texture2D(newWidth, newHeight, original.format, false);
+
+            for (int y = 0; y < newHeight; y++)
+            {
+                for (int x = 0; x < newWidth; x++)
+                {
+                    // Copy from original, skipping left padding
+                    croppedTex.SetPixel(x, y, original.GetPixel(x + padding, y));
+                }
+            }
+
+            croppedTex.Apply();
+            return croppedTex;
         }
 
         private static void SaveTextureAsPng(Texture2D texture, string path)

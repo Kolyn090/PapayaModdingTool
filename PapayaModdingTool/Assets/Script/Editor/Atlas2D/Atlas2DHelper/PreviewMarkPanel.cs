@@ -1,18 +1,12 @@
 using System.Collections.Generic;
 using System.IO;
+using PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using UnityEditor;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
 {
-    public class Mark
-    {
-        public int digitsString = 0;
-        public Vector2 position = new(0, 0);
-        public Color color = new(1f, 1f, 1f, 0.8f);
-    }
-
     public class PreviewMarkPanel
     {
         private Texture2D _workplaceTexture;
@@ -29,7 +23,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
         }
 
         // Call this when the parent workplace texture is updated
-        public void MakeWorkplaceTexture(List<Mark> marks, int width, int height)
+        public void MakeWorkplaceTexture(List<PreviewMark> marks, int width, int height)
         {
             Texture2D tex = new(width, height, TextureFormat.RGBA32, false);
             Color[] clearPixels = new Color[width * height];
@@ -49,19 +43,34 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
 
             foreach (var mark in marks)
             {
-                int startX = Mathf.Clamp((int)mark.position.x, 0, width - 1);
-                int startY = Mathf.Clamp((int)mark.position.y, 0, height - 1);
+                string number = mark.digits.ToString();
+                int totalWidth = 0;
+                int maxHeight = 0;
+
+                // Calculate total width and max height of the number
+                foreach (char c in number)
+                {
+                    if (!char.IsDigit(c)) continue;
+                    int digit = c - '0';
+                    Texture2D digitTex = digitTextures[digit];
+                    totalWidth += digitTex.width + 1; // +1 for gap
+                    maxHeight = Mathf.Max(maxHeight, digitTex.height);
+                }
+                totalWidth -= 1; // Remove last extra gap
+
+                // Compute top-left corner to start drawing so it's centered at mark.position
+                int startX = Mathf.RoundToInt(mark.position.x - totalWidth * 0.5f);
+                int startY = Mathf.RoundToInt(mark.position.y - maxHeight * 0.5f);
 
                 int cursorX = startX;
 
-                for (int d = 0; d < mark.digitsString.ToString().Length; d++)
+                for (int d = 0; d < number.Length; d++)
                 {
-                    char c = mark.digitsString.ToString()[d];
+                    char c = number[d];
                     if (!char.IsDigit(c)) continue;
 
                     int digit = c - '0';
                     Texture2D digitTex = digitTextures[digit];
-
                     int digitWidth = digitTex.width;
                     int digitHeight = digitTex.height;
 
@@ -70,7 +79,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
                         for (int x = 0; x < digitWidth; x++)
                         {
                             Color pixel = digitTex.GetPixel(x, y);
-                            if (pixel.a > 0) // Only draw non-transparent pixels
+                            if (pixel.a > 0)
                             {
                                 int px = cursorX + x;
                                 int py = startY + y;
@@ -80,7 +89,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
                         }
                     }
 
-                    // Move cursor for next digit (+1 pixel gap)
                     cursorX += digitWidth + 1;
                 }
             }
