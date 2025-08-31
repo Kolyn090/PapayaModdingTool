@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Universal;
 using PapayaModdingTool.Assets.Script.Editor.Universal.GraphicUI;
@@ -21,8 +22,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         {
             var window = CreateInstance<PlayAnimationPanel>(); // create new instance
             window.titleContent = new GUIContent($"{ELT("play_animation")}: {Guid.NewGuid()}");
-            window._frames = animationData;
+            window._frames = SortFrames(animationData);
             window.Show();
+        }
+
+        private static List<SpriteButtonData> SortFrames(List<SpriteButtonData> frames)
+        {
+            return frames.OrderBy(x => x.level).ThenBy(x => x.order).ToList();
         }
 
         private void OnEnable()
