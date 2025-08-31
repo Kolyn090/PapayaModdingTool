@@ -39,6 +39,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private string GetJsonSavePath => string.Format(PredefinedPaths.Atlas2DSpritesPanelSaveJson,
                                                         GetProjectName(),
                                                         _curr.fileFolderName);
+        private Dictionary<SpriteButtonData, Texture2D> _scaledSpriteCache = new();
 
         public void Initialize(Rect bound)
         {
@@ -58,84 +59,193 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             EditorGUILayout.LabelField(ELT("found_sprites"), EditorStyles.boldLabel);
 
             EditorGUI.BeginDisabledGroup(_curr == null || string.IsNullOrWhiteSpace(_curr.sourcePath));
+            var datas = GetDatas();
             if (GUILayout.Button(ELT("save_all_sprites")))
             {
-                GetSaver().Save(GetJsonSavePath, _curr.sourcePath, GetDatas());
+                GetSaver().Save(GetJsonSavePath, _curr.sourcePath, datas);
                 Debug.Log("Save success!");
             }
             EditorGUI.EndDisabledGroup();
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
-            int index = 0;
-            if (GetDatas() != null)
-            {
-                while (index < GetDatas().Count)
-                {
-                    EditorGUILayout.BeginHorizontal();
+            // if (datas != null && datas.Count > 0)
+            // {
+            //     for (int i = 0; i < datas.Count; i += BUTTONS_PER_ROW)
+            //     {
+            //         EditorGUILayout.BeginHorizontal();
 
-                    for (int col = 0; col < BUTTONS_PER_ROW && index < GetDatas().Count; col++, index++)
-                    {
-                        DrawImageButton(GetDatas()[index]);
-                    }
+            //         int rowEnd = Mathf.Min(i + BUTTONS_PER_ROW, datas.Count);
+            //         for (int j = i; j < rowEnd; j++)
+            //         {
+            //             DrawImageButton(datas[j]);
+            //         }
 
-                    EditorGUILayout.EndHorizontal();
-                }
-            }
+            //         EditorGUILayout.EndHorizontal();
+            //     }
+            // }
+
+            DrawButtonGrid(datas, BUTTONS_PER_ROW, _bound.width / BUTTONS_PER_ROW - 15, 115, 5);
 
             EditorGUILayout.EndScrollView();
             GUILayout.EndArea();
         }
 
-        private void DrawImageButton(SpriteButtonData data, params GUILayoutOption[] options)
+        private void DrawButtonGrid(List<SpriteButtonData> datas, int buttonsPerRow, float buttonWidth, float buttonHeight, float spacing)
         {
-            Rect areaRect = EditorGUILayout.BeginVertical("box");
+            if (datas == null || datas.Count == 0) return;
 
-            if (data.isSelected)
-                EditorGUI.DrawRect(areaRect, new Color(0.6f, 0.8f, 1f, 1f));
+            float startX = 10f; // left margin
+            float startY = 10f; // top margin
+            float x = startX;
+            float y = startY;
 
-            // Center the button horizontally
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
+            int col = 0;
 
-            if (GUILayout.Button(data.sprite, GUILayout.Width(64), GUILayout.Height(64)))
+            for (int i = 0; i < datas.Count; i++)
             {
-                // Debug.Log("Clicked: " + data.label);
-                GetBatchSelector().ClickSpriteButton(data, SpritesBatchSelector.IsShiftHeld(), SpritesBatchSelector.IsCtrlHeld());
-                if (GetListener != null)
+                Rect buttonRect = new(x, y, buttonWidth, buttonHeight);
+
+                DrawImageButton(datas[i], buttonRect);
+
+                col++;
+                if (col >= buttonsPerRow)
                 {
-                    GetListener()?.Update(data);
+                    // Move to next row
+                    col = 0;
+                    x = startX;
+                    y += buttonHeight + spacing;
+                }
+                else
+                {
+                    // Move to next column
+                    x += buttonWidth + spacing;
                 }
             }
 
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
+            // Reserve space below grid for other controls
+            GUILayout.Space(y + buttonHeight + startY);
+        }
 
-            // Center the text horizontally
-            GUILayout.Label(TruncateToEnd(data.label, 15), EditorStyles.centeredGreyMiniLabel, GUILayout.ExpandWidth(true));
-            string coord;
-            if (data.level < 0 || data.order < 0)
-                coord = "(null)";
-            else
-                coord = $"({data.level}, {data.order})";
+        private void DrawImageButton(SpriteButtonData data, Rect rect)
+        {
+            // Highlight selection
+            if (data.isSelected)
+                EditorGUI.DrawRect(rect, new Color(0.6f, 0.8f, 1f, 0.5f));
 
-            string pivot = $"{ELT("pivot")}: <{(float)Math.Round(data.pivot.x, 2)}, {(float)Math.Round(data.pivot.y, 2)}>";
+            // Draw overall background
+            EditorGUI.DrawRect(rect, new Color(0.1f, 0.1f, 0.1f, 0.5f));
 
-            GUIStyle redLabel = new(GUI.skin.label)
+            // Sprite size
+            float spriteSize = 64f;
+
+            // Draw sprite container background (light)
+            Rect spriteRect = new(
+                rect.x + (rect.width - spriteSize) / 2,
+                rect.y + 5f,
+                spriteSize,
+                spriteSize
+            );
+            EditorGUI.DrawRect(spriteRect, new Color(0.9f, 0.9f, 0.9f, 0.1f));
+
+            float spriteContainerSize = 64;
+Texture2D scaledSprite = GetScaledSprite(data, (int)spriteContainerSize);
+
+// Center in container
+Rect centeredRect = new Rect(
+    spriteRect.x + (spriteContainerSize - scaledSprite.width) / 2,
+    spriteRect.y + (spriteContainerSize - scaledSprite.height) / 2,
+    scaledSprite.width,
+    scaledSprite.height
+);
+
+// Draw texture
+GUI.DrawTexture(centeredRect, scaledSprite, ScaleMode.StretchToFill);
+
+// Button click area
+if (GUI.Button(spriteRect, GUIContent.none, GUIStyle.none))
+{
+    GetBatchSelector().ClickSpriteButton(data,
+        SpritesBatchSelector.IsShiftHeld(),
+        SpritesBatchSelector.IsCtrlHeld());
+
+    GetListener()?.Update(data);
+}
+
+            // Draw label below sprite
+            float textY = spriteRect.yMax + 2f;
+
+            string labelText = TruncateToEnd(data.label, 15);
+            GUIStyle labelStyle = EditorStyles.centeredGreyMiniLabel;
+            Vector2 labelSize = labelStyle.CalcSize(new GUIContent(labelText));
+            Rect labelRect = new(
+                rect.x + (rect.width - labelSize.x) / 2,
+                textY,
+                labelSize.x,
+                labelSize.y
+            );
+            GUI.Label(labelRect, labelText, labelStyle);
+
+            // Draw coordinates
+            string coord = (data.level < 0 || data.order < 0) ? "(null)" : $"({data.level}, {data.order})";
+            GUIStyle coordStyle = (coord == "(null)") ? new GUIStyle(labelStyle)
             {
-                fontSize = EditorStyles.centeredGreyMiniLabel.fontSize,
-                alignment = TextAnchor.MiddleCenter
-            };
-            redLabel.normal.textColor = Color.red;
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = Color.red },
+                fontSize = labelStyle.fontSize
+            } : labelStyle;
 
-            GUILayout.Label($"{ELT("workplace")}: {coord}",
-                            coord == "(null)" ? redLabel : EditorStyles.centeredGreyMiniLabel,
-                            GUILayout.ExpandWidth(true));
-            GUILayout.Label(pivot,
-                            EditorStyles.centeredGreyMiniLabel,
-                            GUILayout.ExpandWidth(true));
+            Vector2 coordSize = coordStyle.CalcSize(new GUIContent(coord));
+            Rect coordRect = new(
+                rect.x + (rect.width - rect.width) / 2,
+                labelRect.yMax + 2f,
+                rect.width,
+                coordSize.y
+            );
+            GUI.Label(coordRect, $"{ELT("workplace")}: {coord}", coordStyle);
 
-            EditorGUILayout.EndVertical();
+            // Draw pivot info
+            string pivot = $"{ELT("pivot")}: <{Math.Round(data.pivot.x, 2)}, {Math.Round(data.pivot.y, 2)}>";
+            Vector2 pivotSize = labelStyle.CalcSize(new GUIContent(pivot));
+            Rect pivotRect = new(
+                rect.x + (rect.width - pivotSize.x) / 2,
+                coordRect.yMax + 2f,
+                pivotSize.x,
+                pivotSize.y
+            );
+            GUI.Label(pivotRect, pivot, labelStyle);
+        }
+
+        private Texture2D GetScaledSprite(SpriteButtonData data, int targetSize)
+        {
+            if (_scaledSpriteCache.TryGetValue(data, out Texture2D cached))
+                return cached;
+
+            float scale = Mathf.Min(targetSize / (float)data.sprite.width, targetSize / (float)data.sprite.height);
+            int targetWidth = Mathf.RoundToInt(data.sprite.width * scale);
+            int targetHeight = Mathf.RoundToInt(data.sprite.height * scale);
+
+            Texture2D scaled = RescaleNearestNeighbor(data.sprite, targetWidth, targetHeight);
+            _scaledSpriteCache[data] = scaled;
+            return scaled;
+        }
+
+        private Texture2D RescaleNearestNeighbor(Texture2D source, int targetWidth, int targetHeight)
+        {
+            Texture2D result = new Texture2D(targetWidth, targetHeight, source.format, false);
+
+            for (int y = 0; y < targetHeight; y++)
+            {
+                for (int x = 0; x < targetWidth; x++)
+                {
+                    int srcX = Mathf.FloorToInt(x * (source.width / (float)targetWidth));
+                    int srcY = Mathf.FloorToInt(y * (source.height / (float)targetHeight));
+                    result.SetPixel(x, y, source.GetPixel(srcX, srcY));
+                }
+            }
+
+            result.Apply();
+            return result;
         }
 
         private string TruncateToEnd(string s, int len = 20)

@@ -41,7 +41,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private SpritesBatchOperator _batchOperator;
 
         private Rect _bound;
+        
+        // For dropdown list
         private readonly Dictionary<List<string>, string[]> _cachedOptionArrays = new();
+
+        // For sprite display
+        private Texture2D _cachedDoubledSprite;
+        private Texture2D _lastSprite;
 
         public void Initialize(Rect bound)
         {
@@ -366,20 +372,24 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 // Draw the container background
                 // EditorGUI.DrawRect(containerRect, new Color(0.1f, 0.1f, 0.1f, 1f));
 
-                Texture2D doubled = DoubleSize(_sprite);
+                if (_sprite != _lastSprite)
+                {
+                    _cachedDoubledSprite = DoubleSize(_sprite);
+                    _lastSprite = _sprite;
+                }
 
                 // Compute rect for your sprite inside the container, centered
                 Rect spriteRect = new(
-                    containerRect.x + containerRect.width / 2 - doubled.width / 2,  // center X
-                    containerRect.y + containerRect.height / 2 - doubled.height / 2, // center Y
-                    doubled.width,  // width
-                    doubled.height  // height
+                    containerRect.x + containerRect.width / 2 - _cachedDoubledSprite.width / 2,  // center X
+                    containerRect.y + containerRect.height / 2 - _cachedDoubledSprite.height / 2, // center Y
+                    _cachedDoubledSprite.width,  // width
+                    _cachedDoubledSprite.height  // height
                 );
 
                 // Draw sprite background
                 // EditorGUI.DrawRect(spriteRect, new Color(1f, 0.2f, 0.2f, 1f));
 
-                GUI.DrawTexture(spriteRect, doubled, ScaleMode.ScaleToFit, true);
+                GUI.DrawTexture(spriteRect, _cachedDoubledSprite, ScaleMode.ScaleToFit, true);
 
                 // Draw pivot on top
                 PivotPoint.MakePivot(_pivotX, _pivotY, spriteRect);
