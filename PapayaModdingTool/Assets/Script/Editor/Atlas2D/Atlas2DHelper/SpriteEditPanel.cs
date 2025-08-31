@@ -41,6 +41,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private SpritesBatchOperator _batchOperator;
 
         private Rect _bound;
+        private readonly Dictionary<List<string>, string[]> _cachedOptionArrays = new();
 
         public void Initialize(Rect bound)
         {
@@ -75,15 +76,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                 GUILayout.BeginVertical();
                 {
-                    DrawField(ELT("sprite_edit_name"), ref _name);
-                    DrawField(ELT("sprite_edit_level"), ref _level);
-                    DrawField(ELT("sprite_edit_order"), ref _order);
-                    DrawField(ELT("sprite_edit_width"), ref _width);
-                    DrawField(ELT("sprite_edit_height"), ref _height);
-                    DrawField(ELT("pivot_x"), ref _pivotX);
-                    DrawField(ELT("pivot_y"), ref _pivotY);
-                    DrawField(ELT("create_new_animation"), ref _newAnimation);
-                    DrawField(ELT("delete_animation"), ref _deleteAnimation);
+                    DrawString(ELT("sprite_edit_name"), ref _name);
+                    DrawIntRedTextIfNegative(ELT("sprite_edit_level"), ref _level);
+                    DrawIntRedTextIfNegative(ELT("sprite_edit_order"), ref _order);
+                    DrawIntRedTextIfNegative(ELT("sprite_edit_width"), ref _width);
+                    DrawIntRedTextIfNegative(ELT("sprite_edit_height"), ref _height);
+                    DrawFloat(ELT("pivot_x"), ref _pivotX);
+                    DrawFloat(ELT("pivot_y"), ref _pivotY);
+                    DrawString(ELT("create_new_animation"), ref _newAnimation);
+                    DrawString(ELT("delete_animation"), ref _deleteAnimation);
                     DrawDropdownList(ELT("sprite_edit_animation"), ref _selectedIndex, _animations);
                 }
                 GUILayout.EndVertical();
@@ -282,46 +283,43 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             }
         }
 
-        private void DrawField<T>(string label, ref T value)
+        private void DrawIntRedTextIfNegative(string label, ref int value)
         {
-            Rect rect = EditorGUILayout.GetControlRect();
-            Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
-            Rect fieldRect = new(rect.x + Label_Width + Spacing, rect.y, Field_Width, rect.height);
-
+            (Rect labelRect, Rect fieldRect) = GetFieldRect();
             EditorGUI.LabelField(labelRect, label);
-
-            Color originalColor = GUI.contentColor;
-            T newValue = value;
-
-            EditorGUI.BeginChangeCheck(); // Start tracking changes
-
-            if (typeof(T) == typeof(int))
+            if (value < 0)
             {
-                int intValue = (int)(object)value;
-                if (intValue < 0) GUI.contentColor = Color.red;
-                intValue = EditorGUI.IntField(fieldRect, intValue);
-                newValue = (T)(object)intValue;
+                Color originalColor = GUI.contentColor;
+                GUI.contentColor = Color.red;
+                int newValue = EditorGUI.IntField(fieldRect, value);
+                GUI.contentColor = originalColor;
+                if (newValue != value)
+                    value = newValue;
             }
-            else if (typeof(T) == typeof(float))
+            else
             {
-                float floatValue = (float)(object)value;
-                // if (floatValue < 0f) GUI.contentColor = Color.red;
-                floatValue = EditorGUI.FloatField(fieldRect, floatValue);
-                newValue = (T)(object)floatValue;
+                int newValue = EditorGUI.IntField(fieldRect, value);
+                if (newValue != value)
+                    value = newValue;
             }
-            else if (typeof(T) == typeof(string))
-            {
-                string strValue = (string)(object)value;
-                strValue = EditorGUI.TextField(fieldRect, strValue);
-                newValue = (T)(object)strValue;
-            }
+        }
 
-            GUI.contentColor = originalColor;
-
-            if (EditorGUI.EndChangeCheck()) // Only true if user actually changed the value
-            {
+        private void DrawFloat(string label, ref float value)
+        {
+            (Rect labelRect, Rect fieldRect) = GetFieldRect();
+            EditorGUI.LabelField(labelRect, label);
+            float newValue = EditorGUI.FloatField(fieldRect, value);
+            if (newValue != value)
                 value = newValue;
-            }
+        }
+
+        private void DrawString(string label, ref string value)
+        {
+            (Rect labelRect, Rect fieldRect) = GetFieldRect();
+            EditorGUI.LabelField(labelRect, label);
+            string newValue = EditorGUI.TextField(fieldRect, value);
+            if (newValue != value)
+                value = newValue;
         }
 
         private void DrawDropdownList(string label,
@@ -329,42 +327,25 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                                         List<string> options,
                                         string nullLabel = "<None>")
         {
-            string controlName = $"Dropdown_{label}";
-            GUI.SetNextControlName(controlName);
-
             Rect rect = EditorGUILayout.GetControlRect();
             Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
             Rect fieldRect = new(rect.x + Label_Width + Spacing, rect.y, Field_Width, rect.height);
 
             EditorGUI.LabelField(labelRect, label);
 
-            // Prepare options array with null option at index 0
-            string[] optionArray = new string[options.Count + 1];
-            optionArray[0] = nullLabel; // represents null
-            for (int i = 0; i < options.Count; i++)
-                optionArray[i + 1] = options[i];
+            // Cache or rebuild the array
+            if (!_cachedOptionArrays.TryGetValue(options, out string[] optionArray) ||
+                optionArray.Length != options.Count + 1 || optionArray[0] != nullLabel)
+            {
+                optionArray = new string[options.Count + 1];
+                optionArray[0] = nullLabel;
+                for (int i = 0; i < options.Count; i++)
+                    optionArray[i + 1] = options[i];
 
-            // Remember previous value
-            // int previousValue = value;
+                _cachedOptionArrays[options] = optionArray;
+            }
 
-            // Draw the popup
             value = EditorGUI.Popup(fieldRect, value, optionArray);
-
-            // value == 0 means null / none selected
-
-            // Invoke callback if selection changed
-            // if (value != previousValue && EditorGUI.EndChangeCheck()) // check if really from user
-            // {
-            //     if (value > 0)
-            //     {
-            //         callBack.Invoke(options[value - 1]);
-            //     }
-            //     else
-            //     {
-            //         callBack.Invoke("");
-            //     }
-            //     // Debug.Log(value > 0 ? $"Changed to {options[value-1]}" : $"Changed to None");
-            // }
         }
 
         private void DrawImageDisplay(params GUILayoutOption[] options)
@@ -389,7 +370,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                 // Compute rect for your sprite inside the container, centered
                 Rect spriteRect = new(
-                    containerRect.x + containerRect.width / 2 -  doubled.width / 2,  // center X
+                    containerRect.x + containerRect.width / 2 - doubled.width / 2,  // center X
                     containerRect.y + containerRect.height / 2 - doubled.height / 2, // center Y
                     doubled.width,  // width
                     doubled.height  // height
@@ -468,6 +449,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 GUILayout.Space(20); // right margin
             }
             GUILayout.EndHorizontal();
+        }
+
+        // Do not store rect in a dictionary as it might be slower to do
+        private (Rect, Rect) GetFieldRect()
+        {
+            Rect rect = EditorGUILayout.GetControlRect();
+            Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
+            Rect fieldRect = new(rect.x + Label_Width + Spacing, rect.y, Field_Width, rect.height);
+            return (labelRect, fieldRect);
         }
 
         private static Texture2D DoubleSize(Texture2D source, int factor = 2)

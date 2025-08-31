@@ -1,0 +1,4 @@
+1. The order of animation is incorrect, should take level & order into consideration.
+2. Should be able to move unused sprites to trashbin
+3. Duplicate sprites?
+4. Allow zoom-out further

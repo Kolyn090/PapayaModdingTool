@@ -17,6 +17,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public List<SpriteButtonData> Selected => GetDatas().Where(x => x.isSelected).ToList();
 
+#region Fields
         public void RenameSpriteLabel(string newVal,
                                     Func<SpriteButtonData> GetCurr,
                                     Action<string> SetRenderVal)
@@ -42,6 +43,20 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 SetRenderVal,
                 data => data.level,
                 (data, newVal) => data.level = newVal
+            ));
+        }
+
+        public void ChangeOrderOfSelected(int newVal,
+                                        Func<SpriteButtonData> GetCurr,
+                                        Action<int> SetRenderVal)
+        {
+            GetCommandManager().ExecuteCommand(new EditFieldCommand<int>(
+                newVal,
+                GetCurr,
+                Selected,
+                SetRenderVal,
+                data => data.order,
+                (data, newVal) => data.order = newVal
             ));
         }
 
@@ -101,6 +116,25 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             ));
         }
 
+        public void ChangeAnimationOfSelected(int newSelectedIndex,
+                                    Func<SpriteButtonData> GetCurr,
+                                    Action<int> SetIndex,
+                                    Func<List<string>> GetOptions,
+                                    Action<string> SetRenderAnimation)
+        {
+            GetCommandManager().ExecuteCommand(new EditDropdownCommand(
+                GetCurr,
+                newSelectedIndex,
+                SetIndex,
+                Selected,
+                GetOptions,
+                SetRenderAnimation,
+                data => data.animation,
+                (data, newAnimation) => data.animation = newAnimation
+            ));
+        }
+#endregion
+
         public void AddPivotOfSelected(Func<SpriteButtonData> GetCurr,
                                         Action<float> SetRenderPivotX,
                                         Action<float> SetRenderPivotY,
@@ -128,38 +162,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                     (data, newVal) => data.pivot = new(data.pivot.x, newVal)
                 ));
             }
-        }
-
-        public void ChangeAnimationOfSelected(int newSelectedIndex,
-                                            Func<SpriteButtonData> GetCurr,
-                                            Action<int> SetIndex,
-                                            Func<List<string>> GetOptions,
-                                            Action<string> SetRenderAnimation)
-        {
-            GetCommandManager().ExecuteCommand(new EditDropdownCommand(
-                GetCurr,
-                newSelectedIndex,
-                SetIndex,
-                Selected,
-                GetOptions,
-                SetRenderAnimation,
-                data => data.animation,
-                (data, newAnimation) => data.animation = newAnimation
-            ));
-        }
-
-        public void ChangeOrderOfSelected(int newVal,
-                                        Func<SpriteButtonData> GetCurr,
-                                        Action<int> SetRenderVal)
-        {
-            GetCommandManager().ExecuteCommand(new EditFieldCommand<int>(
-                newVal,
-                GetCurr,
-                Selected,
-                SetRenderVal,
-                data => data.order,
-                (data, newVal) => data.order = newVal
-            ));
         }
 
         public void FlipXAllSelected()
