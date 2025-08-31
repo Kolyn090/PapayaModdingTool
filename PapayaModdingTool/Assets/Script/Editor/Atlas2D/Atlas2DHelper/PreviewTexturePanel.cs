@@ -2,25 +2,15 @@ using System;
 using System.Collections.Generic;
 using PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper;
 using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
 using UnityEngine;
-using UEvent = UnityEngine.Event;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
-    [Serializable]
-    public class ImageLabel
-    {
-        public Vector2 pos;   // position in _workplaceTexture pixel coordinates
-        public string text;   // the label text
-    }
-
     public class PreviewTexturePanel
     {
-        private const float ZOOM_MIN = 0.7f;
-        private const float ZOOM_MAX = 4f;
-
         public Func<string, string> ELT;
         public Func<WorkplaceExportor> GetWorkplaceExportor;
         public Func<List<SpriteButtonData>> GetDatas;
@@ -33,24 +23,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private Texture2D _workplaceTexture;
         private RenderTexture _renderTexture;
         private Texture2D _checkerBoardTexture;
-        private Vector2 _panOffset = Vector2.zero;
-        private float _zoom = 1f;
         private List<SpriteButtonData> _workplace;
         private bool _needUpdateWorkplaceTexture = false;
 
-        private bool _showLabels = true;
-        private List<ImageLabel> _labels = new List<ImageLabel>() {
-            new() {pos=new(200, 200), text="TestTestTest"}
-        };
-
-        #region Optimization
-        private Vector2 _lastPanOffset;
-        private float _lastZoom;
-        private Vector2Int _lastRenderSize;
-
-        private bool _isPanning = false;
-        private Vector2 _lastMousePos;
-        #endregion
+        private ZoomPanController _zoomPanController;
 
         public void Initialize(Rect bound)
         {
@@ -73,6 +49,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 new(102,102,102,255), new(153,153,153,255)
             });
             _checkerBoardTexture.Apply();
+
+            _zoomPanController = new(_imageRect, () => _workplaceTexture);
 
             // _panOffset = new(0, -GetTexture().height / 2f);
 
@@ -112,21 +90,31 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             float buttonWidth = _guiRect.width * 0.5f - 10f;
             if (GUILayout.Button(ELT("zoom_in"), GUILayout.Width(buttonWidth)))
             {
-                ZoomAtCenter(1.2f, _imageRect);
+                _zoomPanController.ZoomAtCenter(1.2f, _imageRect);
             }
 
             if (GUILayout.Button(ELT("zoom_out"), GUILayout.Width(buttonWidth)))
             {
-                ZoomAtCenter(1 / 1.2f, _imageRect);
+                _zoomPanController.ZoomAtCenter(1 / 1.2f, _imageRect);
             }
             GUILayout.EndHorizontal();
 
             // Compute pan bounds based on zoomed image size
-            float panWidth = Mathf.Max((_workplaceTexture != null ? _workplaceTexture.width : 0f) * _zoom - _imageRect.width, 0f) / 2f;
-            float panHeight = Mathf.Max((_workplaceTexture != null ? _workplaceTexture.height : 0f) * _zoom - _imageRect.height, 0f) / 2f;
+            float panWidth = Mathf.Max((_workplaceTexture != null ?
+                                        _workplaceTexture.width : 0f) * _zoomPanController.Zoom - _imageRect.width, 0f) / 2f;
+            float panHeight = Mathf.Max((_workplaceTexture != null ?
+                                        _workplaceTexture.height : 0f) * _zoomPanController.Zoom - _imageRect.height, 0f) / 2f;
             float sliderWidth = _guiRect.width - 20f;
-            _panOffset.x = EditorGUILayout.Slider(ELT("pan_x"), _panOffset.x, -panWidth, panWidth, GUILayout.Width(sliderWidth));
-            _panOffset.y = EditorGUILayout.Slider(ELT("pan_y"), _panOffset.y, -panHeight, panHeight, GUILayout.Width(sliderWidth));
+            _zoomPanController.SetPanOffsetX(EditorGUILayout.Slider(ELT("pan_x"),
+                                            _zoomPanController.PanOffset.x,
+                                            -panWidth,
+                                            panWidth,
+                                            GUILayout.Width(sliderWidth)));
+            _zoomPanController.SetPanOffsetY(EditorGUILayout.Slider(ELT("pan_y"),
+                                            _zoomPanController.PanOffset.y,
+                                            -panHeight,
+                                            panHeight,
+                                            GUILayout.Width(sliderWidth)));
             EditorGUI.EndDisabledGroup();
             GUI.EndGroup();
 
@@ -149,9 +137,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 if (NeedsRenderUpdate())
                 {
                     UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
-                    _lastRenderSize = new Vector2Int((int)_imageRect.width, (int)_imageRect.height);
-                    _lastZoom = _zoom;
-                    _lastPanOffset = _panOffset;
+                    _zoomPanController.UpdateLast();
                 }
 
                 GUI.DrawTexture(
@@ -163,71 +149,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             }
 
             GUI.EndGroup();
-            HandleMouseInput(_imageRect);
-
-            if (_showLabels && _workplaceTexture != null)
-            {
-                foreach (var label in _labels)
-                {
-                    Vector2 guiPos = TextureToGUI(label.pos);
-
-                    // fixed-size rect so text doesn’t zoom
-                    Rect labelRect = new Rect(guiPos.x - 40, guiPos.y - 10, 80, 20);
-
-                    Color originalColor = GUI.color;     // save original color
-                    GUI.color = Color.red;               // set color to red
-                    GUI.Label(labelRect, label.text, EditorStyles.boldLabel);
-                    GUI.color = originalColor;           // restore original color
-                }
-            }
+            _zoomPanController.HandleMouseInput(_imageRect);
         }
 
         private bool NeedsRenderUpdate()
         {
-            return _renderTexture == null
-                || _lastRenderSize.x != (int)_imageRect.width
-                || _lastRenderSize.y != (int)_imageRect.height
-                || _lastZoom != _zoom
-                || _lastPanOffset != _panOffset;
-        }
-
-        public void SetPanOffset(Vector2 panOffset)
-        {
-            _panOffset = panOffset;
-        }
-
-        private void ZoomAtCenter(float zoomFactor, Rect previewRect)
-        {
-            float oldZoom = _zoom;
-            _zoom = Mathf.Clamp(_zoom * zoomFactor, ZOOM_MIN, ZOOM_MAX);
-
-            // Compute half sizes
-            Vector2 halfPreview = new Vector2(previewRect.width, previewRect.height) * 0.5f;
-            Vector2 halfImageOld = 0.5f * oldZoom * new Vector2(_workplaceTexture.width, _workplaceTexture.height);
-            Vector2 halfImageNew = _zoom * 0.5f * new Vector2(_workplaceTexture.width, _workplaceTexture.height);
-
-            // Compute old min/max pan
-            float oldPanMinX = halfPreview.x - halfImageOld.x;
-            float oldPanMaxX = halfImageOld.x - halfPreview.x;
-            float oldPanMinY = halfPreview.y - halfImageOld.y;
-            float oldPanMaxY = halfImageOld.y - halfPreview.y;
-
-            // Compute new min/max pan
-            float newPanMinX = halfPreview.x - halfImageNew.x;
-            float newPanMaxX = halfImageNew.x - halfPreview.x;
-            float newPanMinY = halfPreview.y - halfImageNew.y;
-            float newPanMaxY = halfImageNew.y - halfPreview.y;
-
-            // Adjust panOffset to preserve edge-relative position
-            float tX = (_panOffset.x - oldPanMinX) / (oldPanMaxX - oldPanMinX);
-            float tY = (_panOffset.y - oldPanMinY) / (oldPanMaxY - oldPanMinY);
-
-            _panOffset.x = Mathf.Lerp(newPanMinX, newPanMaxX, tX);
-            _panOffset.y = Mathf.Lerp(newPanMinY, newPanMaxY, tY);
-
-            // Clamp again to be safe
-            _panOffset.x = Mathf.Clamp(_panOffset.x, newPanMinX, newPanMaxX);
-            _panOffset.y = Mathf.Clamp(_panOffset.y, newPanMinY, newPanMaxY);
+            return _renderTexture == null || _zoomPanController.HasChanged;
         }
 
         private void UpdatePreviewTexture(int previewWidth, int previewHeight)
@@ -258,8 +185,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             blitMat.SetTexture("_MainTex", _workplaceTexture);
 
             // Set zoom, pan, scale as before
-            blitMat.SetFloat("_Zoom", _zoom);
-            blitMat.SetVector("_PanOffset", new Vector2(_panOffset.x / _workplaceTexture.width, _panOffset.y / _workplaceTexture.height));
+            blitMat.SetFloat("_Zoom", _zoomPanController.Zoom);
+            blitMat.SetVector("_PanOffset", new Vector2(_zoomPanController.PanOffset.x / _workplaceTexture.width,
+                                                        _zoomPanController.PanOffset.y / _workplaceTexture.height));
 
             float panelAspect = (float)previewWidth / previewHeight;
             float textureAspect = (float)_workplaceTexture.width / _workplaceTexture.height;
@@ -272,97 +200,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
             // Restore previous RenderTexture
             RenderTexture.active = prev;
-        }
-
-        private void HandleMouseInput(Rect previewRect)
-        {
-            UEvent e = UEvent.current;
-
-            // --- Zoom (scroll wheel) ---
-            if (previewRect.Contains(e.mousePosition) && e.type == EventType.ScrollWheel)
-            {
-                float zoomFactor = (e.delta.y > 0) ? 1f / 1.1f : 1.1f;
-                ZoomAtPosition(zoomFactor, e.mousePosition, previewRect);
-                e.Use();
-            }
-
-            // --- Pan with Left Mouse ---
-            if (e.type == EventType.MouseDown && e.button == 0 && previewRect.Contains(e.mousePosition))
-            {
-                _isPanning = true;
-                _lastMousePos = e.mousePosition;
-                e.Use(); // eat event so GUI buttons won’t get clicked
-            }
-            else if (e.type == EventType.MouseDrag && _isPanning && e.button == 0)
-            {
-                Vector2 deltaPanel = e.mousePosition - _lastMousePos;
-                deltaPanel.y = -deltaPanel.y; // flip Y because IMGUI
-
-                Vector2 panelToSrc = new Vector2(
-                    _workplaceTexture.width / previewRect.width,
-                    _workplaceTexture.height / previewRect.height
-                );
-
-                _panOffset -= Vector2.Scale(deltaPanel, panelToSrc) / _zoom;
-                _lastMousePos = e.mousePosition;
-
-                e.Use();
-            }
-            else if (e.type == EventType.MouseUp && e.button == 0)
-            {
-                _isPanning = false;
-            }
-        }
-
-        private void ZoomAtPosition(float zoomFactor, Vector2 mousePos, Rect previewRect)
-        {
-            // Vector2 center = previewRect.center;
-
-            // // Mouse delta in panel space; flip Y because IMGUI Y+ is down
-            // Vector2 deltaPanel = mousePos - center;
-            // deltaPanel.y = -deltaPanel.y;
-
-            // // Convert panel pixels -> source (texture) pixels
-            // Vector2 panelToSrc = new Vector2(
-            //     _workplaceTexture.width / previewRect.width,
-            //     _workplaceTexture.height / previewRect.height
-            // );
-
-            // float oldZoom = _zoom;
-            // float newZoom = Mathf.Clamp(_zoom * zoomFactor, ZOOM_MIN, ZOOM_MAX);
-            // float zoomChange = (newZoom / oldZoom) - 1f;
-
-            // _zoom = newZoom;
-
-            // // Adjust pan so the point under the cursor stays anchored
-            // _panOffset += Vector2.Scale(deltaPanel, panelToSrc) * zoomChange;
-            float oldZoom = _zoom;
-            _zoom = Mathf.Clamp(_zoom * zoomFactor, ZOOM_MIN, ZOOM_MAX);
-            float zoomRatio = _zoom / oldZoom;
-
-            // Mouse position relative to panel top-left
-            Vector2 localMouse = mousePos - previewRect.position;
-
-            // Compute offset from panel center in GUI coordinates
-            Vector2 offsetFromCenter = localMouse - previewRect.size * 0.5f;
-
-            // Adjust pan so the zoom pivots around the mouse
-            _panOffset += offsetFromCenter * (1f - zoomRatio);
-        }
-
-        // Show Label
-        Vector2 TextureToGUI(Vector2 texPos)
-        {
-            float halfTexW = _workplaceTexture.width * 0.5f;
-            float halfTexH = _workplaceTexture.height * 0.5f;
-
-            float xOffset = (texPos.x - halfTexW + _panOffset.x) * _zoom;
-            float yOffset = (texPos.y - halfTexH + _panOffset.y) * _zoom;
-
-            float x = _imageRect.x + _imageRect.width * 0.5f + xOffset;
-            float y = _imageRect.y + _imageRect.height * 0.5f + yOffset;
-
-            return new Vector2(x, y);
         }
     }
 }
