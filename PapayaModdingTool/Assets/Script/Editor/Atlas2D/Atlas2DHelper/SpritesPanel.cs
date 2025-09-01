@@ -116,10 +116,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         {
             // Highlight selection
             if (data.isSelected)
-                EditorGUI.DrawRect(rect, new Color(0.6f, 0.8f, 1f, 0.5f));
+                EditorGUI.DrawRect(rect, new(0.6f, 0.8f, 1f, 0.5f));
 
-            // Draw overall background
-            EditorGUI.DrawRect(rect, new Color(0.1f, 0.1f, 0.1f, 0.5f));
+            if (!data.isInTrashbin)
+            {
+                // Draw overall background
+                EditorGUI.DrawRect(rect, new(0.1f, 0.1f, 0.1f, 0.5f));
+            }
+            else
+            {
+                EditorGUI.DrawRect(rect, new(1f, 0f, 1f, 0.5f));
+            }
 
             // Sprite size
             float spriteSize = 64f;

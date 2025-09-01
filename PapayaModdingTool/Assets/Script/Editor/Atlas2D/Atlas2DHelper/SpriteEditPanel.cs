@@ -9,7 +9,6 @@ using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Program;
 using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
@@ -178,6 +177,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 // This image exists, move it to trashbin
                 string destinationPath = Path.Combine(trashbinPath, Path.GetFileName(actualPath));
                 PathUtils.MoveFileSafe(actualPath, destinationPath);
+                _curr.isInTrashbin = true;
                 Debug.Log($"Moved {_curr.originalLabel} to trashbin. All changes will be applied after you reopen this Texture.");
             }
             else
@@ -200,6 +200,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 string importedPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName));
                 string destinationPath = Path.Combine(importedPath, Path.GetFileName(actualPath));
                 PathUtils.MoveFileSafe(actualPath, destinationPath);
+                _curr.isInTrashbin = false;
                 Debug.Log($"Recovered {_curr.originalLabel} from trashbin.");
             }
             else
