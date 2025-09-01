@@ -45,7 +45,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private readonly Dictionary<SpriteButtonData, Texture2D> _scaledSpriteCache = new();
         private readonly Dictionary<SpriteButtonData, bool> _spriteFlipX = new();
         private readonly Dictionary<SpriteButtonData, bool> _spriteFlipY = new();
-        
+
         private static Texture2D _whiteTex;
 
         public void Initialize(Rect bound)
@@ -72,6 +72,18 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 GetSaver().Save(GetJsonSavePath, _curr.sourcePath, datas);
                 Debug.Log("Save success!");
             }
+            GUILayout.BeginHorizontal();
+            {
+                if (GUILayout.Button(ELT("sort_by_name")))
+                {
+                    SetDatas(SpriteButtonDataSorter.SortByOriginalLabel(GetDatas()));
+                }
+                if (GUILayout.Button(ELT("sort_by_workplace")))
+                {
+                    SetDatas(SpriteButtonDataSorter.SortByWorkplace(GetDatas()));
+                }
+            }
+            GUILayout.EndHorizontal();
             EditorGUI.EndDisabledGroup();
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
@@ -319,16 +331,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 LoadFromSave(data.sourcePath, datas);
                 FlipTexture(datas);
                 SetDatas(datas);
-                SetDatas(GetDatas().OrderBy(o =>
-                {
-                    var match = Regex.Match(o.originalLabel, @"\d+$");
-                    if (match.Success && int.TryParse(match.Value, out int num))
-                        return num;
-                    else
-                        return int.MaxValue; // no number → push to end
-                })
-                .ThenBy(o => o.originalLabel) // optional: sort alphabetically among "no-number" names
-                .ToList());
+                SetDatas(SpriteButtonDataSorter.SortByOriginalLabel(GetDatas()));
                 SetAnimations(GetAnimations(datas));
             }
             else if (data.IsStyle2)
@@ -337,7 +340,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 LoadFromSave(data.sourcePath, datas);
                 FlipTexture(datas);
                 SetDatas(datas);
-                SetDatas(GetDatas().OrderBy(o => o.originalLabel).ToList());
+                SetDatas(SpriteButtonDataSorter.SortByOriginalLabel(GetDatas()));
                 SetAnimations(GetAnimations(datas));
             }
             else
