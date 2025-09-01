@@ -32,6 +32,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         public Func<SpritesPanelReader> GetReader;
         public Func<string> GetProjectName;
         public Action<List<SpriteButtonData>> SetDatas;
+        public Action<List<string>> SetAnimations;
 
         private Rect _bound;
         private bool _hasInit;
@@ -263,6 +264,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         public void Update(Texture2DButtonData data)
         {
+            static List<string> GetAnimations(List<SpriteButtonData> datas)
+            {
+                return datas.Select(x => x.animation).ToHashSet().ToList();
+            }
+
             _curr = data;
             if (data.IsStyle1)
             {
@@ -282,6 +288,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 })
                 .ThenBy(o => o.originalLabel) // optional: sort alphabetically among "no-number" names
                 .ToList());
+                SetAnimations(GetAnimations(datas));
             }
             else if (data.IsStyle2)
             {
@@ -290,6 +297,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 FlipTexture(datas);
                 SetDatas(datas);
                 SetDatas(GetDatas().OrderBy(o => o.originalLabel).ToList());
+                SetAnimations(GetAnimations(datas));
             }
             else
             {

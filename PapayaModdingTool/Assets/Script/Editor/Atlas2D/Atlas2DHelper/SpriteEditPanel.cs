@@ -40,7 +40,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private float _pivotX;
         private float _pivotY;
         private SpriteButtonData _curr;
-        private readonly List<string> _animations = new();
+        private List<string> _animations = new();
+        public void SetAnimations(List<string> animations)
+        {
+            _animations = animations;
+        }
         private int _selectedIndex = 0; // currently selected index
         private bool _hasInit;
         private SpritesBatchOperator _batchOperator;

@@ -67,7 +67,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                 GetBatchSelector = () => _batchSelector,
                 GetSaver = () => _spritesPanelSaver,
                 GetReader = () => _spritesPanelReader,
-                GetProjectName = () => ProjectName
+                GetProjectName = () => ProjectName,
+                SetAnimations = var => _spriteEditPanel.SetAnimations(var)
             };
             _spritesPanel.Initialize(new(270, 20, 530, 520));
 
