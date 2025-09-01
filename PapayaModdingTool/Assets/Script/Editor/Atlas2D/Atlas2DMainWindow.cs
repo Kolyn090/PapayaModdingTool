@@ -44,7 +44,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                 GetWorkplaceExportor = () => _workplaceExportor,
                 GetDatas = () => _workplace
             };
-            _previewPanel.Initialize(new(800, 10, 350, 800));
+            _previewPanel.Initialize(new(800, 10, 450, 900));
             // _previewPanel.SetPanOffset(new(0, _previewTexture != null ? -_previewTexture.height / 2f : 0f));
 
             _workplace = new();
@@ -93,7 +93,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                 GetBatchSelector = () => _batchSelector,
                 GetCommandManager = () => _appEnvironment.CommandManager
             };
-            _spriteEditPanel.Initialize(new(270, 550, 530, 260));
+            _spriteEditPanel.Initialize(new(270, 550, 530, 360));
 
             _batchSelector ??= new()
             {
@@ -109,7 +109,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                 GetTexture2DButtonDatas = () => _texture2DButtonDatas,
                 GetListener = () => _spritesPanel,
             };
-            _texturesPanel.Initialize(new(10, 20, 250, 790));
+            _texturesPanel.Initialize(new(10, 20, 250, 890));
             _texture2DButtonDatas = new();
 
             LoadTextureButtonDatas();

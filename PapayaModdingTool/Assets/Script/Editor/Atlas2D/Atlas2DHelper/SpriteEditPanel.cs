@@ -99,9 +99,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 GUILayout.BeginVertical();
                 {
                     DrawSideButton(ELT("save_changed"), SaveChanged);
-                    DrawSideButton(ELT("flip_x"), _batchOperator.FlipXAllSelected);
-                    DrawSideButton(ELT("flip_y"), _batchOperator.FlipYAllSelected);
                     DrawSideButton(ELT("auto_fill_workplace"), _batchOperator.AutoFillWorkplace);
+                    GUILayout.Label("");
+                    GUILayout.Label("");
                     GUILayout.Label("");
                     DrawSideButton2("-0.1", "+0.1",
                         () => _batchOperator.AddPivotOfSelected(
@@ -134,6 +134,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                     DrawSideButton(ELT("sprite_edit_create"), AddAnimation);
                     DrawSideButton(ELT("sprite_edit_delete"), DeleteAnimation);
                     DrawSideButton(ELT("play_animation"), PlayAnimation);
+
+                    GUILayout.Label("");
+                    GUILayout.Label("");
+                    DrawSideButton(ELT("flip_x"), _batchOperator.FlipXAllSelected);
+                    DrawSideButton(ELT("flip_y"), _batchOperator.FlipYAllSelected);
                     DrawSideButton(ELT("update_workplace"), UpdateWorkplace, height: 40);
                     GUILayout.Label("");
                 }
@@ -421,7 +426,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             GUILayout.EndVertical();
         }
 
-        private void DrawSideButton(string title, Action onClick, int width=100, int height=20)
+        private void DrawSideButton(string title, Action onClick, int width=100, int height=18)
         {
             GUILayout.BeginHorizontal();
             {
