@@ -163,70 +163,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         // !!! Only for Imported
         private void MoveSpriteToTrashBin()
         {
-            string trashbinPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureTrashbinFolder, GetProjectName(), _fileFolderName));
-            if (!Directory.Exists(trashbinPath))
-                Directory.CreateDirectory(trashbinPath);
-
-            // ! Assuming all images
-            // ! Assuming no two images have the same name but with different extension
-            string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName);
-            string determinedImagePath = PathUtils.ToLongPath(Path.Combine(importedPath, _curr.originalLabel));
-            string actualPath = PathUtils.FindImagePath(determinedImagePath);
-            if (actualPath != null)
-            {
-                // This image exists, move it to trashbin
-                string destinationPath = Path.Combine(trashbinPath, Path.GetFileName(actualPath));
-                PathUtils.MoveFileSafe(actualPath, destinationPath);
-                _curr.isInTrashbin = true;
-                Debug.Log($"Moved {_curr.originalLabel} to trashbin. All changes will be applied after you reopen this Texture.");
-            }
-            else
-            {
-                Debug.Log($"Failed to move {_curr.originalLabel} to trashbin. Either it's not an Imported sprite or you renamed it.");
-            }
+            _batchOperator.MoveSelectedToTrashbin(GetProjectName(), _fileFolderName);
         }
 
         // !!! Only for Imported
         private void UndoTrashbin()
         {
-            string trashbinPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureTrashbinFolder, GetProjectName(), _fileFolderName));
-            if (!Directory.Exists(trashbinPath))
-                return;
-
-            string imageInTrashbin = Path.Combine(trashbinPath, _curr.originalLabel);
-            string actualPath = PathUtils.FindImagePath(imageInTrashbin);
-            if (actualPath != null)
-            {
-                string importedPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName));
-                string destinationPath = Path.Combine(importedPath, Path.GetFileName(actualPath));
-                PathUtils.MoveFileSafe(actualPath, destinationPath);
-                _curr.isInTrashbin = false;
-                Debug.Log($"Recovered {_curr.originalLabel} from trashbin.");
-            }
-            else
-            {
-                Debug.Log($"Failed to undo trashbin for {_curr.originalLabel}. Either it's not an Imported sprite or it's not in trashbin.");
-            }
+            _batchOperator.UndoTrashbinForSelected(GetProjectName(), _fileFolderName);
         }
 
         // !!! Only for Imported
         private void DuplicateSprite()
         {
-            string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName);
-            string determinedImagePath = PathUtils.ToLongPath(Path.Combine(importedPath, _curr.originalLabel));
-            string actualPath = PathUtils.FindImagePath(determinedImagePath);
-            if (actualPath != null)
-            {
-                string[] duplicates = PathUtils.DuplicateFile(actualPath, 1);
-                string duplicated = duplicates[0];
-                // Also copy properties in the save file
-                GetSaver().CopyPropertiesWithinOneSave(GetJsonSavePath, importedPath, _curr.originalLabel, Path.GetFileNameWithoutExtension(duplicated));
-                Debug.Log($"Successfully duplicated {_curr.originalLabel}. All changes will be applied after you reopen this Texture.");
-            }
-            else
-            {
-                Debug.Log($"Failed to duplicate {_curr.originalLabel}. Either it's not an Imported sprite or you renamed it.");
-            }
+            _batchOperator.DuplicateSelected(GetProjectName(), _fileFolderName, GetJsonSavePath, GetSaver());
         }
 
         private void SaveChanged()

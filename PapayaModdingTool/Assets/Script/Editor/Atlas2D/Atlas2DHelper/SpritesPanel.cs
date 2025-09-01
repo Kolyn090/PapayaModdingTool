@@ -168,7 +168,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             // Draw label below sprite
             float textY = spriteRect.yMax + 2f;
 
-            string labelText = TruncateToEnd(data.label, 15);
+            string labelText = TruncateWithEllipsis(data.label, 8);
             GUIStyle labelStyle = EditorStyles.centeredGreyMiniLabel;
             Vector2 labelSize = labelStyle.CalcSize(new GUIContent(labelText));
             Rect labelRect = new(
@@ -244,6 +244,21 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private string TruncateToEnd(string s, int len = 20)
         {
             return s.Length > len ? $"...{s[^len..]}" : s;
+        }
+
+        public static string TruncateWithEllipsis(string input, int keep = 10)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            // Only truncate if string is longer than what we want to keep
+            if (input.Length <= keep * 2)
+                return input;
+
+            string start = input[..keep];
+            string end   = input[^keep..];
+
+            return $"{start}...{end}";
         }
 
         public void Update(Texture2DButtonData data)

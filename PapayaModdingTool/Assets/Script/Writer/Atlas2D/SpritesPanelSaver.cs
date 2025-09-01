@@ -79,8 +79,8 @@ namespace PapayaModdingTool.Assets.Script.Writer.Atlas2D
             File.WriteAllText(savePath, _jsonSerializer.Serialize(saveObjects, true));
         }
 
-        // Called when sprite is duplicated. Copy all except label & original label!
-        public void CopyPropertiesWithinOneSave(string savePath,
+        // Called when sprite is duplicated. Copy all except label & original label & level & order!
+        public void CopyAfterDuplication(string savePath,
                                                 string sourcePath, // ! Warning: this has no connection with below
                                                 string sourceOriginalLabel,
                                                 string targetOriginalLabel)
@@ -101,8 +101,6 @@ namespace PapayaModdingTool.Assets.Script.Writer.Atlas2D
                     targetSprite.width = sourceSprite.width;
                     targetSprite.height = sourceSprite.height;
                     targetSprite.pivot = sourceSprite.pivot;
-                    targetSprite.level = sourceSprite.level;
-                    targetSprite.order = sourceSprite.order;
                     targetSprite.animation = sourceSprite.animation;
                     targetSprite.hasFlipX = sourceSprite.hasFlipX;
                     targetSprite.hasFlipY = sourceSprite.hasFlipY;
@@ -117,8 +115,6 @@ namespace PapayaModdingTool.Assets.Script.Writer.Atlas2D
                         width = sourceSprite.width,
                         height = sourceSprite.height,
                         pivot = sourceSprite.pivot,
-                        level = sourceSprite.level,
-                        order = sourceSprite.order,
                         animation = sourceSprite.animation,
                         hasFlipX = sourceSprite.hasFlipX,
                         hasFlipY = sourceSprite.hasFlipY
