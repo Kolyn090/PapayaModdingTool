@@ -89,6 +89,8 @@
         "hide_marks": "Hide Marks",
         "move_to_trashbin": "Move to Trashbin",
         "undo_trashbin": "Undo Trashbin",
-        "duplicate": "Duplicate"
+        "duplicate": "Duplicate",
+        "sort_by_name": "Sort by Name",
+        "sort_by_workplace": "Sort by Workplace"
     }
 }

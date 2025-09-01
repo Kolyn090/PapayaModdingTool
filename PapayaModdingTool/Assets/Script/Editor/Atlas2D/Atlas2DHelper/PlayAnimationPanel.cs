@@ -12,7 +12,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
     public class PlayAnimationPanel : BaseEditorWindow
     {
         private List<SpriteButtonData> _frames = new();
-        private int _targetSize = 256;
+        private int _targetSize = 512;
         private int _currentFrame = 0;
         private float _fps = 9f;
         private bool _isPlaying = false;

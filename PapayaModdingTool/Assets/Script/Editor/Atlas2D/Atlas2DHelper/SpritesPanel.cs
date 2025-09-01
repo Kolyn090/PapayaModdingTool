@@ -7,6 +7,7 @@ using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Commands.SpriteEditCommand;
 using PapayaModdingTool.Assets.Script.EventListener;
+using PapayaModdingTool.Assets.Script.Misc.ColorGen;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Reader.Atlas2D;
 using PapayaModdingTool.Assets.Script.Reader.ImageDecoder;
@@ -42,6 +43,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                                                         GetProjectName(),
                                                         _curr.fileFolderName);
         private readonly Dictionary<SpriteButtonData, Texture2D> _scaledSpriteCache = new();
+        private readonly Dictionary<SpriteButtonData, bool> _spriteFlipX = new();
+        private readonly Dictionary<SpriteButtonData, bool> _spriteFlipY = new();
+        
+        private static Texture2D _whiteTex;
 
         public void Initialize(Rect bound)
         {
@@ -208,11 +213,45 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 pivotSize.y
             );
             GUI.Label(pivotRect, pivot, labelStyle);
+
+            if (!string.IsNullOrWhiteSpace(data.animation))
+            {
+                DrawRotatedSquare(new(rect.x, rect.y, 10, 10), ColorGenerator.GetColorFromString(data.animation));
+            }
+        }
+
+        private void DrawRotatedSquare(Rect rect, Color color, float angle = 45f)
+        {
+            // --- Lazy init of white texture ---
+            if (_whiteTex == null)
+            {
+                _whiteTex = new Texture2D(1, 1);
+                _whiteTex.SetPixel(0, 0, Color.white);
+                _whiteTex.Apply();
+            }
+
+            // Save matrix
+            Matrix4x4 oldMatrix = GUI.matrix;
+
+            // Translate pivot to rect center, then rotate
+            Vector2 pivot = rect.center;
+            GUIUtility.RotateAroundPivot(angle, pivot);
+
+            // Draw solid colored square
+            Color oldColor = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(rect, _whiteTex);
+            GUI.color = oldColor;
+
+            // Restore matrix
+            GUI.matrix = oldMatrix;
         }
 
         private Texture2D GetScaledSprite(SpriteButtonData data, int targetSize)
         {
-            if (_scaledSpriteCache.TryGetValue(data, out Texture2D cached))
+            if (_spriteFlipX.ContainsKey(data) && _spriteFlipX[data] == data.hasFlipX &&
+                _spriteFlipY.ContainsKey(data) && _spriteFlipY[data] == data.hasFlipY &&
+                _scaledSpriteCache.TryGetValue(data, out Texture2D cached))
                 return cached;
 
             float scale = Mathf.Min(targetSize / (float)data.sprite.width, targetSize / (float)data.sprite.height);
@@ -221,6 +260,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
             Texture2D scaled = RescaleNearestNeighbor(data.sprite, targetWidth, targetHeight);
             _scaledSpriteCache[data] = scaled;
+            _spriteFlipX[data] = data.hasFlipX;
+            _spriteFlipY[data] = data.hasFlipY;
             return scaled;
         }
 

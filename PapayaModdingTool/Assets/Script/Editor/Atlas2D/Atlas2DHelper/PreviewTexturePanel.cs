@@ -11,7 +11,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
     public class PreviewTexturePanel
     {
-        private const int HORIZONTAL_PADDING = 30;
+        private const int HORIZONTAL_PADDING = 40;
 
         public Func<string, string> ELT;
         public Func<WorkplaceExportor> GetWorkplaceExportor;

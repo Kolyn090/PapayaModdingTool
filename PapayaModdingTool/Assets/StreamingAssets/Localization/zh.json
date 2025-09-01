@@ -89,6 +89,8 @@
         "hide_marks": "隐藏标记",
         "move_to_trashbin": "移动到回收站",
         "undo_trashbin": "撤销回收站操作",
-        "duplicate": "复制"
+        "duplicate": "复制",
+        "sort_by_name": "按名字排序",
+        "sort_by_workplace": "按工作区排序"
     }
 }

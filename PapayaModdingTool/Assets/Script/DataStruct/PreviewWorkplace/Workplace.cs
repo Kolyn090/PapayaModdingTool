@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.Misc.ColorGen;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace
@@ -74,14 +75,15 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace
                         marks.Add(new()
                         {
                             digits = level,
-                            position = new(15, allMidPointsY[i]),
+                            position = new(25, allMidPointsY[i]),
                             color = Color.red
                         });
                     }
                     marks.Add(new()
                     {
                         digits = order,
-                        position = new(horizontalPadding + allMidPointsX[i][j], allMidPointsY[i])
+                        position = new(horizontalPadding + allMidPointsX[i][j], allMidPointsY[i]),
+                        color = GetColorByIndex(groups, j, i)
                     });
                 }
             }
@@ -97,14 +99,32 @@ namespace PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace
             return (result, marks);
         }
 
+        private static Color GetColorByIndex(Dictionary<int, List<SpriteButtonData>> groups, int x, int y)
+        {
+            SpriteButtonData data = GetDataByIndex(groups, x, y);
+            if (!string.IsNullOrWhiteSpace(data.animation))
+            {
+                return ColorGenerator.GetColorFromString(data.animation);
+            }
+            else
+            {
+                return new(1f, 1f, 1f, 0.9f);
+            }
+        }
+
         private static (int, int) GetLevelOrderByIndex(Dictionary<int, List<SpriteButtonData>> groups, int x, int y)
         {
-            List<int> sortedKeys = groups.Keys.ToList(); // group by level (i.e. y)
+            SpriteButtonData data = GetDataByIndex(groups, x, y);
+            return (data.order, data.level);
+        }
+
+        private static SpriteButtonData GetDataByIndex(Dictionary<int, List<SpriteButtonData>> groups, int x, int y)
+        {
+            List<int> sortedKeys = groups.Keys.ToList();
             sortedKeys.Sort();
             sortedKeys.Reverse();
             int resultLevel = sortedKeys[y];
-            int resultOrder = groups[resultLevel][x].order;
-            return (resultOrder, resultLevel);
+            return groups[resultLevel][x];
         }
 
         private static Texture2D AddHorizontalPadding(Texture2D original, int padding = 40)
