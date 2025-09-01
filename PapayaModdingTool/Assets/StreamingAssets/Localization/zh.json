@@ -86,6 +86,9 @@
         "stop": "停止",
         "save_changed": "保存修改",
         "show_marks": "显示标记",
-        "hide_marks": "隐藏标记"
+        "hide_marks": "隐藏标记",
+        "move_to_trashbin": "移动到回收站",
+        "undo_trashbin": "撤销回收站操作",
+        "duplicate": "复制"
     }
 }

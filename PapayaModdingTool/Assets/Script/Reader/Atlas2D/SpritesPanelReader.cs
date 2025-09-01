@@ -51,7 +51,7 @@ namespace PapayaModdingTool.Assets.Script.Reader.Atlas2D
             return null;
         }
 
-        private List<SpriteButtonData> GetSavedDatas(string savePath, string sourcePath)
+        public List<SpriteButtonData> GetSavedDatas(string savePath, string sourcePath)
         {
             List<IJsonObject> items = ReadSavePath(savePath);
             int index = GetIndexOfSourcePath(items, sourcePath);

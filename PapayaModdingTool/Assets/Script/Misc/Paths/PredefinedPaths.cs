@@ -26,6 +26,7 @@ namespace PapayaModdingTool.Assets.Script.Misc.Paths
         public static readonly string ExternalFileTextureOwningDumpFolder = Path.Combine(FileTextureFolder, "Owning Dump");
         public static readonly string ExternalFileTextureSourceDumpFolder = Path.Combine(FileTextureFolder, "Source Dump");
         public static readonly string ExternalFileTextureImportedFolder = Path.Combine(FileTextureFolder, "Imported");
+        public static readonly string ExternalFileTextureTrashbinFolder = Path.Combine(FileTextureFolder, "Trashbin");
 
         public static readonly string ExternalFileAtlas2DFolder = Path.Combine(FileTextureFolder, "Atlas2D");
         public static readonly string Atlas2DSpritesPanelSaveJson = Path.Combine(ExternalFileAtlas2DFolder, "SpritesPanelSave.json");

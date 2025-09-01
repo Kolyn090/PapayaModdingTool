@@ -24,7 +24,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         public Func<string, string> ELT;
         public Func<AssetsManager> GetAssetsManager;
         public Func<TextureEncoderDecoder> GetTextureEncoderDecoder;
-        public Func<ISpriteButtonDataListener> GetListener;
+        public Func<ISpriteButtonDataListener> GetSpriteButtonDataListener;
+        public Func<IFileFolderNameListener> GetFileFolderNameListener;
         public Func<List<SpriteButtonData>> GetDatas;
         public Func<SpritesBatchSelector> GetBatchSelector;
         public Func<SpritesPanelSaver> GetSaver;
@@ -39,7 +40,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private string GetJsonSavePath => string.Format(PredefinedPaths.Atlas2DSpritesPanelSaveJson,
                                                         GetProjectName(),
                                                         _curr.fileFolderName);
-        private Dictionary<SpriteButtonData, Texture2D> _scaledSpriteCache = new();
+        private readonly Dictionary<SpriteButtonData, Texture2D> _scaledSpriteCache = new();
 
         public void Initialize(Rect bound)
         {
@@ -153,7 +154,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                     SpritesBatchSelector.IsShiftHeld(),
                     SpritesBatchSelector.IsCtrlHeld());
 
-                GetListener()?.Update(data);
+                GetSpriteButtonDataListener()?.Update(data);
+                GetFileFolderNameListener()?.Update(_curr.fileFolderName);
             }
 
             // Draw label below sprite

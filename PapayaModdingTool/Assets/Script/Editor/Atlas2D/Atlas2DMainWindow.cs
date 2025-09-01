@@ -58,7 +58,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
             _spritesPanel = new()
             {
                 ELT = var => ELT(var),
-                GetListener = () => _spriteEditPanel,
+                GetSpriteButtonDataListener = () => _spriteEditPanel,
+                GetFileFolderNameListener = () => _spriteEditPanel,
                 GetAssetsManager = () => _appEnvironment.AssetsManager,
                 GetTextureEncoderDecoder = () => _appEnvironment.Wrapper.TextureEncoderDecoder,
                 GetDatas = () => _allDatasInTexture,
@@ -91,7 +92,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                 },
                 GetAllDatasInTexture = () => _allDatasInTexture,
                 GetBatchSelector = () => _batchSelector,
-                GetCommandManager = () => _appEnvironment.CommandManager
+                GetCommandManager = () => _appEnvironment.CommandManager,
+                GetProjectName = () => ProjectName,
+                GetSaver = () => _spritesPanelSaver
             };
             _spriteEditPanel.Initialize(new(270, 550, 530, 360));
 
@@ -147,7 +150,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
             }
 
             // Sort
-                _texture2DButtonDatas = _texture2DButtonDatas.OrderBy(o =>
+            _texture2DButtonDatas = _texture2DButtonDatas.OrderBy(o =>
             {
                 var match = Regex.Match(o.label, @"\d+$");
                 if (match.Success && int.TryParse(match.Value, out int num))

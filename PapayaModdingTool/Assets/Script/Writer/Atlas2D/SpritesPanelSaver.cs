@@ -1,10 +1,11 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Reader.Atlas2D;
 using PapayaModdingTool.Assets.Script.Wrapper.Json;
+using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Writer.Atlas2D
 {
@@ -76,6 +77,62 @@ namespace PapayaModdingTool.Assets.Script.Writer.Atlas2D
                 Directory.CreateDirectory(Path.GetDirectoryName(savePath));
             }
             File.WriteAllText(savePath, _jsonSerializer.Serialize(saveObjects, true));
+        }
+
+        // Called when sprite is duplicated. Copy all except label & original label!
+        public void CopyPropertiesWithinOneSave(string savePath,
+                                                string sourcePath, // ! Warning: this has no connection with below
+                                                string sourceOriginalLabel,
+                                                string targetOriginalLabel)
+        {
+            List<SpriteButtonData> saveDatas = _reader.GetSavedDatas(savePath, sourcePath);
+            if (saveDatas.Count == 0)
+            {
+                Debug.Log($"Failed to copy {sourceOriginalLabel} to {targetOriginalLabel} because save was not found.");
+            }
+
+            SpriteButtonData sourceSprite = saveDatas.FirstOrDefault(x => x.originalLabel == sourceOriginalLabel);
+            if (sourceSprite != null)
+            {
+                SpriteButtonData targetSprite = saveDatas.FirstOrDefault(x => x.originalLabel == targetOriginalLabel);
+                if (targetSprite != null)
+                {
+                    targetSprite.sprite = sourceSprite.sprite;
+                    targetSprite.width = sourceSprite.width;
+                    targetSprite.height = sourceSprite.height;
+                    targetSprite.pivot = sourceSprite.pivot;
+                    targetSprite.level = sourceSprite.level;
+                    targetSprite.order = sourceSprite.order;
+                    targetSprite.animation = sourceSprite.animation;
+                    targetSprite.hasFlipX = sourceSprite.hasFlipX;
+                    targetSprite.hasFlipY = sourceSprite.hasFlipY;
+                }
+                else
+                {
+                    saveDatas.Add(new()
+                    {
+                        label = targetOriginalLabel,
+                        originalLabel = targetOriginalLabel,
+                        sprite = sourceSprite.sprite,
+                        width = sourceSprite.width,
+                        height = sourceSprite.height,
+                        pivot = sourceSprite.pivot,
+                        level = sourceSprite.level,
+                        order = sourceSprite.order,
+                        animation = sourceSprite.animation,
+                        hasFlipX = sourceSprite.hasFlipX,
+                        hasFlipY = sourceSprite.hasFlipY
+                    });
+                }
+            }
+            else
+            {
+                Debug.Log($"Failed to find {sourceOriginalLabel}. Did you change its sprite's name?");
+                return;
+            }
+
+            Save(savePath, sourcePath, saveDatas);
+            Debug.Log($"Successfully copied {sourceOriginalLabel} to {targetOriginalLabel}.");
         }
     }
 }

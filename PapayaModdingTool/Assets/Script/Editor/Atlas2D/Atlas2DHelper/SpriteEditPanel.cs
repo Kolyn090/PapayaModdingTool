@@ -1,16 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Universal.GraphicUI;
 using PapayaModdingTool.Assets.Script.EventListener;
+using PapayaModdingTool.Assets.Script.Misc.Paths;
 using PapayaModdingTool.Assets.Script.Program;
+using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 {
-    public class SpriteEditPanel : ISpriteButtonDataListener
+    public class SpriteEditPanel : ISpriteButtonDataListener, IFileFolderNameListener
     {
         private const float Field_Width = 140f; // width of the input box
         private const float Label_Width = 60f;  // width of the label
@@ -21,7 +25,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         public Func<List<SpriteButtonData>> GetDatas; // Workplace
         public Func<SpritesBatchSelector> GetBatchSelector;
         public Func<CommandManager> GetCommandManager;
+        public Func<string> GetProjectName;
         public Action<List<SpriteButtonData>> SetDatas; // Workplace
+        public Func<SpritesPanelSaver> GetSaver;
 
         private Texture2D _sprite;
         private int _level;
@@ -39,16 +45,20 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private int _selectedIndex = 0; // currently selected index
         private bool _hasInit;
         private SpritesBatchOperator _batchOperator;
+        private string _fileFolderName;
+        private string GetJsonSavePath => string.Format(PredefinedPaths.Atlas2DSpritesPanelSaveJson,
+                                                        GetProjectName(),
+                                                        _fileFolderName);
 
         private Rect _bound;
 
-#region Optimization
+        #region Optimization
         // For dropdown list
         private readonly Dictionary<List<string>, string[]> _cachedOptionArrays = new();
         // For sprite display
         private Texture2D _cachedDoubledSprite;
         private Texture2D _lastSprite;
-#endregion
+        #endregion
 
         public void Initialize(Rect bound)
         {
@@ -136,11 +146,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                     DrawSideButton(ELT("play_animation"), PlayAnimation);
 
                     GUILayout.Label("");
-                    GUILayout.Label("");
+                    DrawSideButton(ELT("move_to_trashbin"), MoveSpriteToTrashBin);
+                    DrawSideButton(ELT("undo_trashbin"), UndoTrashbin);
+                    DrawSideButton(ELT("duplicate"), DuplicateSprite);
                     DrawSideButton(ELT("flip_x"), _batchOperator.FlipXAllSelected);
                     DrawSideButton(ELT("flip_y"), _batchOperator.FlipYAllSelected);
                     DrawSideButton(ELT("update_workplace"), UpdateWorkplace, height: 40);
-                    GUILayout.Label("");
                 }
                 GUILayout.EndVertical();
             }
@@ -150,6 +161,73 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             GUILayout.EndArea();
         }
 
+        // !!! Only for Imported
+        private void MoveSpriteToTrashBin()
+        {
+            string trashbinPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureTrashbinFolder, GetProjectName(), _fileFolderName));
+            if (!Directory.Exists(trashbinPath))
+                Directory.CreateDirectory(trashbinPath);
+
+            // ! Assuming all images
+            // ! Assuming no two images have the same name but with different extension
+            string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName);
+            string determinedImagePath = PathUtils.ToLongPath(Path.Combine(importedPath, _curr.originalLabel));
+            string actualPath = PathUtils.FindImagePath(determinedImagePath);
+            if (actualPath != null)
+            {
+                // This image exists, move it to trashbin
+                string destinationPath = Path.Combine(trashbinPath, Path.GetFileName(actualPath));
+                PathUtils.MoveFileSafe(actualPath, destinationPath);
+                Debug.Log($"Moved {_curr.originalLabel} to trashbin. All changes will be applied after you reopen this Texture.");
+            }
+            else
+            {
+                Debug.Log($"Failed to move {_curr.originalLabel} to trashbin. Either it's not an Imported sprite or you renamed it.");
+            }
+        }
+
+        // !!! Only for Imported
+        private void UndoTrashbin()
+        {
+            string trashbinPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureTrashbinFolder, GetProjectName(), _fileFolderName));
+            if (!Directory.Exists(trashbinPath))
+                return;
+
+            string imageInTrashbin = Path.Combine(trashbinPath, _curr.originalLabel);
+            string actualPath = PathUtils.FindImagePath(imageInTrashbin);
+            if (actualPath != null)
+            {
+                string importedPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName));
+                string destinationPath = Path.Combine(importedPath, Path.GetFileName(actualPath));
+                PathUtils.MoveFileSafe(actualPath, destinationPath);
+                Debug.Log($"Recovered {_curr.originalLabel} from trashbin.");
+            }
+            else
+            {
+                Debug.Log($"Failed to undo trashbin for {_curr.originalLabel}. Either it's not an Imported sprite or it's not in trashbin.");
+            }
+        }
+
+        // !!! Only for Imported
+        private void DuplicateSprite()
+        {
+            string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName);
+            string determinedImagePath = PathUtils.ToLongPath(Path.Combine(importedPath, _curr.originalLabel));
+            string actualPath = PathUtils.FindImagePath(determinedImagePath);
+            if (actualPath != null)
+            {
+                string[] duplicates = PathUtils.DuplicateFile(actualPath, 1);
+                string duplicated = duplicates[0];
+                // Also copy properties in the save file
+                GetSaver().CopyPropertiesWithinOneSave(GetJsonSavePath, importedPath, _curr.originalLabel, Path.GetFileNameWithoutExtension(duplicated));
+                Debug.Log($"Successfully duplicated {_curr.originalLabel}. All changes will be applied after you reopen this Texture.");
+            }
+            else
+            {
+                Debug.Log($"Failed to duplicate {_curr.originalLabel}. Either it's not an Imported sprite or you renamed it.");
+            }
+        }
+
         private void SaveChanged()
         {
             // For optimization purpose, only truly save to data if this button is clicked
@@ -157,19 +235,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
             if (_curr.label != _name)
                 _batchOperator.RenameSpriteLabel(_name, () => _curr, newVal => _name = newVal);
-            
+
             if (_curr.level != _level)
                 _batchOperator.ChangeLevelOfSelected(_level, () => _curr, newVal => _level = newVal);
-            
+
             if (_curr.order != _order)
                 _batchOperator.ChangeOrderOfSelected(_order, () => _curr, newVal => _order = newVal);
-            
+
             if (_curr.width != _width)
                 _batchOperator.ChangeWidthOfSelected(_width, () => _curr, newVal => _width = newVal);
-            
+
             if (_curr.height != _height)
                 _batchOperator.ChangeHeightOfSelected(_height, () => _curr, newVal => _height = newVal);
-            
+
             if (_curr.pivot.x != _pivotX)
                 _batchOperator.ChangePivotXOfSelected(_pivotX, () => _curr, newVal => _pivotX = newVal);
 
@@ -426,7 +504,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             GUILayout.EndVertical();
         }
 
-        private void DrawSideButton(string title, Action onClick, int width=100, int height=18)
+        private void DrawSideButton(string title, Action onClick, int width = 100, int height = 18)
         {
             GUILayout.BeginHorizontal();
             {
@@ -444,7 +522,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         private void DrawSideButton2(string title1, string title2,
                                     Action onClick1, Action onClick2,
-                                    int width=40, int height=20)
+                                    int width = 40, int height = 20)
         {
             GUILayout.BeginHorizontal();
             {
@@ -539,6 +617,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             _pivotX = data.pivot.x;
             _pivotY = data.pivot.y;
             _curr = data;
+        }
+
+        public void Update(string fileFolderName)
+        {
+            _fileFolderName = fileFolderName;
         }
     }
 }
