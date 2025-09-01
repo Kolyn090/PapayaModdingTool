@@ -84,6 +84,8 @@
         "pause": "Pause",
         "play": "Play",
         "stop": "Stop",
-        "save_changed": "Save Changed"
+        "save_changed": "Save Changed",
+        "show_marks": "Show Marks",
+        "hide_marks": "Hide Marks"
     }
 }

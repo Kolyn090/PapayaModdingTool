@@ -28,6 +28,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private List<SpriteButtonData> _workplace;
         private bool _needUpdateWorkplaceTexture = false;
         private bool _needUpdateRender = false;
+        private bool _showMarks = true;
+        public bool ShowMarks => _showMarks;
 
         private PreviewMarkPanel _previewMarkPanel;
         private ZoomPanController _zoomPanController;
@@ -35,7 +37,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         public void Initialize(Rect bound)
         {
             float totalHeight = bound.height;
-            float guiHeight = totalHeight * 0.155f;
+            float guiHeight = totalHeight * 0.18f;
             float imageHeight = totalHeight - guiHeight;
             _guiRect = new Rect(bound.x, bound.y, bound.width, guiHeight);
             _imageRect = new Rect(bound.x, bound.y + guiHeight, bound.width, imageHeight);
@@ -79,8 +81,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 // ! Add padding for level mark
                 var preview = Workplace.CreatePreview(_workplace, horizontalPadding: HORIZONTAL_PADDING);
                 _workplaceTexture = preview.Item1;
-                List<PreviewMark> marks = preview.Item2;
-                _previewMarkPanel.MakeWorkplaceTexture(marks, _workplaceTexture.width, _workplaceTexture.height);
+                if (_showMarks)
+                {
+                    List<PreviewMark> marks = preview.Item2;
+                    _previewMarkPanel.MakeWorkplaceTexture(marks, _workplaceTexture.width, _workplaceTexture.height);
+                }
                 _needUpdateWorkplaceTexture = false;
             }
 
@@ -110,8 +115,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             }
             GUILayout.EndHorizontal();
 
+            if (GUILayout.Button(ELT(_showMarks ? "hide_marks" : "show_marks"), GUILayout.Width(_guiRect.width - 15f)))
+            {
+                ToggleShowMark();
+            }
+
             // Compute pan bounds based on zoomed image size
-            float panWidth = Mathf.Max((_workplaceTexture != null ?
+                float panWidth = Mathf.Max((_workplaceTexture != null ?
                                         _workplaceTexture.width : 0f) * _zoomPanController.Zoom - _imageRect.width, 0f) / 2f;
             float panHeight = Mathf.Max((_workplaceTexture != null ?
                                         _workplaceTexture.height : 0f) * _zoomPanController.Zoom - _imageRect.height, 0f) / 2f;
@@ -148,7 +158,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 if (NeedsRenderUpdate())
                 {
                     UpdatePreviewTexture((int)_imageRect.width, (int)_imageRect.height);
-                    _previewMarkPanel.UpdatePreviewTexture();
+                    if (_showMarks)
+                    {
+                        _previewMarkPanel.UpdatePreviewTexture();
+                    }
                     _zoomPanController.UpdateLast();
                     _needUpdateRender = false;
                 }
@@ -159,16 +172,24 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                     ScaleMode.StretchToFill,
                     true
                 );
-                GUI.DrawTexture(
-                    new Rect(0, 0, _imageRect.width, _imageRect.height), // local group coords
-                    _previewMarkPanel.RenderTexture,
-                    ScaleMode.StretchToFill,
-                    true
-                );
+                if (_showMarks)
+                {
+                    GUI.DrawTexture(
+                        new Rect(0, 0, _imageRect.width, _imageRect.height), // local group coords
+                        _previewMarkPanel.RenderTexture,
+                        ScaleMode.StretchToFill,
+                        true
+                    );
+                }
             }
 
             GUI.EndGroup();
             _zoomPanController.HandleMouseInput(_imageRect);
+        }
+
+        public void ToggleShowMark()
+        {
+            _showMarks = !_showMarks;
         }
 
         private bool NeedsRenderUpdate()

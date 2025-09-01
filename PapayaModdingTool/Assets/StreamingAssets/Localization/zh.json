@@ -84,6 +84,8 @@
         "pause": "暂停",
         "play": "播放",
         "stop": "停止",
-        "save_changed": "保存修改"
+        "save_changed": "保存修改",
+        "show_marks": "显示标记",
+        "hide_marks": "隐藏标记"
     }
 }
