@@ -189,43 +189,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void AutoFillWorkplace()
         {
-            // Add all valid pairs
-            HashSet<(int, int)> pairs = new();
-            foreach (SpriteButtonData data in GetDatas())
-            {
-                if (data.level >= 0 && data.order >= 0)
-                    pairs.Add((data.level, data.order));
-            }
-
-            // For all selected sprites, auto generate level & order for them
-            // If the sprite is already valid, skip
-
-            int currLevel = 0;
-            foreach (SpriteButtonData data in GetDatas())
-            {
-                if (data.isSelected && (data.level < 0 || data.order < 0))
-                {
-                    (int level, int order) = FindSmallestMissingPair(pairs, currLevel);
-                    data.level = level;
-                    data.order = order;
-                    pairs.Add((level, order));
-                }
-                currLevel = data.level;
-            }
-        }
-
-        private static (int, int) FindSmallestMissingPair(HashSet<(int, int)> pairs, int x)
-        {
-            if (x < 0)
-            {
-                x = 0;
-            }
-
-            for (int y = 0; ; y++)  // loop forever over y
-            {
-                if (!pairs.Contains((x, y)))
-                    return (x, y);
-            }
+            GetCommandManager().ExecuteCommand(new AutoFillWorkplaceCommand(
+                GetDatas
+            ));
         }
 
         public void MoveSelectedToTrashbin(string projectName, string fileFolderName)

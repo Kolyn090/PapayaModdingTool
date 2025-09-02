@@ -111,7 +111,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 GUILayout.BeginVertical();
                 {
                     DrawSideButton(ELT("save_changed"), SaveChanged);
-                    DrawSideButton(ELT("auto_fill_workplace"), _batchOperator.AutoFillWorkplace);
+                    DrawSideButton(ELT("auto_fill_workplace"), AutoFillWorkplace);
                     GUILayout.Label("");
                     GUILayout.Label("");
                     GUILayout.Label("");
@@ -179,6 +179,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private void DuplicateSprite()
         {
             _batchOperator.DuplicateSelected(GetProjectName(), _fileFolderName, GetJsonSavePath, GetSaver());
+        }
+
+        private void AutoFillWorkplace()
+        {
+            _batchOperator.AutoFillWorkplace();
+            _level = _curr.level;
+            _order = _curr.order;
         }
 
         private void SaveChanged()
