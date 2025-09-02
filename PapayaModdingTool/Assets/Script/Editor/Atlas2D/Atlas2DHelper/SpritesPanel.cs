@@ -76,7 +76,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             {
                 if (GUILayout.Button(ELT("sort_by_name")))
                 {
-                    SetDatas(SpriteButtonDataSorter.SortByOriginalLabel(GetDatas()));
+                    SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
                 }
                 if (GUILayout.Button(ELT("sort_by_workplace")))
                 {
@@ -331,7 +331,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 LoadFromSave(data.sourcePath, datas);
                 FlipTexture(datas);
                 SetDatas(datas);
-                SetDatas(SpriteButtonDataSorter.SortByOriginalLabel(GetDatas()));
+                SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
                 SetAnimations(GetAnimations(datas));
             }
             else if (data.IsStyle2)
@@ -340,7 +340,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 LoadFromSave(data.sourcePath, datas);
                 FlipTexture(datas);
                 SetDatas(datas);
-                SetDatas(SpriteButtonDataSorter.SortByOriginalLabel(GetDatas()));
+                SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
                 SetAnimations(GetAnimations(datas));
             }
             else

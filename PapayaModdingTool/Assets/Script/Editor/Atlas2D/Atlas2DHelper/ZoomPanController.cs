@@ -101,14 +101,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
                 e.Use();
             }
 
-            // --- Pan with Left Mouse ---
-            if (e.type == EventType.MouseDown && e.button == 0 && previewRect.Contains(e.mousePosition))
+            // --- Pan with Left Mouse or Mid Mouse ---
+            if (e.type == EventType.MouseDown && (e.button == 0 || e.button == 2) && previewRect.Contains(e.mousePosition))
             {
                 _isPanning = true;
                 _lastMousePos = e.mousePosition;
                 e.Use(); // eat event so GUI buttons won’t get clicked
             }
-            else if (e.type == EventType.MouseDrag && _isPanning && e.button == 0)
+            else if (e.type == EventType.MouseDrag && _isPanning && (e.button == 0 || e.button == 2))
             {
                 Vector2 deltaPanel = e.mousePosition - _lastMousePos;
                 deltaPanel.y = -deltaPanel.y; // flip Y because IMGUI
@@ -123,7 +123,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DHelper
 
                 e.Use();
             }
-            else if (e.type == EventType.MouseUp && e.button == 0)
+            else if (e.type == EventType.MouseUp && (e.button == 0 || e.button == 2))
             {
                 _isPanning = false;
             }
