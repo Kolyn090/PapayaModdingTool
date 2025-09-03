@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
+using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Shortcut;
 using PapayaModdingTool.Assets.Script.Editor.Universal.GraphicUI;
 using PapayaModdingTool.Assets.Script.EventListener;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
@@ -12,7 +13,7 @@ using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 {
-    public class SpriteEditPanel : ISpriteButtonDataListener, IFileFolderNameListener
+    public class SpriteEditPanel : ISpriteButtonDataListener, IFileFolderNameListener, IShortcutSavable, IShortcutNavigable
     {
         private const float Field_Width = 140f; // width of the input box
         private const float Label_Width = 60f;  // width of the label
@@ -24,8 +25,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         public Func<SpritesBatchSelector> GetBatchSelector;
         public Func<CommandManager> GetCommandManager;
         public Func<string> GetProjectName;
-        public Action<List<SpriteButtonData>> SetDatas; // Workplace
         public Func<SpritesPanelSaver> GetSaver;
+        public Func<ShortcutManager> GetShortcutManager;
+        public Action<List<SpriteButtonData>> SetDatas; // Workplace
 
         private Texture2D _sprite;
         private int _level;
@@ -95,23 +97,23 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                 GUILayout.BeginVertical();
                 {
-                    DrawString(ELT("sprite_edit_name"), ref _name);
-                    DrawIntRedTextIfNegative(ELT("sprite_edit_level"), ref _level);
-                    DrawIntRedTextIfNegative(ELT("sprite_edit_order"), ref _order);
-                    DrawIntRedTextIfNegative(ELT("sprite_edit_width"), ref _width);
-                    DrawIntRedTextIfNegative(ELT("sprite_edit_height"), ref _height);
-                    DrawFloat(ELT("pivot_x"), ref _pivotX);
-                    DrawFloat(ELT("pivot_y"), ref _pivotY);
-                    DrawString(ELT("create_new_animation"), ref _newAnimation);
-                    DrawString(ELT("delete_animation"), ref _deleteAnimation);
-                    DrawDropdownList(ELT("sprite_edit_animation"), ref _selectedIndex, _animations);
+                    DrawString("sprite_edit_name", ref _name);
+                    DrawIntRedTextIfNegative("sprite_edit_level", ref _level);
+                    DrawIntRedTextIfNegative("sprite_edit_order", ref _order);
+                    DrawIntRedTextIfNegative("sprite_edit_width", ref _width);
+                    DrawIntRedTextIfNegative("sprite_edit_height", ref _height);
+                    DrawFloat("pivot_x", ref _pivotX);
+                    DrawFloat("pivot_y", ref _pivotY);
+                    DrawString("create_new_animation", ref _newAnimation);
+                    DrawString("delete_animation", ref _deleteAnimation);
+                    DrawDropdownList("sprite_edit_animation", ref _selectedIndex, _animations);
                 }
                 GUILayout.EndVertical();
 
                 GUILayout.BeginVertical();
                 {
-                    DrawSideButton(ELT("save_changed"), SaveChanged);
-                    DrawSideButton(ELT("auto_fill_workplace"), AutoFillWorkplace);
+                    DrawSideButton("save_changed", SaveChanged);
+                    DrawSideButton("auto_fill_workplace", AutoFillWorkplace);
                     GUILayout.Label("");
                     GUILayout.Label("");
                     GUILayout.Label("");
@@ -143,17 +145,17 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                                 addY: 0.1f
                             )
                     );
-                    DrawSideButton(ELT("sprite_edit_create"), AddAnimation);
-                    DrawSideButton(ELT("sprite_edit_delete"), DeleteAnimation);
-                    DrawSideButton(ELT("play_animation"), PlayAnimation);
+                    DrawSideButton("sprite_edit_create", AddAnimation);
+                    DrawSideButton("sprite_edit_delete", DeleteAnimation);
+                    DrawSideButton("play_animation", PlayAnimation);
 
                     GUILayout.Label("");
-                    DrawSideButton(ELT("move_to_trashbin"), MoveSpriteToTrashBin);
-                    DrawSideButton(ELT("undo_trashbin"), UndoTrashbin);
-                    DrawSideButton(ELT("duplicate"), DuplicateSprite);
-                    DrawSideButton(ELT("flip_x"), _batchOperator.FlipXAllSelected);
-                    DrawSideButton(ELT("flip_y"), _batchOperator.FlipYAllSelected);
-                    DrawSideButton(ELT("update_workplace"), UpdateWorkplace, height: 40);
+                    DrawSideButton("move_to_trashbin", MoveSpriteToTrashBin);
+                    DrawSideButton("undo_trashbin", UndoTrashbin);
+                    DrawSideButton("duplicate", DuplicateSprite);
+                    DrawSideButton("flip_x", _batchOperator.FlipXAllSelected);
+                    DrawSideButton("flip_y", _batchOperator.FlipYAllSelected);
+                    DrawSideButton("update_workplace", UpdateWorkplace, height: 40);
                 }
                 GUILayout.EndVertical();
             }
@@ -333,10 +335,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             }
         }
 
-        private void DrawIntRedTextIfNegative(string label, ref int value)
+        private void DrawIntRedTextIfNegative(string controlName, ref int value)
         {
             (Rect labelRect, Rect fieldRect) = GetFieldRect();
-            EditorGUI.LabelField(labelRect, label);
+            EditorGUI.LabelField(labelRect, ELT(controlName));
             if (value < 0)
             {
                 Color originalColor = GUI.contentColor;
@@ -354,25 +356,32 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             }
         }
 
-        private void DrawFloat(string label, ref float value)
+        private void DrawFloat(string controlName, ref float value)
         {
             (Rect labelRect, Rect fieldRect) = GetFieldRect();
-            EditorGUI.LabelField(labelRect, label);
+            EditorGUI.LabelField(labelRect, ELT(controlName));
             float newValue = EditorGUI.FloatField(fieldRect, value);
             if (newValue != value)
                 value = newValue;
         }
 
-        private void DrawString(string label, ref string value)
+        private void DrawString(string controlName, ref string value)
         {
             (Rect labelRect, Rect fieldRect) = GetFieldRect();
-            EditorGUI.LabelField(labelRect, label);
+            EditorGUI.LabelField(labelRect, ELT(controlName));
+            GUI.SetNextControlName(controlName);
             string newValue = EditorGUI.TextField(fieldRect, value);
             if (newValue != value)
                 value = newValue;
+
+            // Check if this control is focused
+            if (GUI.GetNameOfFocusedControl() == controlName)
+            {
+                FocusPanel();
+            }
         }
 
-        private void DrawDropdownList(string label,
+        private void DrawDropdownList(string controlName,
                                         ref int value,
                                         List<string> options,
                                         string nullLabel = "<None>")
@@ -381,7 +390,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
             Rect fieldRect = new(rect.x + Label_Width + Spacing, rect.y, Field_Width, rect.height);
 
-            EditorGUI.LabelField(labelRect, label);
+            EditorGUI.LabelField(labelRect, ELT(controlName));
 
             // Cache or rebuild the array
             if (!_cachedOptionArrays.TryGetValue(options, out string[] optionArray) ||
@@ -464,13 +473,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             GUILayout.EndVertical();
         }
 
-        private void DrawSideButton(string title, Action onClick, int width = 100, int height = 18)
+        private void DrawSideButton(string controlName, Action onClick, int width = 100, int height = 18)
         {
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Space(20); // left margin
 
-                if (GUILayout.Button(title, GUILayout.Width(width), GUILayout.Height(height)))
+                if (GUILayout.Button(ELT(controlName), GUILayout.Width(width), GUILayout.Height(height)))
                 {
                     onClick.Invoke();
                 }
@@ -480,7 +489,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             GUILayout.EndHorizontal();
         }
 
-        private void DrawSideButton2(string title1, string title2,
+        private void DrawSideButton2(string controlName1, string controlName2,
                                     Action onClick1, Action onClick2,
                                     int width = 40, int height = 20)
         {
@@ -488,14 +497,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             {
                 GUILayout.Space(20); // left margin
 
-                if (GUILayout.Button(title1, GUILayout.Width(width), GUILayout.Height(height)))
+                if (GUILayout.Button(ELT(controlName1), GUILayout.Width(width), GUILayout.Height(height)))
                 {
                     onClick1.Invoke();
                 }
 
                 GUILayout.Space(5);
 
-                if (GUILayout.Button(title2, GUILayout.Width(width), GUILayout.Height(height)))
+                if (GUILayout.Button(ELT(controlName2), GUILayout.Width(width), GUILayout.Height(height)))
                 {
                     onClick2.Invoke();
                 }
@@ -582,6 +591,30 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         public void Update(string fileFolderName)
         {
             _fileFolderName = fileFolderName;
+        }
+
+        // Call when this panel is focused
+        private void FocusPanel()
+        {
+            GetShortcutManager().IsEnabled = true;
+        }
+
+        // Call when Ctrl + S is clicked
+        public void OnShortcutSave()
+        {
+            void WriteToDb()
+            {
+                string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName);
+                GetSaver().Save(GetJsonSavePath, importedPath, GetAllDatasInTexture());
+            }
+            SaveChanged();
+            UpdateWorkplace();
+            WriteToDb();
+        }
+
+        public void OnShortNavigate(KeyCode keyCode)
+        {
+            
         }
     }
 }

@@ -103,9 +103,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                 },
                 GetAllDatasInTexture = () => _allDatasInTexture,
                 GetBatchSelector = () => _batchSelector,
-                GetCommandManager = () => _appEnvironment.CommandManager,
+                GetCommandManager = () => _spriteEditCommandManager,
                 GetProjectName = () => ProjectName,
-                GetSaver = () => _spritesPanelSaver
+                GetSaver = () => _spritesPanelSaver,
+                GetShortcutManager = () => _spriteEditShortcutManager
             };
             _spriteEditPanel.Initialize(new(270, 550, 530, 360));
 
@@ -178,10 +179,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
             _shortcutManagerEnabler = new();
             _spriteEditShortcutManager = new(_spriteEditCommandManager);
             _spritesPanelShortcutManager = new(_spritesPanelCommandManager);
+
             _shortcutManagerEnabler.AddShortcutManager(_spriteEditShortcutManager);
             _shortcutManagerEnabler.AddShortcutManager(_spritesPanelShortcutManager);
+
             _spriteEditShortcutManager.AssignEnabler(_shortcutManagerEnabler);
             _spritesPanelShortcutManager.AssignEnabler(_shortcutManagerEnabler);
+
+            _spriteEditShortcutManager.AssignSavable(_spriteEditPanel);
+            _spriteEditShortcutManager.AssignNavigable(_spriteEditPanel);
         }
 
         public static void Open(string projectPath)
