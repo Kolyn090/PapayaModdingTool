@@ -1,3 +1,4 @@
 1. Ctrl + Z
-2. Put duplication & trashbin to command
+2. Implement Redo
 3. Implement arrow key sprite navigation
+4. Make shortcut managers

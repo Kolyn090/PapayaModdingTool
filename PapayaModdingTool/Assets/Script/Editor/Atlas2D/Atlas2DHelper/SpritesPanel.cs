@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using AssetsTools.NET.Extra;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Commands.SpriteEditCommand;
+using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Shortcut;
 using PapayaModdingTool.Assets.Script.EventListener;
 using PapayaModdingTool.Assets.Script.Misc.ColorGen;
 using PapayaModdingTool.Assets.Script.Misc.Paths;
@@ -32,6 +32,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         public Func<SpritesPanelSaver> GetSaver;
         public Func<SpritesPanelReader> GetReader;
         public Func<string> GetProjectName;
+        public Func<ShortcutManager> GetShortcutManager;
         public Action<List<SpriteButtonData>> SetDatas;
         public Action<List<string>> SetAnimations;
 
