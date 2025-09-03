@@ -196,18 +196,20 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void MoveSelectedToTrashbin(string projectName, string fileFolderName)
         {
-            foreach (SpriteButtonData data in Selected)
-            {
-                MoveSpriteToTrashBin(projectName, fileFolderName, data);
-            }
+            GetCommandManager().ExecuteCommand(new TrashbinCommand(
+                Selected,
+                projectName,
+                fileFolderName
+            ));
         }
 
         public void UndoTrashbinForSelected(string projectName, string fileFolderName)
         {
-            foreach (SpriteButtonData data in Selected)
-            {
-                UndoTrashbin(projectName, fileFolderName, data);
-            }
+            GetCommandManager().ExecuteCommand(new UndoTrashbinCommand(
+                Selected,
+                projectName,
+                fileFolderName
+            ));
         }
 
         public void DuplicateSelected(string projectName, string fileFolderName, string savePath, SpritesPanelSaver saver)
@@ -215,55 +217,6 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             foreach (SpriteButtonData data in Selected)
             {
                 DuplicateSprite(projectName, fileFolderName, savePath, data, saver);
-            }
-        }
-
-        // !!! Only for Imported
-        private void MoveSpriteToTrashBin(string projectName, string fileFolderName, SpriteButtonData data)
-        {
-            string trashbinPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureTrashbinFolder, projectName, fileFolderName));
-            if (!Directory.Exists(trashbinPath))
-                Directory.CreateDirectory(trashbinPath);
-
-            // ! Assuming all images
-            // ! Assuming no two images have the same name but with different extension
-            string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, projectName, fileFolderName);
-            string determinedImagePath = PathUtils.ToLongPath(Path.Combine(importedPath, data.originalLabel));
-            string actualPath = PathUtils.FindImagePath(determinedImagePath);
-            if (actualPath != null)
-            {
-                // This image exists, move it to trashbin
-                string destinationPath = Path.Combine(trashbinPath, Path.GetFileName(actualPath));
-                PathUtils.MoveFileSafe(actualPath, destinationPath);
-                data.isInTrashbin = true;
-                Debug.Log($"Moved {data.originalLabel} to trashbin. All changes will be applied after you reopen this Texture.");
-            }
-            else
-            {
-                Debug.Log($"Failed to move {data.originalLabel} to trashbin. Either it's not an Imported sprite or you renamed it.");
-            }
-        }
-
-        // !!! Only for Imported
-        private void UndoTrashbin(string projectName, string fileFolderName, SpriteButtonData data)
-        {
-            string trashbinPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureTrashbinFolder, projectName, fileFolderName));
-            if (!Directory.Exists(trashbinPath))
-                return;
-
-            string imageInTrashbin = Path.Combine(trashbinPath, data.originalLabel);
-            string actualPath = PathUtils.FindImagePath(imageInTrashbin);
-            if (actualPath != null)
-            {
-                string importedPath = PathUtils.ToLongPath(string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, projectName, fileFolderName));
-                string destinationPath = Path.Combine(importedPath, Path.GetFileName(actualPath));
-                PathUtils.MoveFileSafe(actualPath, destinationPath);
-                data.isInTrashbin = false;
-                Debug.Log($"Recovered {data.originalLabel} from trashbin.");
-            }
-            else
-            {
-                Debug.Log($"Failed to undo trashbin for {data.originalLabel}. Either it's not an Imported sprite or it's not in trashbin.");
             }
         }
 
