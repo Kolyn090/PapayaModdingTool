@@ -214,30 +214,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void DuplicateSelected(string projectName, string fileFolderName, string savePath, SpritesPanelSaver saver)
         {
-            foreach (SpriteButtonData data in Selected)
-            {
-                DuplicateSprite(projectName, fileFolderName, savePath, data, saver);
-            }
-        }
-
-        // !!! Only for Imported
-        private void DuplicateSprite(string projectName, string fileFolderName, string savePath, SpriteButtonData data, SpritesPanelSaver saver)
-        {
-            string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, projectName, fileFolderName);
-            string determinedImagePath = PathUtils.ToLongPath(Path.Combine(importedPath, data.originalLabel));
-            string actualPath = PathUtils.FindImagePath(determinedImagePath);
-            if (actualPath != null)
-            {
-                string[] duplicates = PathUtils.DuplicateFile(actualPath, 1);
-                string duplicated = duplicates[0];
-                // Also copy properties in the save file
-                saver.CopyAfterDuplication(savePath, importedPath, data.originalLabel, Path.GetFileNameWithoutExtension(duplicated));
-                Debug.Log($"Successfully duplicated {data.originalLabel}. All changes will be applied after you reopen this Texture.");
-            }
-            else
-            {
-                Debug.Log($"Failed to duplicate {data.originalLabel}. Either it's not an Imported sprite or you renamed it.");
-            }
+            GetCommandManager().ExecuteCommand(new DuplicateSpriteCommand(
+                Selected,
+                projectName,
+                fileFolderName,
+                savePath,
+                saver
+            ));
         }
     }
 }
