@@ -84,7 +84,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Shortcut
                     IsArrowKey(e.keyCode))
             {
                 _shortcutNavigable?.OnShortNavigate(e.keyCode);
-                Debug.Log($"{e.keyCode}");
+                // Debug.Log($"{e.keyCode}");
                 e.Use();
             }
         }

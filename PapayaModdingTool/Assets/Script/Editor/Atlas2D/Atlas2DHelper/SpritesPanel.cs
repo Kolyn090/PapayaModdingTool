@@ -18,9 +18,11 @@ using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
-    public class SpritesPanel : ITexture2DButtonDataListener
+    public class SpritesPanel : ITexture2DButtonDataListener, IShortcutSavable, IShortcutNavigable
     {
         private const int BUTTONS_PER_ROW = 4;
+        private const int BUTTON_HEIGHT = 115;
+        private const int GAP = 5;
 
         public Func<string, string> ELT;
         public Func<AssetsManager> GetAssetsManager;
@@ -39,10 +41,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private Rect _bound;
         private bool _hasInit;
         private Vector2 _scrollPos;
-        private Texture2DButtonData _curr;
+        private Texture2DButtonData _currSelectedTextureData;
+        private SpriteButtonData _currSelectedSpriteButtonData;
         private string GetJsonSavePath => string.Format(PredefinedPaths.Atlas2DSpritesPanelSaveJson,
                                                         GetProjectName(),
-                                                        _curr.fileFolderName);
+                                                        _currSelectedTextureData.fileFolderName);
         private readonly Dictionary<SpriteButtonData, Texture2D> _scaledSpriteCache = new();
         private readonly Dictionary<SpriteButtonData, bool> _spriteFlipX = new();
         private readonly Dictionary<SpriteButtonData, bool> _spriteFlipY = new();
@@ -66,11 +69,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             GUILayout.BeginArea(_bound);
             EditorGUILayout.LabelField(ELT("found_sprites"), EditorStyles.boldLabel);
 
-            EditorGUI.BeginDisabledGroup(_curr == null || string.IsNullOrWhiteSpace(_curr.sourcePath));
+            EditorGUI.BeginDisabledGroup(_currSelectedTextureData == null || string.IsNullOrWhiteSpace(_currSelectedTextureData.sourcePath));
             var datas = GetDatas();
             if (GUILayout.Button(ELT("save_all_sprites")))
             {
-                GetSaver().Save(GetJsonSavePath, _curr.sourcePath, datas);
+                GetSaver().Save(GetJsonSavePath, _currSelectedTextureData.sourcePath, datas);
                 Debug.Log("Save success!");
             }
             GUILayout.BeginHorizontal();
@@ -89,7 +92,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
-            DrawButtonGrid(datas, BUTTONS_PER_ROW, _bound.width / BUTTONS_PER_ROW - 15, 115, 5);
+            DrawButtonGrid(datas, BUTTONS_PER_ROW,
+                            _bound.width / BUTTONS_PER_ROW - (BUTTONS_PER_ROW-1)*GAP,
+                            BUTTON_HEIGHT, GAP);
 
             EditorGUILayout.EndScrollView();
             GUILayout.EndArea();
@@ -181,7 +186,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                     SpritesBatchSelector.IsCtrlHeld());
 
                 GetSpriteButtonDataListener()?.Update(data);
-                GetFileFolderNameListener()?.Update(_curr.fileFolderName);
+                GetFileFolderNameListener()?.Update(_currSelectedTextureData.fileFolderName);
+
+                _currSelectedSpriteButtonData = data;
+                FocusPanel();
             }
 
             // Draw label below sprite
@@ -311,7 +319,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 return input;
 
             string start = input[..keep];
-            string end   = input[^keep..];
+            string end = input[^keep..];
 
             return $"{start}...{end}";
         }
@@ -323,7 +331,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 return datas.Select(x => x.animation).ToHashSet().ToList();
             }
 
-            _curr = data;
+            _currSelectedTextureData = data;
             if (data.IsStyle1)
             {
                 List<SpriteButtonData> datas = ImageReader.ReadSpriteButtonDatas(data.assetsInst,
@@ -368,6 +376,177 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                     data.sprite = FlipSpriteCommand.FlipTextureByY(data.sprite);
                 }
             }
+        }
+
+        public void OnShortcutSave()
+        {
+            GetSaver().Save(GetJsonSavePath, _currSelectedTextureData.sourcePath, GetDatas());
+            Debug.Log("Save success!");
+        }
+
+        public void OnShortNavigate(KeyCode keyCode)
+        {
+            if (_currSelectedSpriteButtonData == null || !_currSelectedSpriteButtonData.isSelected)
+            {
+                // don't do anything if the current editing sprite is not selected
+                return;
+            }
+
+            // Get the coordinate of the current editing sprite
+            (int, int) coord = GetCoordinate();
+
+            (int, int) moveTo;
+            if (keyCode == KeyCode.UpArrow)
+            {
+                moveTo = MoveUp(coord);
+            }
+            else if (keyCode == KeyCode.DownArrow)
+            {
+                moveTo = MoveDown(coord);
+            }
+            else if (keyCode == KeyCode.LeftArrow)
+            {
+                moveTo = MoveLeft(coord);
+            }
+            else if (keyCode == KeyCode.RightArrow)
+            {
+                moveTo = MoveRight(coord);
+            }
+            else
+            {
+                // ! Error: this shouldn't be possible
+                moveTo = (-1, -1);
+            }
+
+            SpriteButtonData newSelected = GetDataInCoord(moveTo);
+            GetBatchSelector().ClickSpriteButton(newSelected,
+            SpritesBatchSelector.IsShiftHeld(),
+            SpritesBatchSelector.IsCtrlHeld());
+
+            GetSpriteButtonDataListener()?.Update(newSelected);
+            GetFileFolderNameListener()?.Update(_currSelectedTextureData.fileFolderName);
+
+            _currSelectedSpriteButtonData = newSelected;
+            ScrollToSpriteCoord(moveTo, _bound.height - BUTTON_HEIGHT);
+            FocusPanel();
+        }
+
+        private void ScrollToSpriteCoord((int, int) coord, float viewportHeight)
+        {
+            float elementHeight = BUTTON_HEIGHT + GAP;
+            float elementTop = coord.Item1 * elementHeight;
+            float elementBottom = elementTop + elementHeight;
+
+            float viewTop = _scrollPos.y;
+            float viewBottom = _scrollPos.y + viewportHeight;
+
+            // If element is above the visible area → scroll up
+            if (elementTop < viewTop)
+            {
+                _scrollPos.y = elementTop;
+            }
+            // If element is below the visible area → scroll down
+            else if (elementBottom > viewBottom)
+            {
+                _scrollPos.y = elementBottom - viewportHeight;
+            }
+            // Else, already in view → do nothing
+        }
+
+        private SpriteButtonData GetDataInCoord((int, int) coord)
+        {
+            int index = coord.Item1 * BUTTONS_PER_ROW + coord.Item2;
+            if (index < 0 || index >= GetDatas().Count)
+                return null;
+            return GetDatas()[index];
+        }
+
+        private (int, int) MoveUp((int, int) currPos)
+        {
+            int count = GetDatas().Count;
+            int lastRow = (count - 1) / BUTTONS_PER_ROW;
+
+            int newRow = currPos.Item1 > 0 ? currPos.Item1 - 1 : lastRow;
+
+            // number of items in the new row
+            int itemsInRow = (newRow == lastRow) 
+                ? (count % BUTTONS_PER_ROW == 0 ? BUTTONS_PER_ROW : count % BUTTONS_PER_ROW)
+                : BUTTONS_PER_ROW;
+
+            int newCol = Math.Min(currPos.Item2, itemsInRow - 1);
+
+            return (newRow, newCol);
+        }
+
+        private (int, int) MoveDown((int, int) currPos)
+        {
+            int count = GetDatas().Count;
+            int lastRow = (count - 1) / BUTTONS_PER_ROW;
+
+            int newRow = currPos.Item1 == lastRow ? 0 : currPos.Item1 + 1;
+
+            // Clamp column if last row has fewer elements
+            int maxColInRow = (newRow == lastRow) ? (count % BUTTONS_PER_ROW == 0 ? BUTTONS_PER_ROW : count % BUTTONS_PER_ROW) - 1
+                                                : BUTTONS_PER_ROW - 1;
+
+            int newCol = Math.Min(currPos.Item2, maxColInRow);
+
+            return (newRow, newCol);
+        }
+
+        private (int, int) MoveLeft((int, int) currPos)
+        {
+            int count = GetDatas().Count;
+            int lastRow = (count - 1) / BUTTONS_PER_ROW;
+
+            if (currPos.Item2 > 0)
+            {
+                // just move left
+                return (currPos.Item1, currPos.Item2 - 1);
+            }
+            else
+            {
+                // wrap to last column in this row
+                int itemsInRow = (currPos.Item1 == lastRow)
+                    ? (count % BUTTONS_PER_ROW == 0 ? BUTTONS_PER_ROW : count % BUTTONS_PER_ROW)
+                    : BUTTONS_PER_ROW;
+
+                return (currPos.Item1, itemsInRow - 1);
+            }
+        }
+
+        private (int, int) MoveRight((int, int) currPos)
+        {
+            int count = GetDatas().Count;
+            int lastRow = (count - 1) / BUTTONS_PER_ROW;
+
+            // how many items in this row?
+            int itemsInRow = (currPos.Item1 == lastRow) 
+                ? (count % BUTTONS_PER_ROW == 0 ? BUTTONS_PER_ROW : count % BUTTONS_PER_ROW) 
+                : BUTTONS_PER_ROW;
+
+            if (currPos.Item2 < itemsInRow - 1)
+                return (currPos.Item1, currPos.Item2 + 1);
+            else
+                return (currPos.Item1, 0); // wrap to start of the row
+        }
+
+        private (int, int) GetCoordinate()
+        {
+            int indexOfSelected = GetDatas().IndexOf(_currSelectedSpriteButtonData);
+
+            if (indexOfSelected == -1)
+            {
+                // Shouldn't be happening
+                return (-1, -1);
+            }
+
+            return (indexOfSelected / BUTTONS_PER_ROW, indexOfSelected % BUTTONS_PER_ROW);
+        }
+
+        private void FocusPanel()
+        {
+            GetShortcutManager().IsEnabled = true;
         }
     }
 }

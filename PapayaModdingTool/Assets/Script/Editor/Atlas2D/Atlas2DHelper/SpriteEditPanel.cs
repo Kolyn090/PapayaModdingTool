@@ -612,9 +612,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             WriteToDb();
         }
 
+        // Call when Arrow key is clicked
         public void OnShortNavigate(KeyCode keyCode)
         {
-            
+
         }
     }
 }

@@ -91,6 +91,8 @@
         "undo_trashbin": "Undo Trashbin",
         "duplicate": "Duplicate",
         "sort_by_name": "Sort by Name",
-        "sort_by_workplace": "Sort by Workplace"
+        "sort_by_workplace": "Sort by Workplace",
+        "-0.1": "-0.1",
+        "+0.1": "+0.1"
     }
 }
