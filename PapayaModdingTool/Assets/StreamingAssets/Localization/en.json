@@ -93,6 +93,10 @@
         "sort_by_name": "Sort by Name",
         "sort_by_workplace": "Sort by Workplace",
         "-0.1": "-0.1",
-        "+0.1": "+0.1"
+        "+0.1": "+0.1",
+        "duplicate_sprite": "Duplicate sprite",
+        "duplicate_sprite_alert": "Are you sure you want to duplicate {0} item(s)? This operation cannot be undone.",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
     }
 }

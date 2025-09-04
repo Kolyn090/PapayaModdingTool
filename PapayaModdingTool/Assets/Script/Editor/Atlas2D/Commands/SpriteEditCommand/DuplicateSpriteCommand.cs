@@ -42,22 +42,23 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Commands.SpriteEditComm
 
         public void Undo()
         {
-            string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, _projectName, _fileFolderName);
-            foreach (string path in _duplicatePaths)
-            {
-                try
-                {
-                    if (File.Exists(path))
-                        File.Delete(path);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"Failed to delete file at {path}: {ex.Message}");
-                }
-            }
+            // ! This is dangerous
+            // string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, _projectName, _fileFolderName);
+            // foreach (string path in _duplicatePaths)
+            // {
+            //     try
+            //     {
+            //         if (File.Exists(path))
+            //             File.Delete(path);
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         Debug.LogError($"Failed to delete file at {path}: {ex.Message}");
+            //     }
+            // }
 
-            // Save the original selected, should clear out duplication
-            _saver.Save(_savePath, importedPath, _selected);
+            // // Save the original selected, should clear out duplication
+            // _saver.Save(_savePath, importedPath, _selected);
         }
 
         // !!! Only for Imported

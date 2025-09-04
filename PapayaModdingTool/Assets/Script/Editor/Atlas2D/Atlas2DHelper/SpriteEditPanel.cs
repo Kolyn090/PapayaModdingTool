@@ -193,6 +193,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         // !!! Only for Imported
         private void DuplicateSprite()
         {
+            bool confirm = EditorUtility.DisplayDialog(
+                ELT("duplicate_sprite"),
+                string.Format(ELT("duplicate_sprite_alert"), _batchOperator.Selected.Count),
+                ELT("confirm"),
+                ELT("cancel")
+            );
+            if (!confirm)
+                return;
+            
             _batchOperator.DuplicateSelected(GetProjectName(), _fileFolderName, GetJsonSavePath, GetSaver());
         }
 

@@ -1,4 +1,1 @@
-1. Ctrl + Z
-2. Implement Redo
-3. Implement arrow key sprite navigation
-4. Make shortcut managers
+1. Fix undo duplicate bug

@@ -212,13 +212,23 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public void DuplicateSelected(string projectName, string fileFolderName, string savePath, SpritesPanelSaver saver)
         {
-            GetCommandManager().ExecuteCommand(new DuplicateSpriteCommand(
+            // ! This is dangerous
+            // GetCommandManager().ExecuteCommand(new DuplicateSpriteCommand(
+            //     Selected,
+            //     projectName,
+            //     fileFolderName,
+            //     savePath,
+            //     saver
+            // ));
+
+            // * Just call Execute instead
+            new DuplicateSpriteCommand(
                 Selected,
                 projectName,
                 fileFolderName,
                 savePath,
                 saver
-            ));
+            ).Execute();
         }
     }
 }
