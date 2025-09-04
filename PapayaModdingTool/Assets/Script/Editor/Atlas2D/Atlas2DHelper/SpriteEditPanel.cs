@@ -55,6 +55,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                                                         _fileFolderName);
 
         private Rect _bound;
+        private readonly Dictionary<int, string> _controlNames = new()
+        {
+            {0, "sprite_edit_name"},
+            {1, "sprite_edit_level"},
+            {2, "sprite_edit_order"},
+            {3, "sprite_edit_width"},
+            {4, "sprite_edit_height"},
+            {5, "pivot_x"},
+            {6, "pivot_y"},
+            {7, "create_new_animation"},
+            {8, "delete_animation"},
+            {9, "sprite_edit_animation"},
+        };
 
         #region Optimization
         // For dropdown list
@@ -97,16 +110,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                 GUILayout.BeginVertical();
                 {
-                    DrawString("sprite_edit_name", ref _name);
-                    DrawIntRedTextIfNegative("sprite_edit_level", ref _level);
-                    DrawIntRedTextIfNegative("sprite_edit_order", ref _order);
-                    DrawIntRedTextIfNegative("sprite_edit_width", ref _width);
-                    DrawIntRedTextIfNegative("sprite_edit_height", ref _height);
-                    DrawFloat("pivot_x", ref _pivotX);
-                    DrawFloat("pivot_y", ref _pivotY);
-                    DrawString("create_new_animation", ref _newAnimation);
-                    DrawString("delete_animation", ref _deleteAnimation);
-                    DrawDropdownList("sprite_edit_animation", ref _selectedIndex, _animations);
+                    DrawString(_controlNames[0], ref _name);
+                    DrawIntRedTextIfNegative(_controlNames[1], ref _level);
+                    DrawIntRedTextIfNegative(_controlNames[2], ref _order);
+                    DrawIntRedTextIfNegative(_controlNames[3], ref _width);
+                    DrawIntRedTextIfNegative(_controlNames[4], ref _height);
+                    DrawFloat(_controlNames[5], ref _pivotX);
+                    DrawFloat(_controlNames[6], ref _pivotY);
+                    DrawString(_controlNames[7], ref _newAnimation);
+                    DrawString(_controlNames[8], ref _deleteAnimation);
+                    DrawDropdownList(_controlNames[9], ref _selectedIndex, _animations);
                 }
                 GUILayout.EndVertical();
 
@@ -339,6 +352,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         {
             (Rect labelRect, Rect fieldRect) = GetFieldRect();
             EditorGUI.LabelField(labelRect, ELT(controlName));
+            GUI.SetNextControlName(controlName);
             if (value < 0)
             {
                 Color originalColor = GUI.contentColor;
@@ -354,15 +368,28 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 if (newValue != value)
                     value = newValue;
             }
+
+            // Check if this control is focused
+            if (GUI.GetNameOfFocusedControl() == controlName)
+            {
+                FocusPanel();
+            }
         }
 
         private void DrawFloat(string controlName, ref float value)
         {
             (Rect labelRect, Rect fieldRect) = GetFieldRect();
             EditorGUI.LabelField(labelRect, ELT(controlName));
+            GUI.SetNextControlName(controlName);
             float newValue = EditorGUI.FloatField(fieldRect, value);
             if (newValue != value)
                 value = newValue;
+            
+            // Check if this control is focused
+            if (GUI.GetNameOfFocusedControl() == controlName)
+            {
+                FocusPanel();
+            }
         }
 
         private void DrawString(string controlName, ref string value)
@@ -403,8 +430,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                 _cachedOptionArrays[options] = optionArray;
             }
-
+            GUI.SetNextControlName(controlName);
             value = EditorGUI.Popup(fieldRect, value, optionArray);
+
+            // Check if this control is focused
+            if (GUI.GetNameOfFocusedControl() == controlName)
+            {
+                FocusPanel();
+            }
         }
 
         private void DrawImageDisplay(params GUILayoutOption[] options)
@@ -482,6 +515,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 if (GUILayout.Button(ELT(controlName), GUILayout.Width(width), GUILayout.Height(height)))
                 {
                     onClick.Invoke();
+                    FocusPanel();
                 }
 
                 GUILayout.Space(20); // right margin
@@ -500,6 +534,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 if (GUILayout.Button(ELT(controlName1), GUILayout.Width(width), GUILayout.Height(height)))
                 {
                     onClick1.Invoke();
+                    FocusPanel();
                 }
 
                 GUILayout.Space(5);
@@ -507,6 +542,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 if (GUILayout.Button(ELT(controlName2), GUILayout.Width(width), GUILayout.Height(height)))
                 {
                     onClick2.Invoke();
+                    FocusPanel();
                 }
 
                 GUILayout.Space(20); // right margin
@@ -613,9 +649,37 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         }
 
         // Call when Arrow key is clicked
-        public void OnShortNavigate(KeyCode keyCode)
+        public void OnShortcutNavigate(KeyCode keyCode)
         {
+            string currFocus = GUI.GetNameOfFocusedControl();
+            if (!_controlNames.ContainsValue(currFocus))
+            {
+                return;
+            }
+            int index = _controlNames.FirstOrDefault(x => x.Value == currFocus).Key;
 
+            if (keyCode == KeyCode.UpArrow)
+            {
+                if (index > 0)
+                {
+                    GUI.FocusControl(_controlNames[index - 1]);
+                }
+                else
+                {
+                    GUI.FocusControl(_controlNames[_controlNames.Count-1]);
+                }
+            }
+            else if (keyCode == KeyCode.DownArrow)
+            {
+                if (index < _controlNames.Count-1)
+                {
+                    GUI.FocusControl(_controlNames[index + 1]);
+                }
+                else
+                {
+                    GUI.FocusControl(_controlNames[0]);
+                }
+            }
         }
     }
 }

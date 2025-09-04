@@ -384,7 +384,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             Debug.Log("Save success!");
         }
 
-        public void OnShortNavigate(KeyCode keyCode)
+        public void OnShortcutNavigate(KeyCode keyCode)
         {
             if (_currSelectedSpriteButtonData == null || !_currSelectedSpriteButtonData.isSelected)
             {
