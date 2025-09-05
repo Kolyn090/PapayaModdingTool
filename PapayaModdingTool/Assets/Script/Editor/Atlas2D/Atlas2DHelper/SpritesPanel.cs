@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AssetsTools.NET.Extra;
+using PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Commands.SpriteEditCommand;
@@ -15,6 +16,7 @@ using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
 using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
 using UnityEngine;
+using UEvent = UnityEngine.Event;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
@@ -49,6 +51,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private readonly Dictionary<SpriteButtonData, Texture2D> _scaledSpriteCache = new();
         private readonly Dictionary<SpriteButtonData, bool> _spriteFlipX = new();
         private readonly Dictionary<SpriteButtonData, bool> _spriteFlipY = new();
+        private readonly SpritesCacher _spritesCacher = new();
 
         private static Texture2D _whiteTex;
 
@@ -324,33 +327,46 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             return $"{start}...{end}";
         }
 
-        public void Update(Texture2DButtonData data)
+        public void Update(Texture2DButtonData texture2dData)
         {
             static List<string> GetAnimations(List<SpriteButtonData> datas)
             {
                 return datas.Select(x => x.animation).ToHashSet().ToList();
             }
 
-            _currSelectedTextureData = data;
-            if (data.IsStyle1)
+            List<SpriteButtonData> spriteDatas = _spritesCacher.GetFromCache(texture2dData);
+            if (spriteDatas != null)
             {
-                List<SpriteButtonData> datas = ImageReader.ReadSpriteButtonDatas(data.assetsInst,
+                SetDatas(spriteDatas);
+                SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
+                SetAnimations(GetAnimations(spriteDatas));
+                return;
+            }
+
+            _currSelectedTextureData = texture2dData;
+            if (texture2dData.IsStyle1)
+            {
+                spriteDatas = ImageReader.ReadSpriteButtonDatas(texture2dData.assetsInst,
                                                             GetAssetsManager(),
                                                             GetTextureEncoderDecoder());
-                LoadFromSave(data.sourcePath, datas);
-                FlipTexture(datas);
-                SetDatas(datas);
+                LoadFromSave(texture2dData.sourcePath, spriteDatas);
+                FlipTexture(spriteDatas);
+                SetDatas(spriteDatas);
                 SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
-                SetAnimations(GetAnimations(datas));
+                SetAnimations(GetAnimations(spriteDatas));
+
+                _spritesCacher.AddToCache(texture2dData, GetDatas());
             }
-            else if (data.IsStyle2)
+            else if (texture2dData.IsStyle2)
             {
-                List<SpriteButtonData> datas = ImageReader.ReadSpriteButtonDatas(data.importedTexturesPath);
-                LoadFromSave(data.sourcePath, datas);
+                List<SpriteButtonData> datas = ImageReader.ReadSpriteButtonDatas(texture2dData.importedTexturesPath);
+                LoadFromSave(texture2dData.sourcePath, datas);
                 FlipTexture(datas);
                 SetDatas(datas);
                 SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
                 SetAnimations(GetAnimations(datas));
+
+                _spritesCacher.AddToCache(texture2dData, GetDatas());
             }
             else
             {

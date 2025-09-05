@@ -1,3 +1,2 @@
 1. Auto import Animation from MonoBehaviour
 2. Cache sprites so that we don't have to completely reload
-3. Empty workplace problem

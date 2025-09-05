@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using AssetsTools.NET.Extra;
+using PapayaModdingTool.Assets.Script.DataStruct.PreviewWorkplace;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper;
 using PapayaModdingTool.Assets.Script.Editor.Atlas2D.Shortcut;
@@ -38,6 +39,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
         private SpritesBatchSelector _batchSelector;
         private SpritesPanelSaver _spritesPanelSaver;
         private SpritesPanelReader _spritesPanelReader;
+        private readonly SpritesCacher _spritesCacher = new();
 
         private readonly CommandManager _spriteEditCommandManager = new();
         private readonly CommandManager _spritesPanelCommandManager = new();
