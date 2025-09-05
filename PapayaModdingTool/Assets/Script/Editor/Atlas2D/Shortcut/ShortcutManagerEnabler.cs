@@ -18,6 +18,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Shortcut
 
             foreach (ShortcutManager sm in _shortcutManagers)
             {
+                if (sm != shortcutManager)
+                    sm.OnDisabled();
+
                 sm.SetEnabled(sm == shortcutManager);
             }
         }

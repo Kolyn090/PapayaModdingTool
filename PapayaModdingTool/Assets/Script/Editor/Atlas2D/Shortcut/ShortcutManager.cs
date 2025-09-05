@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using PapayaModdingTool.Assets.Script.Program;
 using UnityEngine;
 using UEvent = UnityEngine.Event;
@@ -26,10 +27,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Shortcut
         private ShortcutManagerEnabler _enabler;
         private IShortcutSavable _shortcutSavable;
         private IShortcutNavigable _shortcutNavigable;
+        private readonly List<ICallOnShortcutDisabled> _callOnShortcutDisables = new();
 
         public ShortcutManager(CommandManager commandManager)
         {
             _commandManager = commandManager;
+        }
+
+        public void AddCallOnShortcutDisable(ICallOnShortcutDisabled callOnShortcutDisabled)
+        {
+            _callOnShortcutDisables.Add(callOnShortcutDisabled);
         }
 
         public void AssignEnabler(ShortcutManagerEnabler enabler)
@@ -96,5 +103,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Shortcut
                 key == KeyCode.LeftArrow ||
                 key == KeyCode.RightArrow;
         }
+
+        public void OnDisabled()
+        {
+            foreach (ICallOnShortcutDisabled callOnShortcutDisabled in _callOnShortcutDisables)
+            {
+                callOnShortcutDisabled.OnShortcutDisabled();
+            }
+        } 
     }
 }

@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 {
-    public class SpriteEditPanel : ISpriteButtonDataListener, IFileFolderNameListener, IShortcutSavable, IShortcutNavigable
+    public class SpriteEditPanel : ISpriteButtonDataListener, IFileFolderNameListener, IShortcutSavable, IShortcutNavigable, ICallOnShortcutDisabled
     {
         private const float Field_Width = 140f; // width of the input box
         private const float Label_Width = 60f;  // width of the label
@@ -689,6 +689,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                     GUI.FocusControl(_controlNames[0]);
                 }
             }
+        }
+
+        public void OnShortcutDisabled()
+        {
+            GUI.FocusControl("");
         }
     }
 }

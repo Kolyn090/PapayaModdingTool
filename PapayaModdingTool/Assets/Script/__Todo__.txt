@@ -1,2 +1,2 @@
 1. Auto import Animation from MonoBehaviour
-2. Cache sprites so that we don't have to completely reload
+2. Fix sprite edit focus cannot get lost

@@ -192,6 +192,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
             _spriteEditShortcutManager.AssignNavigable(_spriteEditPanel);
             _spritesPanelShortcutManager.AssignSavable(_spritesPanel);
             _spritesPanelShortcutManager.AssignNavigable(_spritesPanel);
+
+            _spriteEditShortcutManager.AddCallOnShortcutDisable(_spriteEditPanel);
         }
 
         public static void Open(string projectPath)
