@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using PapayaModdingTool.Assets.Script.DataStruct.TextureData;
 using PapayaModdingTool.Assets.Script.Program;
@@ -7,7 +6,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Commands.SpriteEditComm
 {
     public class UndoTrashbinCommand : ICommand
     {
-        private TrashbinCommand _trashbinCommand;
+        private readonly TrashbinCommand _trashbinCommand;
 
         public UndoTrashbinCommand(List<SpriteButtonData> selected,
                                     string projectName,

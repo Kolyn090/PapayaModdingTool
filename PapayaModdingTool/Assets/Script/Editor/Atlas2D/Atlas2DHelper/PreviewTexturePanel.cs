@@ -84,7 +84,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 if (_showMarks)
                 {
                     List<PreviewMark> marks = preview.Item2;
-                    _previewMarkPanel.MakeWorkplaceTexture(marks, _workplaceTexture.width, _workplaceTexture.height);
+                    if (marks != null)
+                    {
+                        _previewMarkPanel.MakeWorkplaceTexture(marks, _workplaceTexture.width, _workplaceTexture.height);
+                    }
                 }
                 _needUpdateWorkplaceTexture = false;
             }
