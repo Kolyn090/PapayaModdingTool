@@ -19,16 +19,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private const float Label_Width = 60f;  // width of the label
         private const float Spacing = 5f;      // space between label and field
 
-        public Func<string, string> ELT;
-        public Func<List<SpriteButtonData>> GetAllDatasInTexture;
-        public Func<List<SpriteButtonData>> GetDatas; // Workplace
-        public Func<SpritesBatchSelector> GetBatchSelector;
-        public Func<CommandManager> GetCommandManager;
-        public Func<string> GetProjectName;
-        public Func<SpritesPanelSaver> GetSaver;
-        public Func<ShortcutManager> GetShortcutManager;
-        public Action<List<SpriteButtonData>> SetDatas; // Workplace
-        public Action ForceUpdateSpritesPanel;
+        private readonly Func<string, string> _ELT;
+        private readonly Func<List<SpriteButtonData>> _GetAllDatasInTexture;
+        private readonly Func<List<SpriteButtonData>> _GetWorkplaceDatas;
+        private readonly Action<List<SpriteButtonData>> _SetWorkplaceDatas;
+        private readonly Action _ForceUpdateSpritesPanel;
+        private readonly SpritesBatchSelector _spritesBatchSelector;
+        private readonly CommandManager _commandManager;
+        private readonly SpritesPanelSaver _spritesPanelSaver;
+        private readonly Func<ShortcutManager> _GetShortcutManager;
+        private readonly string _projectName;
 
         private Texture2D _sprite;
         private int _level;
@@ -52,8 +52,31 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private SpritesBatchOperator _batchOperator;
         private string _fileFolderName;
         private string GetJsonSavePath => string.Format(PredefinedPaths.Atlas2DSpritesPanelSaveJson,
-                                                        GetProjectName(),
+                                                        _projectName,
                                                         _fileFolderName);
+
+        public SpriteEditPanel(Func<string, string> ELT,
+                            Func<List<SpriteButtonData>> GetAllDatasInTexture,
+                            Func<List<SpriteButtonData>> GetWorkplaceDatas,
+                            Action<List<SpriteButtonData>> SetWorkplaceDatas,
+                            Action ForceUpdateSpritesPanel,
+                            SpritesBatchSelector spritesBatchSelector,
+                            CommandManager commandManager,
+                            SpritesPanelSaver spritesPanelSaver,
+                            Func<ShortcutManager> GetShortcutManager,
+                            string projectName)
+        {
+            _ELT = ELT;
+            _GetAllDatasInTexture = GetAllDatasInTexture;
+            _GetWorkplaceDatas = GetWorkplaceDatas;
+            _SetWorkplaceDatas = SetWorkplaceDatas;
+            _ForceUpdateSpritesPanel = ForceUpdateSpritesPanel;
+            _spritesBatchSelector = spritesBatchSelector;
+            _commandManager = commandManager;
+            _spritesPanelSaver = spritesPanelSaver;
+            _GetShortcutManager = GetShortcutManager;
+            _projectName = projectName;
+        }
 
         private Rect _bound;
         private readonly Dictionary<int, string> _controlNames = new()
@@ -85,10 +108,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
             _batchOperator = new()
             {
-                GetDatas = GetAllDatasInTexture,
+                GetDatas = _GetAllDatasInTexture,
                 GetDisplaySprite = () => _sprite,
                 SetDisplaySprite = var => _sprite = var,
-                GetCommandManager = GetCommandManager
+                GetCommandManager = () => _commandManager
             };
         }
 
@@ -182,29 +205,29 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         // !!! Only for Imported
         private void MoveSpriteToTrashBin()
         {
-            _batchOperator.MoveSelectedToTrashbin(GetProjectName(), _fileFolderName);
+            _batchOperator.MoveSelectedToTrashbin(_projectName, _fileFolderName);
         }
 
         // !!! Only for Imported
         private void UndoTrashbin()
         {
-            _batchOperator.UndoTrashbinForSelected(GetProjectName(), _fileFolderName);
+            _batchOperator.UndoTrashbinForSelected(_projectName, _fileFolderName);
         }
 
         // !!! Only for Imported
         private void DuplicateSprite()
         {
             bool confirm = EditorUtility.DisplayDialog(
-                ELT("duplicate_sprite"),
-                string.Format(ELT("duplicate_sprite_alert"), _batchOperator.Selected.Count),
-                ELT("confirm"),
-                ELT("cancel")
+                _ELT("duplicate_sprite"),
+                string.Format(_ELT("duplicate_sprite_alert"), _batchOperator.Selected.Count),
+                _ELT("confirm"),
+                _ELT("cancel")
             );
             if (!confirm)
                 return;
 
-            _batchOperator.DuplicateSelected(GetProjectName(), _fileFolderName, GetJsonSavePath, GetSaver());
-            ForceUpdateSpritesPanel();
+            _batchOperator.DuplicateSelected(_projectName, _fileFolderName, GetJsonSavePath, _spritesPanelSaver);
+            _ForceUpdateSpritesPanel();
         }
 
         private void AutoFillWorkplace()
@@ -301,7 +324,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         {
             if (_selectedIndex != 0)
             {
-                PlayAnimationPanel.Open(GetAllDatasInTexture().Where(x => x.animation == _animation).ToList());
+                PlayAnimationPanel.Open(_GetAllDatasInTexture().Where(x => x.animation == _animation).ToList());
             }
             else
             {
@@ -311,7 +334,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         private void UpdateWorkplace()
         {
-            if (GetDatas == null || SetDatas == null)
+            if (_GetWorkplaceDatas == null || _SetWorkplaceDatas == null)
             {
                 Debug.LogError("Did you forgot to assign Workplace Datas?");
                 return;
@@ -323,13 +346,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                 return;
             }
 
-            if (GetDatas() == null)
+            if (_GetWorkplaceDatas() == null)
             {
-                SetDatas(new() { _curr });
+                _SetWorkplaceDatas(new() { _curr });
             }
             else
             {
-                if (GetDatas().Contains(_curr))
+                if (_GetWorkplaceDatas().Contains(_curr))
                 {
                     _curr.level = _level;
                     _curr.order = _order;
@@ -347,22 +370,22 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
                     _curr.label = _name;
                     _curr.width = _width;
                     _curr.height = _height;
-                    List<SpriteButtonData> copy = new(GetDatas())
+                    List<SpriteButtonData> copy = new(_GetWorkplaceDatas())
                     {
                         _curr
                     };
                     // SetDatas(copy);
                 }
                 // Add all valid sprites to workplace
-                List<SpriteButtonData> validSprites = GetAllDatasInTexture().Where(x => x.level >= 0 && x.order >= 0).ToList();
-                SetDatas(validSprites);
+                List<SpriteButtonData> validSprites = _GetAllDatasInTexture().Where(x => x.level >= 0 && x.order >= 0).ToList();
+                _SetWorkplaceDatas(validSprites);
             }
         }
 
         private void DrawIntRedTextIfNegative(string controlName, ref int value)
         {
             (Rect labelRect, Rect fieldRect) = GetFieldRect();
-            EditorGUI.LabelField(labelRect, ELT(controlName));
+            EditorGUI.LabelField(labelRect, _ELT(controlName));
             GUI.SetNextControlName(controlName);
             if (value < 0)
             {
@@ -390,7 +413,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private void DrawFloat(string controlName, ref float value)
         {
             (Rect labelRect, Rect fieldRect) = GetFieldRect();
-            EditorGUI.LabelField(labelRect, ELT(controlName));
+            EditorGUI.LabelField(labelRect, _ELT(controlName));
             GUI.SetNextControlName(controlName);
             float newValue = EditorGUI.FloatField(fieldRect, value);
             if (newValue != value)
@@ -406,7 +429,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private void DrawString(string controlName, ref string value)
         {
             (Rect labelRect, Rect fieldRect) = GetFieldRect();
-            EditorGUI.LabelField(labelRect, ELT(controlName));
+            EditorGUI.LabelField(labelRect, _ELT(controlName));
             GUI.SetNextControlName(controlName);
             string newValue = EditorGUI.TextField(fieldRect, value);
             if (newValue != value)
@@ -428,7 +451,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             Rect labelRect = new(rect.x, rect.y, Label_Width, rect.height);
             Rect fieldRect = new(rect.x + Label_Width + Spacing, rect.y, Field_Width, rect.height);
 
-            EditorGUI.LabelField(labelRect, ELT(controlName));
+            EditorGUI.LabelField(labelRect, _ELT(controlName));
 
             // Cache or rebuild the array
             if (!_cachedOptionArrays.TryGetValue(options, out string[] optionArray) ||
@@ -502,12 +525,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             GUILayout.FlexibleSpace(); // right flexible space
             GUILayout.EndHorizontal();
 
-            int selected = GetBatchSelector().GetNumOfSelected();
+            int selected = _spritesBatchSelector.GetNumOfSelected();
             string label;
             if (selected <= 1)
                 label = !string.IsNullOrWhiteSpace(_name) ? _name : "<null>";
             else
-                label = string.Format(ELT("num_selected"), selected);
+                label = string.Format(_ELT("num_selected"), selected);
             GUILayout.Label(
                 TruncateToEnd(label, 25),
                 EditorStyles.centeredGreyMiniLabel,
@@ -523,7 +546,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             {
                 GUILayout.Space(20); // left margin
 
-                if (GUILayout.Button(ELT(controlName), GUILayout.Width(width), GUILayout.Height(height)))
+                if (GUILayout.Button(_ELT(controlName), GUILayout.Width(width), GUILayout.Height(height)))
                 {
                     onClick.Invoke();
                     FocusPanel();
@@ -542,7 +565,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             {
                 GUILayout.Space(20); // left margin
 
-                if (GUILayout.Button(ELT(controlName1), GUILayout.Width(width), GUILayout.Height(height)))
+                if (GUILayout.Button(_ELT(controlName1), GUILayout.Width(width), GUILayout.Height(height)))
                 {
                     onClick1.Invoke();
                     FocusPanel();
@@ -550,7 +573,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                 GUILayout.Space(5);
 
-                if (GUILayout.Button(ELT(controlName2), GUILayout.Width(width), GUILayout.Height(height)))
+                if (GUILayout.Button(_ELT(controlName2), GUILayout.Width(width), GUILayout.Height(height)))
                 {
                     onClick2.Invoke();
                     FocusPanel();
@@ -643,19 +666,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         // Call when this panel is focused
         private void FocusPanel()
         {
-            GetShortcutManager().IsEnabled = true;
+            _GetShortcutManager().IsEnabled = true;
         }
 
         // Call when Ctrl + S is clicked
         public void OnShortcutSave()
         {
-            if (GetAllDatasInTexture == null || GetAllDatasInTexture() == null)
+            if (_GetAllDatasInTexture == null || _GetAllDatasInTexture() == null)
                 return;
 
             void WriteToDb()
             {
-                string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName);
-                GetSaver().Save(GetJsonSavePath, importedPath, GetAllDatasInTexture());
+                string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, _projectName, _fileFolderName);
+                _spritesPanelSaver.Save(GetJsonSavePath, importedPath, _GetAllDatasInTexture());
             }
             SaveChanged();
             UpdateWorkplace();

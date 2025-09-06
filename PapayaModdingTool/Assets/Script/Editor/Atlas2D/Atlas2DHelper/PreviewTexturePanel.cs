@@ -13,9 +13,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
     {
         private const int HORIZONTAL_PADDING = 40;
 
-        public Func<string, string> ELT;
-        public Func<WorkplaceExportor> GetWorkplaceExportor;
-        public Func<List<SpriteButtonData>> GetDatas;
+        private readonly Func<string, string> _ELT;
+        private readonly Func<List<SpriteButtonData>> _GetDatas;
+        private readonly WorkplaceExportor _workplaceExportor;
 
         private Rect _guiRect;
         private Rect _imageRect;
@@ -29,10 +29,18 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private bool _needUpdateWorkplaceTexture = false;
         private bool _needUpdateRender = false;
         private bool _showMarks = true;
-        public bool ShowMarks => _showMarks;
 
         private PreviewMarkPanel _previewMarkPanel;
         private ZoomPanController _zoomPanController;
+
+        public PreviewTexturePanel(Func<string, string> ELT,
+                                Func<List<SpriteButtonData>> GetDatas,
+                                WorkplaceExportor workplaceExportor)
+        {
+            _ELT = ELT;
+            _GetDatas = GetDatas;
+            _workplaceExportor = workplaceExportor;
+        }
 
         public void Initialize(Rect bound)
         {
@@ -93,13 +101,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             }
 
             GUI.BeginGroup(_guiRect);
-            EditorGUILayout.LabelField(ELT("workplace"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(_ELT("workplace"), EditorStyles.boldLabel);
 
             EditorGUI.BeginDisabledGroup(_workplaceTexture == null);
-            if (GUILayout.Button(ELT("export_workplace"), GUILayout.Width(_guiRect.width - 15f)))
+            if (GUILayout.Button(_ELT("export_workplace"), GUILayout.Width(_guiRect.width - 15f)))
             {
                 // ! Remember to remove padding when exporting texture
-                GetWorkplaceExportor().Export(_workplaceTexture, GetDatas(), horizontalPadding: HORIZONTAL_PADDING);
+                _workplaceExportor.Export(_workplaceTexture, _GetDatas(), horizontalPadding: HORIZONTAL_PADDING);
                 Debug.Log("Export success!");
             }
 
@@ -107,18 +115,18 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
             // Set buttons to a fixed width
             float buttonWidth = _guiRect.width * 0.5f - 10f;
-            if (GUILayout.Button(ELT("zoom_in"), GUILayout.Width(buttonWidth)))
+            if (GUILayout.Button(_ELT("zoom_in"), GUILayout.Width(buttonWidth)))
             {
                 _zoomPanController.ZoomAtCenter(1.2f, _imageRect);
             }
 
-            if (GUILayout.Button(ELT("zoom_out"), GUILayout.Width(buttonWidth)))
+            if (GUILayout.Button(_ELT("zoom_out"), GUILayout.Width(buttonWidth)))
             {
                 _zoomPanController.ZoomAtCenter(1 / 1.2f, _imageRect);
             }
             GUILayout.EndHorizontal();
 
-            if (GUILayout.Button(ELT(_showMarks ? "hide_marks" : "show_marks"), GUILayout.Width(_guiRect.width - 15f)))
+            if (GUILayout.Button(_ELT(_showMarks ? "hide_marks" : "show_marks"), GUILayout.Width(_guiRect.width - 15f)))
             {
                 ToggleShowMark();
             }
@@ -129,12 +137,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             float panHeight = Mathf.Max((_workplaceTexture != null ?
                                         _workplaceTexture.height : 0f) * _zoomPanController.Zoom - _imageRect.height, 0f) / 2f;
             float sliderWidth = _guiRect.width - 20f;
-            _zoomPanController.SetPanOffsetX(EditorGUILayout.Slider(ELT("pan_x"),
+            _zoomPanController.SetPanOffsetX(EditorGUILayout.Slider(_ELT("pan_x"),
                                             _zoomPanController.PanOffset.x,
                                             -panWidth,
                                             panWidth,
                                             GUILayout.Width(sliderWidth)));
-            _zoomPanController.SetPanOffsetY(EditorGUILayout.Slider(ELT("pan_y"),
+            _zoomPanController.SetPanOffsetY(EditorGUILayout.Slider(_ELT("pan_y"),
                                             _zoomPanController.PanOffset.y,
                                             -panHeight,
                                             panHeight,
@@ -143,7 +151,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             GUI.EndGroup();
 
             // --- Preview Panel ---
-            GUI.Box(_imageRect, ELT("preview"));
+            GUI.Box(_imageRect, _ELT("preview"));
 
             // Update and draw the preview texture
             GUI.BeginGroup(_imageRect);

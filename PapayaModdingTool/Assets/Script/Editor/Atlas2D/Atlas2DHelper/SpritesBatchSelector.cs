@@ -10,11 +10,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 {
     public class SpritesBatchSelector
     {
-        public Func<List<SpriteButtonData>> GetDatas;
+        private Func<List<SpriteButtonData>> _GetDatas;
+
+        public SpritesBatchSelector(Func<List<SpriteButtonData>> GetDatas)
+        {
+            _GetDatas = GetDatas;
+        }
 
         public void ClickSpriteButton(SpriteButtonData data, bool isShiftHeld, bool isCtrlHeld)
         {
-            if (!GetDatas().Contains(data))
+            if (!_GetDatas().Contains(data))
             {
                 Debug.LogWarning("Datas doesn't contain data. This shouldn't be possible. Abort.");
                 return;
@@ -41,7 +46,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         private void UnselectAllDatas()
         {
-            foreach (SpriteButtonData data in GetDatas())
+            foreach (SpriteButtonData data in _GetDatas())
             {
                 data.isSelected = false;
             }
@@ -49,16 +54,16 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         private void ShiftOperation(SpriteButtonData data)
         {
-            if (GetDatas() == null || GetDatas().Count == 0)
+            if (_GetDatas() == null || _GetDatas().Count == 0)
                 return;
 
-            int currIndex = GetDatas().IndexOf(data);
-            List<bool> highlights = GetDatas().Select(x => x.isSelected).ToList();
+            int currIndex = _GetDatas().IndexOf(data);
+            List<bool> highlights = _GetDatas().Select(x => x.isSelected).ToList();
             int closestTrueOffset = FindClosestTrueOffset(highlights, currIndex);
 
             if (closestTrueOffset == int.MaxValue)
             {
-                GetDatas()[currIndex].isSelected = !GetDatas()[currIndex].isSelected;
+                _GetDatas()[currIndex].isSelected = !_GetDatas()[currIndex].isSelected;
                 return;
             }
 
@@ -67,9 +72,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
             for (int i = start; i <= end; i++)
             {
-                if (i < 0 || i >= GetDatas().Count)
+                if (i < 0 || i >= _GetDatas().Count)
                     return;
-                GetDatas()[i].isSelected = true;
+                _GetDatas()[i].isSelected = true;
             }
         }
 
@@ -113,9 +118,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
         public int GetNumOfSelected()
         {
-            if (GetDatas == null || GetDatas() == null)
+            if (_GetDatas == null || _GetDatas() == null)
                 return 0;
-            return GetDatas().Count(x => x.isSelected);
+            return _GetDatas().Count(x => x.isSelected);
         }
     }
 }

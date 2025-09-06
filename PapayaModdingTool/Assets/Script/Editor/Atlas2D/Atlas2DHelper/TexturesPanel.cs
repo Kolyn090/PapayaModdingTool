@@ -11,13 +11,22 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
     {
         private const int BUTTONS_PER_ROW = 1;
 
-        public Func<string, string> ELT;
-        public Func<List<Texture2DButtonData>> GetTexture2DButtonDatas;
-        public Func<ITexture2DButtonDataListener> GetListener;
+        private readonly Func<string, string> _ELT;
+        private readonly List<Texture2DButtonData> _texture2DButtonDatas;
+        private readonly ITexture2DButtonDataListener _listener;
 
         private Rect _bound;
         private bool _hasInit;
         private Vector2 _scrollPos;
+
+        public TexturesPanel(Func<string, string> ELT,
+                            List<Texture2DButtonData> texture2DButtonDatas,
+                            ITexture2DButtonDataListener listener)
+        {
+            _ELT = ELT;
+            _texture2DButtonDatas = texture2DButtonDatas;
+            _listener = listener;
+        }
 
         public void Initialize(Rect bound)
         {
@@ -34,20 +43,20 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             EditorGUI.DrawRect(_bound, new Color(0.2f, 0.2f, 0.2f));
 
             GUILayout.BeginArea(_bound);
-            EditorGUILayout.LabelField(ELT("found_textures"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(_ELT("found_textures"), EditorStyles.boldLabel);
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
             int index = 0;
-            if (GetTexture2DButtonDatas() != null)
+            if (_texture2DButtonDatas != null)
             {
-                while (index < GetTexture2DButtonDatas().Count)
+                while (index < _texture2DButtonDatas.Count)
                 {
                     EditorGUILayout.BeginHorizontal();
 
-                    for (int col = 0; col < BUTTONS_PER_ROW && index < GetTexture2DButtonDatas().Count; col++, index++)
+                    for (int col = 0; col < BUTTONS_PER_ROW && index < _texture2DButtonDatas.Count; col++, index++)
                     {
-                        DrawImageButton(GetTexture2DButtonDatas()[index]);
+                        DrawImageButton(_texture2DButtonDatas[index]);
                     }
 
                     EditorGUILayout.EndHorizontal();
@@ -70,9 +79,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             {
                 if (GUILayout.Button(data.texture, GUILayout.Width(64), GUILayout.Height(64)))
                 {
-                    if (GetListener != null)
+                    if (_listener != null)
                     {
-                        GetListener()?.Update(data);
+                        _listener?.Update(data);
                     }
                 }
             }
@@ -80,9 +89,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             {
                 if (GUILayout.Button(EditorGUIUtility.IconContent("Folder Icon").image as Texture2D, GUILayout.Width(64), GUILayout.Height(64)))
                 {
-                    if (GetListener != null)
+                    if (_listener != null)
                     {
-                        GetListener()?.Update(data);
+                        _listener?.Update(data);
                     }
                 }
             }

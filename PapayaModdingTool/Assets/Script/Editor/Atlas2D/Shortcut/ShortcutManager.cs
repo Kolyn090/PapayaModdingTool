@@ -108,7 +108,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Shortcut
         {
             foreach (ICallOnShortcutDisabled callOnShortcutDisabled in _callOnShortcutDisables)
             {
-                callOnShortcutDisabled.OnShortcutDisabled();
+                callOnShortcutDisabled?.OnShortcutDisabled();
             }
         } 
     }

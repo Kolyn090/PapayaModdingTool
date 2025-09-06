@@ -23,10 +23,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
     {
         private List<Texture2DButtonData> _texture2DButtonDatas;
         private List<SpriteButtonData> _allDatasInTexture;
-        private List<SpriteButtonData> _workplace;
+        private List<SpriteButtonData> _workplace = new();
         private TextureExporter _textureExporter;
         private readonly ProjectLoader _projectLoader = new();
-        private WorkplaceExportor _workplaceExportor;
 
         private PreviewTexturePanel _previewPanel;
         private SpritesPanel _spritesPanel;
@@ -54,9 +53,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
         public void Initialize(Func<string, string> ELT, AppEnvironment appEnvironment, string projectName)
         {
             _textureExporter = new(appEnvironment);
+            _batchSelector ??= new(() => _allDatasInTexture);
+            _spritesPanelSaver = new(appEnvironment.Wrapper.JsonSerializer);
+            _spritesPanelReader = new(appEnvironment.Wrapper.JsonSerializer);
+
+            LoadTextureButtonDatas(appEnvironment, projectName);
+
             InitPreviewPanel(ELT, appEnvironment);
             InitSpritesPanel(ELT, appEnvironment, projectName);
-            InitSpriteEditPanel(ELT, appEnvironment, projectName);
+            InitSpriteEditPanel(ELT, projectName);
             InitTexturesPanel(ELT, appEnvironment, projectName);
             InitShortcutManagers();
             _hasInit = true;
@@ -64,88 +69,65 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
 
         private void InitPreviewPanel(Func<string, string> ELT, AppEnvironment appEnvironment)
         {
-            _previewPanel = new()
-            {
-                ELT = var => ELT(var),
-                GetWorkplaceExportor = () => _workplaceExportor,
-                GetDatas = () => _workplace
-            };
+            _previewPanel = new(
+                ELT,
+                () => _workplace,
+                new(appEnvironment.Wrapper.JsonSerializer,
+                    appEnvironment.Wrapper.FileBrowser,
+                    var => ELT(var))
+            );
             _previewPanel.Initialize(new(800, 10, 450, 900));
-            // _previewPanel.SetPanOffset(new(0, _previewTexture != null ? -_previewTexture.height / 2f : 0f));
-
-            _workplace = new();
-            _workplaceExportor = new(appEnvironment.Wrapper.JsonSerializer,
-                                    appEnvironment.Wrapper.FileBrowser,
-                                    var => ELT(var));
         }
 
         private void InitSpritesPanel(Func<string, string> ELT, AppEnvironment appEnvironment, string projectName)
         {
-            _spritesPanel = new()
-            {
-                ELT = var => ELT(var),
-                GetSpriteButtonDataListener = () => _spriteEditPanel,
-                GetFileFolderNameListener = () => _spriteEditPanel,
-                GetAssetsManager = () => appEnvironment.AssetsManager,
-                GetTextureEncoderDecoder = () => appEnvironment.Wrapper.TextureEncoderDecoder,
-                GetDatas = () => _allDatasInTexture,
-                SetDatas = var => _allDatasInTexture = var,
-                GetBatchSelector = () => _batchSelector,
-                GetSaver = () => _spritesPanelSaver,
-                GetReader = () => _spritesPanelReader,
-                GetProjectName = () => projectName,
-                SetAnimations = var => _spriteEditPanel.SetAnimations(var),
-                GetShortcutManager = () => _spritesPanelShortcutManager
-            };
+            _spritesPanel = new(
+                ELT,
+                () => _allDatasInTexture,
+                var => _allDatasInTexture = var,
+                var => _spriteEditPanel.SetAnimations(var),
+                appEnvironment.AssetsManager,
+                appEnvironment.Wrapper.TextureEncoderDecoder,
+                () => _spriteEditPanel,
+                () => _spriteEditPanel,
+                _batchSelector,
+                _spritesPanelSaver,
+                _spritesPanelReader,
+                () => _spritesPanelShortcutManager,
+                projectName
+            );
             _spritesPanel.Initialize(new(270, 20, 530, 520));
-
-            _batchSelector ??= new()
-            {
-                GetDatas = () => _allDatasInTexture
-            };
-            _spritesPanelSaver = new(appEnvironment.Wrapper.JsonSerializer);
-            _spritesPanelReader = new(appEnvironment.Wrapper.JsonSerializer);
         }
 
-        private void InitSpriteEditPanel(Func<string, string> ELT, AppEnvironment appEnvironment, string projectName)
+        private void InitSpriteEditPanel(Func<string, string> ELT, string projectName)
         {
-            _spriteEditPanel = new()
-            {
-                ELT = var => ELT(var),
-                GetDatas = () => _workplace,
-                SetDatas = var =>
+            _spriteEditPanel = new(
+                ELT,
+                () => _allDatasInTexture,
+                () => _workplace,
+                var =>
                 {
                     _workplace = var;
                     _previewPanel.UpdateWorkplace(var);
                 },
-                GetAllDatasInTexture = () => _allDatasInTexture,
-                GetBatchSelector = () => _batchSelector,
-                GetCommandManager = () => _spriteEditCommandManager,
-                GetProjectName = () => projectName,
-                GetSaver = () => _spritesPanelSaver,
-                GetShortcutManager = () => _spriteEditShortcutManager,
-                ForceUpdateSpritesPanel = _spritesPanel.ForceReload
-            };
+                _spritesPanel.ForceReload,
+                _batchSelector,
+                _spriteEditCommandManager,
+                _spritesPanelSaver,
+                () => _spriteEditShortcutManager,
+                projectName
+            );
             _spriteEditPanel.Initialize(new(270, 550, 530, 360));
-
-            _batchSelector ??= new()
-            {
-                GetDatas = () => _allDatasInTexture
-            };
         }
 
         private void InitTexturesPanel(Func<string, string> ELT, AppEnvironment appEnvironment, string projectName)
         {
-            _texturesPanel = new()
-            {
-                ELT = var => ELT(var),
-                GetTexture2DButtonDatas = () => _texture2DButtonDatas,
-                GetListener = () => _spritesPanel,
-            };
+            _texturesPanel = new(
+                ELT,
+                _texture2DButtonDatas,
+                _spritesPanel
+            );
             _texturesPanel.Initialize(new(10, 20, 250, 890));
-            _texture2DButtonDatas = new();
-
-            LoadTextureButtonDatas(appEnvironment, projectName);
         }
 
         private void LoadTextureButtonDatas(AppEnvironment appEnvironment, string projectName)

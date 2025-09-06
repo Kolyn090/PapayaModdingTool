@@ -25,19 +25,19 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private const int BUTTON_HEIGHT = 115;
         private const int GAP = 5;
 
-        public Func<string, string> ELT;
-        public Func<AssetsManager> GetAssetsManager;
-        public Func<TextureEncoderDecoder> GetTextureEncoderDecoder;
-        public Func<ISpriteButtonDataListener> GetSpriteButtonDataListener;
-        public Func<IFileFolderNameListener> GetFileFolderNameListener;
-        public Func<List<SpriteButtonData>> GetDatas;
-        public Func<SpritesBatchSelector> GetBatchSelector;
-        public Func<SpritesPanelSaver> GetSaver;
-        public Func<SpritesPanelReader> GetReader;
-        public Func<string> GetProjectName;
-        public Func<ShortcutManager> GetShortcutManager;
-        public Action<List<SpriteButtonData>> SetDatas;
-        public Action<List<string>> SetAnimations;
+        private readonly Func<string, string> _ELT;
+        private readonly Func<List<SpriteButtonData>> _GetDatas;
+        private readonly Action<List<SpriteButtonData>> _SetDatas;
+        private readonly Action<List<string>> _SetAnimations;
+        private readonly AssetsManager _assetsManager;
+        private readonly TextureEncoderDecoder _textureEncoderDecoder;
+        private readonly Func<ISpriteButtonDataListener> _GetSpriteButtonDataListener;
+        private readonly Func<IFileFolderNameListener> _GetFileFolderNameListener;
+        private readonly SpritesBatchSelector _spritesBatchSelector;
+        private readonly SpritesPanelSaver _spritesPanelSaver;
+        private readonly SpritesPanelReader _spritesPanelReader;
+        private readonly Func<ShortcutManager> _GetShortcutManager;
+        private readonly string _projectName;
 
         private Rect _bound;
         private bool _hasInit;
@@ -45,7 +45,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private Texture2DButtonData _currSelectedTextureData;
         private SpriteButtonData _currSelectedSpriteButtonData;
         private string GetJsonSavePath => string.Format(PredefinedPaths.Atlas2DSpritesPanelSaveJson,
-                                                        GetProjectName(),
+                                                        _projectName,
                                                         _currSelectedTextureData.fileFolderName);
         private readonly Dictionary<SpriteButtonData, Texture2D> _scaledSpriteCache = new();
         private readonly Dictionary<SpriteButtonData, bool> _spriteFlipX = new();
@@ -53,6 +53,35 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private readonly SpritesCacher _spritesCacher = new();
 
         private static Texture2D _whiteTex;
+
+        public SpritesPanel(Func<string, string> ELT,
+                            Func<List<SpriteButtonData>> GetDatas,
+                            Action<List<SpriteButtonData>> SetDatas,
+                            Action<List<string>> SetAnimations,
+                            AssetsManager assetsManager,
+                            TextureEncoderDecoder textureEncoderDecoder,
+                            Func<ISpriteButtonDataListener> GetSpriteButtonDataListener,
+                            Func<IFileFolderNameListener> GetFileFolderNameListener,
+                            SpritesBatchSelector spritesBatchSelector,
+                            SpritesPanelSaver spritesPanelSaver,
+                            SpritesPanelReader spritesPanelReader,
+                            Func<ShortcutManager> GetShortcutManager,
+                            string projectName)
+        {
+            _ELT = ELT;
+            _GetDatas = GetDatas;
+            _SetDatas = SetDatas;
+            _SetAnimations = SetAnimations;
+            _assetsManager = assetsManager;
+            _textureEncoderDecoder = textureEncoderDecoder;
+            _GetSpriteButtonDataListener = GetSpriteButtonDataListener;
+            _GetFileFolderNameListener = GetFileFolderNameListener;
+            _spritesBatchSelector = spritesBatchSelector;
+            _spritesPanelSaver = spritesPanelSaver;
+            _spritesPanelReader = spritesPanelReader;
+            _GetShortcutManager = GetShortcutManager;
+            _projectName = projectName;
+        }
 
         public void Initialize(Rect bound)
         {
@@ -69,26 +98,26 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             EditorGUI.DrawRect(_bound, new Color(0.2f, 0.2f, 0.2f));
 
             GUILayout.BeginArea(_bound);
-            EditorGUILayout.LabelField(ELT("found_sprites"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(_ELT("found_sprites"), EditorStyles.boldLabel);
 
             EditorGUI.BeginDisabledGroup(_currSelectedTextureData == null || string.IsNullOrWhiteSpace(_currSelectedTextureData.sourcePath));
-            var datas = GetDatas();
-            if (GUILayout.Button(ELT("save_all_sprites")))
+            var datas = _GetDatas();
+            if (GUILayout.Button(_ELT("save_all_sprites")))
             {
-                GetSaver().Save(GetJsonSavePath, _currSelectedTextureData.sourcePath, datas);
+                _spritesPanelSaver.Save(GetJsonSavePath, _currSelectedTextureData.sourcePath, datas);
                 Debug.Log("Save success!");
             }
             GUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button(ELT("sort_by_name")))
+                if (GUILayout.Button(_ELT("sort_by_name")))
                 {
-                    SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
+                    _SetDatas(SpriteButtonDataSorter.SortByLabel(_GetDatas()));
                 }
-                if (GUILayout.Button(ELT("sort_by_workplace")))
+                if (GUILayout.Button(_ELT("sort_by_workplace")))
                 {
-                    SetDatas(SpriteButtonDataSorter.SortByWorkplace(GetDatas()));
+                    _SetDatas(SpriteButtonDataSorter.SortByWorkplace(_GetDatas()));
                 }
-                if (GUILayout.Button(ELT("reload")))
+                if (GUILayout.Button(_ELT("reload")))
                 {
                     ForceReload();
                 }
@@ -187,12 +216,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             // Button click area
             if (GUI.Button(spriteRect, GUIContent.none, GUIStyle.none))
             {
-                GetBatchSelector().ClickSpriteButton(data,
+                _spritesBatchSelector.ClickSpriteButton(data,
                     SpritesBatchSelector.IsShiftHeld(),
                     SpritesBatchSelector.IsCtrlHeld());
 
-                GetSpriteButtonDataListener()?.Update(data);
-                GetFileFolderNameListener()?.Update(_currSelectedTextureData.fileFolderName);
+                _GetSpriteButtonDataListener()?.Update(data);
+                _GetFileFolderNameListener()?.Update(_currSelectedTextureData.fileFolderName);
 
                 _currSelectedSpriteButtonData = data;
                 FocusPanel();
@@ -228,10 +257,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 rect.width,
                 coordSize.y
             );
-            GUI.Label(coordRect, $"{ELT("workplace")}: {coord}", coordStyle);
+            GUI.Label(coordRect, $"{_ELT("workplace")}: {coord}", coordStyle);
 
             // Draw pivot info
-            string pivot = $"{ELT("pivot")}: <{Math.Round(data.pivot.x, 2)}, {Math.Round(data.pivot.y, 2)}>";
+            string pivot = $"{_ELT("pivot")}: <{Math.Round(data.pivot.x, 2)}, {Math.Round(data.pivot.y, 2)}>";
             Vector2 pivotSize = labelStyle.CalcSize(new GUIContent(pivot));
             Rect pivotRect = new(
                 rect.x + (rect.width - pivotSize.x) / 2,
@@ -341,9 +370,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             List<SpriteButtonData> spriteDatas = _spritesCacher.GetFromCache(texture2dData);
             if (spriteDatas != null)
             {
-                SetDatas(spriteDatas);
-                SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
-                SetAnimations(GetAnimations(spriteDatas));
+                _SetDatas(spriteDatas);
+                _SetDatas(SpriteButtonDataSorter.SortByLabel(_GetDatas()));
+                _SetAnimations(GetAnimations(spriteDatas));
                 return;
             }
 
@@ -356,26 +385,26 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             if (texture2dData.IsStyle1)
             {
                 List<SpriteButtonData> spriteDatas = ImageReader.ReadSpriteButtonDatas(texture2dData.assetsInst,
-                                                            GetAssetsManager(),
-                                                            GetTextureEncoderDecoder());
+                                                            _assetsManager,
+                                                            _textureEncoderDecoder);
                 LoadFromSave(texture2dData.sourcePath, spriteDatas);
                 FlipTexture(spriteDatas);
-                SetDatas(spriteDatas);
-                SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
-                SetAnimations(GetAnimations(spriteDatas));
+                _SetDatas(spriteDatas);
+                _SetDatas(SpriteButtonDataSorter.SortByLabel(_GetDatas()));
+                _SetAnimations(GetAnimations(spriteDatas));
 
-                _spritesCacher.AddToCache(texture2dData, GetDatas());
+                _spritesCacher.AddToCache(texture2dData, _GetDatas());
             }
             else if (texture2dData.IsStyle2)
             {
                 List<SpriteButtonData> datas = ImageReader.ReadSpriteButtonDatas(texture2dData.importedTexturesPath);
                 LoadFromSave(texture2dData.sourcePath, datas);
                 FlipTexture(datas);
-                SetDatas(datas);
-                SetDatas(SpriteButtonDataSorter.SortByLabel(GetDatas()));
-                SetAnimations(GetAnimations(datas));
+                _SetDatas(datas);
+                _SetDatas(SpriteButtonDataSorter.SortByLabel(_GetDatas()));
+                _SetAnimations(GetAnimations(datas));
 
-                _spritesCacher.AddToCache(texture2dData, GetDatas());
+                _spritesCacher.AddToCache(texture2dData, _GetDatas());
             }
             else
             {
@@ -390,7 +419,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         private void LoadFromSave(string sourcePath, List<SpriteButtonData> datas)
         {
-            GetReader().LoadDatas(datas, GetJsonSavePath, sourcePath);
+            _spritesPanelReader.LoadDatas(datas, GetJsonSavePath, sourcePath);
         }
 
         private void FlipTexture(List<SpriteButtonData> datas)
@@ -410,7 +439,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         public void OnShortcutSave()
         {
-            GetSaver().Save(GetJsonSavePath, _currSelectedTextureData.sourcePath, GetDatas());
+            _spritesPanelSaver.Save(GetJsonSavePath, _currSelectedTextureData.sourcePath, _GetDatas());
             Debug.Log("Save success!");
         }
 
@@ -449,12 +478,12 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             }
 
             SpriteButtonData newSelected = GetDataInCoord(moveTo);
-            GetBatchSelector().ClickSpriteButton(newSelected,
+            _spritesBatchSelector.ClickSpriteButton(newSelected,
             SpritesBatchSelector.IsShiftHeld(),
             SpritesBatchSelector.IsCtrlHeld());
 
-            GetSpriteButtonDataListener()?.Update(newSelected);
-            GetFileFolderNameListener()?.Update(_currSelectedTextureData.fileFolderName);
+            _GetSpriteButtonDataListener()?.Update(newSelected);
+            _GetFileFolderNameListener()?.Update(_currSelectedTextureData.fileFolderName);
 
             _currSelectedSpriteButtonData = newSelected;
             ScrollToSpriteCoord(moveTo, _bound.height - BUTTON_HEIGHT);
@@ -486,14 +515,14 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
         private SpriteButtonData GetDataInCoord((int, int) coord)
         {
             int index = coord.Item1 * BUTTONS_PER_ROW + coord.Item2;
-            if (index < 0 || index >= GetDatas().Count)
+            if (index < 0 || index >= _GetDatas().Count)
                 return null;
-            return GetDatas()[index];
+            return _GetDatas()[index];
         }
 
         private (int, int) MoveUp((int, int) currPos)
         {
-            int count = GetDatas().Count;
+            int count = _GetDatas().Count;
             int lastRow = (count - 1) / BUTTONS_PER_ROW;
 
             int newRow = currPos.Item1 > 0 ? currPos.Item1 - 1 : lastRow;
@@ -510,7 +539,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         private (int, int) MoveDown((int, int) currPos)
         {
-            int count = GetDatas().Count;
+            int count = _GetDatas().Count;
             int lastRow = (count - 1) / BUTTONS_PER_ROW;
 
             int newRow = currPos.Item1 == lastRow ? 0 : currPos.Item1 + 1;
@@ -526,7 +555,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         private (int, int) MoveLeft((int, int) currPos)
         {
-            int count = GetDatas().Count;
+            int count = _GetDatas().Count;
             int lastRow = (count - 1) / BUTTONS_PER_ROW;
 
             if (currPos.Item2 > 0)
@@ -547,7 +576,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         private (int, int) MoveRight((int, int) currPos)
         {
-            int count = GetDatas().Count;
+            int count = _GetDatas().Count;
             int lastRow = (count - 1) / BUTTONS_PER_ROW;
 
             // how many items in this row?
@@ -563,7 +592,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         private (int, int) GetCoordinate()
         {
-            int indexOfSelected = GetDatas().IndexOf(_currSelectedSpriteButtonData);
+            int indexOfSelected = _GetDatas().IndexOf(_currSelectedSpriteButtonData);
 
             if (indexOfSelected == -1)
             {
@@ -576,7 +605,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         private void FocusPanel()
         {
-            GetShortcutManager().IsEnabled = true;
+            _GetShortcutManager().IsEnabled = true;
         }
     }
 }
