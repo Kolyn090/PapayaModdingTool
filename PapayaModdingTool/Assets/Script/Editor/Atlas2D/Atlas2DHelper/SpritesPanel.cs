@@ -88,6 +88,10 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 {
                     SetDatas(SpriteButtonDataSorter.SortByWorkplace(GetDatas()));
                 }
+                if (GUILayout.Button(ELT("reload")))
+                {
+                    ForceReload();
+                }
             }
             GUILayout.EndHorizontal();
             EditorGUI.EndDisabledGroup();
@@ -328,7 +332,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 
         public void ForceReload()
         {
-            UpdateForceReload(_currSelectedTextureData);
+            if (_currSelectedSpriteButtonData != null)
+                UpdateForceReload(_currSelectedTextureData);
         }
 
         public void Update(Texture2DButtonData texture2dData)

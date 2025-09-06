@@ -97,6 +97,7 @@
         "duplicate_sprite": "复制图像",
         "duplicate_sprite_alert": "你确定要复制{0}个图像吗？该操作不可撤销。",
         "confirm": "确认",
-        "cancel": "取消"
+        "cancel": "取消",
+        "reload": "重新加载"
     }
 }
