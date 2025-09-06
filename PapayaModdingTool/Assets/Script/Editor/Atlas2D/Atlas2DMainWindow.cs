@@ -108,7 +108,8 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D
                 GetCommandManager = () => _spriteEditCommandManager,
                 GetProjectName = () => ProjectName,
                 GetSaver = () => _spritesPanelSaver,
-                GetShortcutManager = () => _spriteEditShortcutManager
+                GetShortcutManager = () => _spriteEditShortcutManager,
+                ForceUpdateSpritesPanel = _spritesPanel.ForceReload
             };
             _spriteEditPanel.Initialize(new(270, 550, 530, 360));
 

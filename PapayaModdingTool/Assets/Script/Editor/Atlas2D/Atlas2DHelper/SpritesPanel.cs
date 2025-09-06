@@ -16,7 +16,6 @@ using PapayaModdingTool.Assets.Script.Wrapper.TextureEncodeDecode;
 using PapayaModdingTool.Assets.Script.Writer.Atlas2D;
 using UnityEditor;
 using UnityEngine;
-using UEvent = UnityEngine.Event;
 
 namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
 {
@@ -327,13 +326,13 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             return $"{start}...{end}";
         }
 
+        public void ForceReload()
+        {
+            UpdateForceReload(_currSelectedTextureData);
+        }
+
         public void Update(Texture2DButtonData texture2dData)
         {
-            static List<string> GetAnimations(List<SpriteButtonData> datas)
-            {
-                return datas.Select(x => x.animation).ToHashSet().ToList();
-            }
-
             List<SpriteButtonData> spriteDatas = _spritesCacher.GetFromCache(texture2dData);
             if (spriteDatas != null)
             {
@@ -343,10 +342,15 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
                 return;
             }
 
+            UpdateForceReload(texture2dData);
+        }
+
+        private void UpdateForceReload(Texture2DButtonData texture2dData)
+        {
             _currSelectedTextureData = texture2dData;
             if (texture2dData.IsStyle1)
             {
-                spriteDatas = ImageReader.ReadSpriteButtonDatas(texture2dData.assetsInst,
+                List<SpriteButtonData> spriteDatas = ImageReader.ReadSpriteButtonDatas(texture2dData.assetsInst,
                                                             GetAssetsManager(),
                                                             GetTextureEncoderDecoder());
                 LoadFromSave(texture2dData.sourcePath, spriteDatas);
@@ -372,6 +376,11 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2DMainHelper
             {
                 Debug.LogError("Invalid Texture2DButtonData. Abort.");
             }
+        }
+
+        private static List<string> GetAnimations(List<SpriteButtonData> datas)
+        {
+            return datas.Select(x => x.animation).ToHashSet().ToList();
         }
 
         private void LoadFromSave(string sourcePath, List<SpriteButtonData> datas)

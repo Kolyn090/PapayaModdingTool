@@ -28,6 +28,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         public Func<SpritesPanelSaver> GetSaver;
         public Func<ShortcutManager> GetShortcutManager;
         public Action<List<SpriteButtonData>> SetDatas; // Workplace
+        public Action ForceUpdateSpritesPanel;
 
         private Texture2D _sprite;
         private int _level;
@@ -201,8 +202,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             );
             if (!confirm)
                 return;
-            
+
             _batchOperator.DuplicateSelected(GetProjectName(), _fileFolderName, GetJsonSavePath, GetSaver());
+            ForceUpdateSpritesPanel();
         }
 
         private void AutoFillWorkplace()
@@ -647,6 +649,9 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         // Call when Ctrl + S is clicked
         public void OnShortcutSave()
         {
+            if (GetAllDatasInTexture == null || GetAllDatasInTexture() == null)
+                return;
+
             void WriteToDb()
             {
                 string importedPath = string.Format(PredefinedPaths.ExternalFileTextureImportedFolder, GetProjectName(), _fileFolderName);
