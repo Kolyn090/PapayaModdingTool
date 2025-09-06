@@ -1,1 +1,2 @@
 1. Auto import Animation from MonoBehaviour
+2. Allow multi-texture process
