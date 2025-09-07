@@ -37,6 +37,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         private string _newAnimation;
         private string _deleteAnimation;
         private string _name;
+        private string _name2ndPart;
         private int _width;
         private int _height;
         private float _pivotX;
@@ -134,7 +135,7 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
 
                 GUILayout.BeginVertical();
                 {
-                    DrawString(_controlNames[0], ref _name);
+                    DrawNameField(_controlNames[0], ref _name);
                     DrawIntRedTextIfNegative(_controlNames[1], ref _level);
                     DrawIntRedTextIfNegative(_controlNames[2], ref _order);
                     DrawIntRedTextIfNegative(_controlNames[3], ref _width);
@@ -241,6 +242,20 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
         {
             // For optimization purpose, only truly save to data if this button is clicked
             // Only update if the value has been changed
+
+            if (!string.IsNullOrWhiteSpace(_name2ndPart))
+            {
+                _name += _name2ndPart;
+                
+                if (int.TryParse(_name2ndPart, out int number))
+                {
+                    _name2ndPart = (number + 1).ToString();
+                }
+                else
+                {
+                    _name2ndPart = "";
+                }
+            }
 
             if (_curr.label != _name)
                 _batchOperator.RenameSpriteLabel(_name, () => _curr, newVal => _name = newVal);
@@ -419,6 +434,31 @@ namespace PapayaModdingTool.Assets.Script.Editor.Atlas2D.Atlas2DMainHelper
             if (newValue != value)
                 value = newValue;
             
+            // Check if this control is focused
+            if (GUI.GetNameOfFocusedControl() == controlName)
+            {
+                FocusPanel();
+            }
+        }
+
+        private void DrawNameField(string controlName, ref string value)
+        {
+            (Rect labelRect, Rect fieldRect) = GetFieldRect();
+            Rect fieldRectPart1 = new(fieldRect.x, fieldRect.y, fieldRect.width * 0.75f, fieldRect.height);
+            Rect fieldRectPart2 = new(fieldRect.x + fieldRect.width * 0.75f, fieldRect.y, fieldRect.width * 0.25f, fieldRect.height);
+
+            GUILayout.BeginHorizontal();
+            {
+                EditorGUI.LabelField(labelRect, _ELT(controlName));
+                GUI.SetNextControlName(controlName);
+                string newValue = EditorGUI.TextField(fieldRectPart1, value);
+                GUI.SetNextControlName(controlName);
+                _name2ndPart = EditorGUI.TextField(fieldRectPart2, _name2ndPart);
+                if (newValue != value)
+                    value = newValue;
+            }
+            GUILayout.EndHorizontal();
+
             // Check if this control is focused
             if (GUI.GetNameOfFocusedControl() == controlName)
             {
